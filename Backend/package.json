@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Surajshivam-123/campus-sphere#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",

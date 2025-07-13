@@ -38,14 +38,8 @@ const eventSchema = new Schema({
         trim:true
     },
     category:{
-        type:String,
-        required:true,
-    },
-    sports:{
-        type:String,
-    },
-    others:{
-        type:String
+        type:Schema.Types.ObjectId,
+        ref:'Category',
     },
     maxParticipants:{
         type:Number,
@@ -60,16 +54,14 @@ const eventSchema = new Schema({
         url:String,
         public_id:String
     },
-    eventPeople:{
-        members:{
-            type:Array,
-            default:[{name:"",role:'Organizer'}]
-        },
-        participants:{
-            type:Array,
-            default:[]
-        }
-    }
+    members:[{
+            type:Schema.Types.ObjectId,
+            ref:"Member"
+        }],
+    participants:[{
+            type:Schema.Types.ObjectId,
+            ref:"Participant"
+        }]
 },{
     timestamps:true
 })
