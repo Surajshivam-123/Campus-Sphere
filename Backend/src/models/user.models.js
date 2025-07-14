@@ -1,5 +1,6 @@
 import mongoose,{Schema} from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 
 const userSchema=new Schema({
@@ -30,8 +31,7 @@ const userSchema=new Schema({
         required:true
     },
     avatar:{
-        url:String,
-        public_id:string
+        type:String,
     },
     refreshToken:{
         type:String
@@ -41,7 +41,7 @@ const userSchema=new Schema({
 })
 
 userSchema.pre('save',async function(next){
-    if(!this.isModeified('password'))
+    if(!this.isModified('password'))
         return next();
     this.password=await bcrypt.hash(this.password,10);
     next();
