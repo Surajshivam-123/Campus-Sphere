@@ -26,19 +26,21 @@ export default function Register() {
     formData.append("email", email);
     formData.append("password", password);
     if (avatarFile) {
-      formData.append("avatar", avatarFile,);
+      formData.append("avatar", avatarFile);
     }
-
+    // if (confirmPassword !== password) {
+    //   throw Error("Passwords do not match");
+    // }
     try {
       const response = await fetch("http://localhost:3000/api/cpsh/users/register", {
         method: "POST",
-        credentials:"include",
+        credentials: "include",
         body: formData,
       });
 
       const result = await response.json();
       console.log("Server Response:", result);
-      //navigate("/home");
+      navigate("/home");
     } catch (err) {
       console.error("Error sending data:", err);
     }
