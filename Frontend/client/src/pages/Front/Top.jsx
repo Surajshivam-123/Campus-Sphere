@@ -1,4 +1,4 @@
-import logo from '../../assets/logo.jpg';
+import logo from '../../../public/logo.jpg';
 
 export default function Top({ onGetStartedClick }) {
   return (

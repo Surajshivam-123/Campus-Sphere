@@ -1,4 +1,4 @@
-import logo from "../assets/logo.jpg";
+import logo from "../../public/logo.jpg";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 export default function Login() {

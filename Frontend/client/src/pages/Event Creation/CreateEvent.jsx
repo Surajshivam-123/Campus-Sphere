@@ -17,30 +17,7 @@ export default function CreateEvent() {
     category: "",
     sports: "",
     others: "",
-    invitationCode: {
-      members: "",
-      candidates: "",
-    },
-    totalParticipants: 0,
-    registeredParticipants: 0,
-    checkedInParticipants: 0,
-    participationRate: 0,
-    registrationSources: {
-      website: 0,
-      email: 0,
-      social: 0,
-      referral: 0,
-    },
-    attendeeCategories: {
-      speakers: 0,
-      sponsors: 0,
-      general: 0,
-      press: 0,
-    },
-    eventPeople: {
-      members: [{ name: "", role: "Organizer" }],
-      participants: [],
-    },
+    maxParticipants: 0,
     imagePreview: "",
   });
 
