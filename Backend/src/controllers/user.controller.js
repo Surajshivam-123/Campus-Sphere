@@ -1,9 +1,9 @@
 import { User } from "../models/user.models.js";
 //import {uploadOnCloudinary} from "../utils/cloudinary.js";
-import { asyncHandler } from "../utils/AsyncHandler.js";
+import  asyncHandler  from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import ApiError  from "../utils/ApiError.js";
+import ApiResponse  from "../utils/ApiResponse.js";
 
 const genetateAccessAndRefreshToken = async (userId) => {
   try {
@@ -160,4 +160,14 @@ const refreshToken = asyncHandler(async (req, res) => {
   }
 });
 
+// const getUser=asyncHandler(async(req,res)=>{
+//   try {
+//     const user = await User.findById(req.user._id);
+//     if (!user) {
+//       throw new ApiError(404, "User not found");
+//     }
+//   } catch (error) {
+    
+//   }
+// })
 export { registerUser, loginUser, logoutUser, refreshToken };

@@ -17,6 +17,9 @@ app.get('/profile',(req,res)=>{
     console.log(req.cookies);
 })
 
-import { userRouter } from './routes/user.route.js';
+
+import  userRouter  from './routes/user.route.js';
+import eventRouter from './routes/event.route.js'
 app.use("/api/cpsh/users",userRouter);
+app.use("/api/cpsh/events",eventRouter);
 export {app}

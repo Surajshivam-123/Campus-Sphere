@@ -19,7 +19,7 @@ const eventSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    Mode: {
+    mode: {
       type: String,
       required: true,
       trim: true,
@@ -36,17 +36,14 @@ const eventSchema = new Schema(
     },
     sports: {
       type: String,
-      required: true,
       trim: true,
     },
     others: {
       type: String,
-      required: true,
       trim: true,
     },
     cultural: {
       type: String,
-      required: true,
       trim: true,
     },
     startDate: {
@@ -55,7 +52,6 @@ const eventSchema = new Schema(
     },
     location: {
       type: String,
-      required: true,
       trim: true,
     },
     maxParticipants: {

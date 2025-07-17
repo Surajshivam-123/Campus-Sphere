@@ -4,21 +4,23 @@ import Rules from "./Rule";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateEvent() {
+  const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
   const [err, seterr] = useState("");
   const [eventData, setEventdata] = useState({
     festivalName: "",
     eventName: "",
-    eventDate: "",
+    startDate: "",
     eventLocation: "",
     organization: "",
     description: "",
     mode: "",
     category: "",
     sports: "",
+    cultural: "",
     others: "",
     maxParticipants: 0,
-    imagePreview: "",
+    poster: "",
   });
 
   const handleInputChange = (e) => {
@@ -31,49 +33,82 @@ export default function CreateEvent() {
     if (file) {
       setEventdata((prev) => ({
         ...prev,
-        imagePreview: URL.createObjectURL(file),
+        poster: file,
       }));
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const {
-      eventName,
-      eventDate,
-      eventLocation,
-      organization,
-      description,
-      mode,
-      category,
-      totalParticipants,
-    } = eventData;
-    if (
-      !eventName.trim() ||
-      !eventDate.trim() ||
-      !eventLocation.trim() ||
-      !organization.trim() ||
-      !description.trim() ||
-      !mode.trim() ||
-      !category.trim() ||
-      !totalParticipants
-    ) {
-      seterr("All mandatory fields are required.");
-      return;
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const {
+        eventName,
+        festivalName,
+        startDate,
+        eventLocation,
+        organization,
+        description,
+        mode,
+        category,
+        sports,
+        cultural,
+        others,
+        maxParticipants,
+        poster,
+      } = eventData;
+      if (
+        !eventName.trim() ||
+        !startDate.trim() ||
+        !eventLocation.trim() ||
+        !organization.trim() ||
+        !description.trim() ||
+        !mode.trim() ||
+        !category.trim() ||
+        !maxParticipants
+      ) {
+        seterr("All mandatory fields are required.");
+      }
+      const formData = new FormData();
+        formData.append("eventName", eventName);
+        formData.append("startDate", startDate);
+        formData.append("location", eventLocation);
+        formData.append("organization", organization);
+        formData.append("description", description);
+        formData.append("mode", mode);
+        formData.append("category", category);
+        formData.append("maxParticipants", maxParticipants);
+        formData.append("festivalName", festivalName);
+        formData.append("sports", sports);
+        formData.append("cultural", cultural);
+        formData.append("others", others);
+        formData.append("poster", poster);
+        const response = await fetch(
+          "http://localhost:3000/api/cpsh/events/create",
+          {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          }
+        );
+
+        const result = await response.json();
+        console.log("Server Response:", result);
+      if (eventData.category === "sports") {
+        navigate(
+          `/event/${eventData.eventName}/${eventData.category}/${
+            eventData.sports === "others" ? eventData.others : eventData.sports
+          }`
+        );
+      } else {
+        navigate(`/event/${eventData.eventName}/${eventData.category}`, {
+          state: eventData,
+        });
+      }
+      console.log("Event Created!");
+    } catch (error) {
+      console.log("Error while creating event and Error:", error);
     }
-    if (eventData.category === "Sports") {
-      navigate(
-        `/event/${eventData.eventName}/${eventData.category}/${eventData.sports=== "others" ? eventData.others : eventData.sports}`,
-        { state: eventData }
-      );
-    }
-    else{
-      navigate(
-        `/event/${eventData.eventName}/${eventData.category}`,
-        { state: eventData }
-      );
-    }
-    console.log("Event Created!");
   };
 
   return (
@@ -164,8 +199,8 @@ export default function CreateEvent() {
               <input
                 type="datetime-local"
                 required
-                name="eventDate"
-                value={eventData.eventDate}
+                name="startDate"
+                value={eventData.startDate}
                 onChange={handleInputChange}
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
               />
@@ -204,6 +239,7 @@ export default function CreateEvent() {
                 <option value="coding">Coding</option>
                 <option value="cultural">Cultural</option>
                 <option value="workshop">Workshop</option>
+                <option value="others">Others</option>
               </select>
             </div>
             {eventData.category === "sports" && (
@@ -219,9 +255,9 @@ export default function CreateEvent() {
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
                 >
                   <option value="">-- Select Sports --</option>
-                  <option value="Cricket">Cricket</option>
-                  <option value="Volleyball">Volleyball</option>
-                  <option value="Basketball">Basketball</option>
+                  <option value="cricket">Cricket</option>
+                  <option value="volleyball">Volleyball</option>
+                  <option value="basketball">Basketball</option>
                   <option value="others">others</option>
                 </select>
               </div>
@@ -248,8 +284,8 @@ export default function CreateEvent() {
               <input
                 type="number"
                 required
-                name="totalParticipants"
-                value={eventData.totalParticipants}
+                name="maxParticipants"
+                value={eventData.maxParticipants}
                 onChange={handleInputChange}
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
                 placeholder="e.g. 50"
@@ -267,9 +303,9 @@ export default function CreateEvent() {
               onChange={handleImageChange}
               className="block w-[30%] text-sm text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
             />
-            {eventData.imagePreview && (
+            {imagePreview && (
               <img
-                src={eventData.imagePreview}
+                src={imagePreview}
                 alt="Event Preview"
                 className="mt-3 rounded-md w-[20%] max-h-64 object-cover shadow"
               />
