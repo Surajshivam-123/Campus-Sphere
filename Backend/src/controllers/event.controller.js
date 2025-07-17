@@ -147,7 +147,7 @@ const updateEvent = asyncHandler(async (req, res) => {
     if (rules) {
       event.rules = rules;
     }
-    const updatedEvent = await findByIdAndUpdate(eventId, event, { new: true });
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, event, { new: true });
     if (!updateEvent) {
       throw new ApiError(400, "Error while updating event");
     }

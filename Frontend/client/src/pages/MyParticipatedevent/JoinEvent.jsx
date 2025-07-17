@@ -5,8 +5,6 @@ export default function JoinEvent() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const validCodes = ["TECH2025", "SPORTS24", "CULTUREX"]; // Sample valid codes
-
   const handleSubmit = (e) => {
     e.preventDefault();
 

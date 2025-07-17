@@ -1,4 +1,25 @@
-export default function CricketEventPage({ event }) {
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import getsingleEvent from "../../components/getsingleevent";
+import { useEffect, useState } from "react";
+
+export default function CricketEventPage() {
+  const navigate = useNavigate();
+  const { eventId } = useParams();
+  if(!eventId){
+    console.log("EventId is not available")
+  }
+  const [event, setevent] = useState(null);
+  useEffect(() => {
+    const loadEvent = async () => {
+      const result = await getsingleEvent(eventId);
+      setevent(result?.data || null);
+    };
+    loadEvent();
+  }, []);
+  if (!event) {
+  return <div className="text-center mt-10 text-gray-600">Loading event details...</div>;
+}
   const {
     festivalName,
     eventName,
@@ -11,13 +32,22 @@ export default function CricketEventPage({ event }) {
     sports,
     maxParticipants,
     rules,
-    membercode,
-    participation,
-    poster,
-    members, // Assuming you have a list of members
-    team, // Assuming you have a list of participants
+    memberCode,
+    participantCode,
+    Poster,//poster using of dummy poster members and team
+    createdAt,
   } = event;
-
+  const poster = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s";
+  const members = [
+    { name: "suraj", role: "organizer" },
+    { name: "shivam", role: "third umpire" },
+    { name: "golu", role: " ground umpire" },
+    { name: "bholu", role: " ground umpire" },
+  ]
+  const team=["csk", "rcb", "mi", "kkr"];
+  const handleupdatebutton = () => {
+    navigate(`/update-event/${eventId}`);
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden">
@@ -56,10 +86,10 @@ export default function CricketEventPage({ event }) {
               <strong>Max Participants:</strong> {maxParticipants}
             </div>
             <div>
-              <strong>Participation Type:</strong> {participation}
+              <strong>Participant Code:</strong> {participantCode}
             </div>
             <div>
-              <strong>Member Code:</strong> {membercode}
+              <strong>Member Code:</strong> {memberCode}
             </div>
           </div>
 
@@ -70,8 +100,10 @@ export default function CricketEventPage({ event }) {
 
           <div>
             <h2 className="text-xl font-semibold text-gray-800">Rules</h2>
-            {rules.map((rule,index) => (
-              <p key={index} className="mt-1 text-gray-600 whitespace-pre-line">{index+1}. {rule}</p>
+            {rules.map((rule, index) => (
+              <p key={index} className="mt-1 text-gray-600 whitespace-pre-line">
+                {index + 1}. {rule}
+              </p>
             ))}
           </div>
 
@@ -125,7 +157,7 @@ export default function CricketEventPage({ event }) {
             <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
               Create Schedule
             </button>
-            <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+            <button onClick={handleupdatebutton} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
               Update Event
             </button>
             <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">

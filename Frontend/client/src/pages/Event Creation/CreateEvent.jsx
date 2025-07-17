@@ -21,8 +21,14 @@ export default function CreateEvent() {
     others: "",
     maxParticipants: 0,
     poster: "",
+    rules: [],
   });
-
+  const handleRule = (allrules) => {
+    setEventdata((prev) => ({
+      ...prev,
+      rules: allrules,
+    }));
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEventdata((prev) => ({ ...prev, [name]: value }));
@@ -56,6 +62,7 @@ export default function CreateEvent() {
         others,
         maxParticipants,
         poster,
+        rules,
       } = eventData;
       if (
         !eventName.trim() ||
@@ -70,41 +77,31 @@ export default function CreateEvent() {
         seterr("All mandatory fields are required.");
       }
       const formData = new FormData();
-        formData.append("eventName", eventName);
-        formData.append("startDate", startDate);
-        formData.append("location", eventLocation);
-        formData.append("organization", organization);
-        formData.append("description", description);
-        formData.append("mode", mode);
-        formData.append("category", category);
-        formData.append("maxParticipants", maxParticipants);
-        formData.append("festivalName", festivalName);
-        formData.append("sports", sports);
-        formData.append("cultural", cultural);
-        formData.append("others", others);
-        formData.append("poster", poster);
-        const response = await fetch(
-          "http://localhost:3000/api/cpsh/events/create",
-          {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-          }
-        );
-
-        const result = await response.json();
-        console.log("Server Response:", result);
-      if (eventData.category === "sports") {
-        navigate(
-          `/event/${eventData.eventName}/${eventData.category}/${
-            eventData.sports === "others" ? eventData.others : eventData.sports
-          }`
-        );
-      } else {
-        navigate(`/event/${eventData.eventName}/${eventData.category}`, {
-          state: eventData,
-        });
-      }
+      formData.append("eventName", eventName);
+      formData.append("startDate", startDate);
+      formData.append("location", eventLocation);
+      formData.append("organization", organization);
+      formData.append("description", description);
+      formData.append("mode", mode);
+      formData.append("category", category);
+      formData.append("maxParticipants", maxParticipants);
+      formData.append("festivalName", festivalName);
+      formData.append("sports", sports);
+      formData.append("cultural", cultural);
+      formData.append("others", others);
+      formData.append("poster", poster);
+      formData.append("rules", rules.split(","));
+      const response = await fetch(
+        "http://localhost:3000/api/cpsh/events/create",
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        }
+      );
+      const result = await response.json();
+      console.log("Server Response:", result);
+      navigate("/events-hosted");
       console.log("Event Created!");
     } catch (error) {
       console.log("Error while creating event and Error:", error);
@@ -292,7 +289,7 @@ export default function CreateEvent() {
               />
             </div>
           </div>
-          <Rules />
+          <Rules save={handleRule} />
           <div>
             <label className=" text-gray-700 font-medium mb-1 flex items-center">
               <FaFileUpload className="mr-2" /> Upload Poster / Image *

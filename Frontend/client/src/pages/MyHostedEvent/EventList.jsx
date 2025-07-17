@@ -2,29 +2,11 @@ import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import getAllEvents from "../../components/getallEvent";
 
 export default function EventList() {
   const [allEvents, setallEvents] = useState(null);
   const navigate = useNavigate();
-  const getAllEvents = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:3000/api/cpsh/events/get-all-events",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.log("Error while getting events and Error", error);
-      return null;
-    }
-  };
   useEffect(() => {
     const loadEvents = async () => {
       const result = await getAllEvents();
@@ -35,11 +17,11 @@ export default function EventList() {
   }, []);
   const handleEventClick = (event) => {
     if (event.category == "sports") {
-      navigate(`/event/${event.eventName}/${event.category}/${event.sports}`);
+      navigate(`/event/${event.eventName}/${event._id}/${event.category}/${event.sports}`);
     } else if (event.category == "workshop") {
-      navigate(`/event/${event.eventName}/workshop`);
+      navigate(`/event/${event.eventName}/${event._id}/workshop`);
     } else {
-      navigate(`/event/${event.eventName}/others`);
+      navigate(`/event/${event.eventName}/${event._id}/others`);
     }
     };
     console.log("all events:", allEvents);

@@ -1,9 +1,9 @@
 import { User } from "../models/user.models.js";
 //import {uploadOnCloudinary} from "../utils/cloudinary.js";
-import  asyncHandler  from "../utils/AsyncHandler.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
-import ApiError  from "../utils/ApiError.js";
-import ApiResponse  from "../utils/ApiResponse.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
 
 const genetateAccessAndRefreshToken = async (userId) => {
   try {
@@ -15,8 +15,8 @@ const genetateAccessAndRefreshToken = async (userId) => {
     user.refreshToken = refreshToken;
     await user.save({
       validateBeforeSave: false,
-    })
-    return { accessToken, refreshToken};
+    });
+    return { accessToken, refreshToken };
   } catch (error) {
     throw new ApiError(500, "Something went wrong while generating tokens");
   }
@@ -24,8 +24,8 @@ const genetateAccessAndRefreshToken = async (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = req.body;
-//   console.log("Request Body:", req.body);
-//   console.log("FileInfo:", req.body);
+  //   console.log("Request Body:", req.body);
+  //   console.log("FileInfo:", req.body);
   if (
     [fullname, username, email, password].some((field) => field.trim() === "")
   ) {
@@ -50,10 +50,12 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!user._id) {
     throw new ApiError(400, "userid does not exist");
   }
-  const { accessToken, refreshToken} = await genetateAccessAndRefreshToken(
+  const { accessToken, refreshToken } = await genetateAccessAndRefreshToken(
     user._id
   );
-  const updatedUser=await User.findById(user._id).select("-password -refreshToken");
+  const updatedUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
   const cookieoptions = {
     httpOnly: true,
     secure: true,
@@ -74,7 +76,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email or UserName and password is required");
   }
   const finduser = await User.findOne({
-    $or: [{ email:usermail }, { username:usermail }],
+    $or: [{ email: usermail }, { username: usermail }],
   });
   if (!finduser) {
     throw new ApiError(400, "User is not registered");
@@ -93,9 +95,9 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   };
-  res.cookie("accessToken", accessToken, cookieoptions);
-  res.cookie("refreshToken", refreshToken, cookieoptions);
   res
+    .cookie("refreshToken", refreshToken, cookieoptions)
+    .cookie("accessToken", accessToken, cookieoptions)
     .status(200)
     .json(
       new ApiResponse(
@@ -167,7 +169,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 //       throw new ApiError(404, "User not found");
 //     }
 //   } catch (error) {
-    
+
 //   }
 // })
 export { registerUser, loginUser, logoutUser, refreshToken };

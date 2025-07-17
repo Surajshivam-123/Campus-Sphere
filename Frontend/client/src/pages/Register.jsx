@@ -1,6 +1,7 @@
 import { useState } from "react";
 import profile from "../assets/download.jpeg";
 import { useNavigate } from "react-router-dom";
+import { set } from "mongoose";
 
 export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -10,6 +11,7 @@ export default function Register() {
   const [username, setusername] = useState("");
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -18,31 +20,59 @@ export default function Register() {
       setAvatarFile(file);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
+    let fn = true,
+      un = true,
+      em = true,
+      pw = true,
+      cp = true;
+    if (!fullname) {
+      setErrorMessage("fullname is required");
+      fn = false;
+    }
     formData.append("fullname", fullname);
+    if (!username) {
+      setErrorMessage("username is required");
+      un = false;
+    }
     formData.append("username", username);
+    if (!email) {
+      setErrorMessage("email is required");
+      em = false;
+    }
     formData.append("email", email);
+    if (!password) {
+      setErrorMessage("password is required");
+      pw = false;
+    }
     formData.append("password", password);
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
-    // if (confirmPassword !== password) {
-    //   throw Error("Passwords do not match");
-    // }
-    try {
-      const response = await fetch("http://localhost:3000/api/cpsh/users/register", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
+    if (confirmPassword !== password) {
+      setErrorMessage("Passwords do not match");
+      cp = false;
+    }
+    if (fn && un && em && pw && cp) {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/cpsh/users/register",
+          {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          }
+        );
 
-      const result = await response.json();
-      console.log("Server Response:", result);
-      navigate("/home");
-    } catch (err) {
-      console.error("Error sending data:", err);
+        const result = await response.json();
+        console.log("Server Response:", result);
+        navigate("/home");
+      } catch (err) {
+        console.error("Error sending data:", err);
+      }
     }
   };
   return (
@@ -141,6 +171,9 @@ export default function Register() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
+          <p className="text-red-500" style={{ textAlign: "center" }}>
+            {errorMessage}
+          </p>
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"

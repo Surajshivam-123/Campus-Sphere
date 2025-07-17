@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FaFontAwesome } from "react-icons/fa";
 
-export default function Rules() {
-  const [rules, setRules] = useState(["Always be kind"]);
+export default function Rules({save,oldrule=[]}) {
+  const [rules, setRules] = useState(oldrule);
   const [newRule, setNewRule] = useState("");
   const handleAddRule = (e) => {
     if (newRule.trim()) {
@@ -11,11 +11,13 @@ export default function Rules() {
       setNewRule("");
     }
   };
-
   const handleRemoveRule = (indexToRemove) => {
     setRules(rules.filter((_, index) => index !== indexToRemove));
   };
-
+  const handleSubmit=(e)=>{
+    e.preventDefault();
+    save(rules);
+  }
   return (
     <div className="max-w-md mx-auto bg-white  overflow-hidden md:max-w-2xl ">
       <h2 className="flex items-center text-xl text-gray-700 font-medium mb-6">
@@ -90,6 +92,7 @@ export default function Rules() {
           <span className="ml-2">Add</span>
         </button>
       </div>
+      <button onClick={handleSubmit} className="cursor-pointer hover:bg-blue-600 transition-colors rounded w-[50%] bg-blue-500 text-white]">Save Rules</button>
     </div>
   );
 }
