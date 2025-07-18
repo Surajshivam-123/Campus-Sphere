@@ -1,8 +1,8 @@
+import mongoose from "mongoose";
 import { Schema } from "mongoose";
-
 const participantSchema = new Schema(
   {
-    name: {
+    owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

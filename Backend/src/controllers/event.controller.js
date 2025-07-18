@@ -190,4 +190,6 @@ const getallEvents = asyncHandler(async (req, res) => {
   }
 });
 
+
+
 export { createEvent, deleteEvent, updateEvent, getallEvents ,getsingleEvent};

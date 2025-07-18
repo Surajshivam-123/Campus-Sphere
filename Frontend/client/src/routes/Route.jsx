@@ -6,32 +6,14 @@ import Home from "../pages/Home/Home";
 import CreateEvent from "../pages/Event Creation/CreateEvent";
 import WorkshopEventDetails from "../pages/Event Creation/WorkshopEventDetails";
 import EventList from "../pages/MyHostedEvent/EventList";
-import JoinEvent from "../pages/MyParticipatedevent/JoinEvent"
+import JoinEvent  from "../pages/ParticipateEvent/JoinEvent";
 import MyEvents from "../pages/MyParticipatedEvents/MyEvents";
 import CricketEventPage from "../pages/Event Creation/CricketEventPage";
 import UpdateEventPage from "../pages/Edit Event/updateEvent";
-
+import EventDetailsPage from "../pages/ParticipateEvent/EventDetails";
 
 
 export default function AppRoutes() {
-//   const cricketEvent = {
-//   festivalName: "Annual Sports Fest 2025",
-//   eventName: "Inter-College Cricket League",
-//   startDate: "2025-08-10",
-//   location: "Main Ground, Campus",
-//   organization: "ABC Institute of Tech",
-//   description: "Exciting 20-over cricket matches between top college teams!",
-//   mode: "Offline",
-//   category: "Sports",
-//   sports: "Cricket",
-//   maxParticipants: 11,
-//   rules: ["Each team must have 11 players.","Each match will be 20 overs.","ICC rules apply."],
-//   membercode: "CRK25ABC",
-//   participation: "Team",
-//   poster: "https://via.placeholder.com/800x400.png?text=Cricket+Event",
-  
-
-// };
   return (
     <>
       <Routes>
@@ -44,15 +26,22 @@ export default function AppRoutes() {
           }
         />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register/>}/>
-        <Route path="/home" element={<Home/>}/>
-        <Route path="/new-events-hosted" element={<CreateEvent/>}/>
-        <Route path="/event/:eventName/:eventId/workshop" element={<WorkshopEventDetails/>}/>
-        <Route path="/events-hosted" element={<EventList/>}/>
-        <Route path="/update-event/:eventId" element={<UpdateEventPage/>}/>
-        <Route path="/join-event" element={<JoinEvent/>}/>
-        <Route path="/my-events" element={<MyEvents/>}/>
-        <Route path="/event/:eventName/:eventId/sports/cricket" element={<CricketEventPage/>}/>
+        <Route path="/register" element={<Register />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/new-events-hosted" element={<CreateEvent />} />
+        <Route
+          path="/event/:eventName/:eventId/workshop"
+          element={<WorkshopEventDetails />}
+        />
+        <Route path="/events-hosted" element={<EventList />} />
+        <Route path="/update-event/:eventId" element={<UpdateEventPage />} />
+        <Route path="/join-event" element={<JoinEvent />} />
+        <Route path="/event-details/:identityNumber/:participantCode" element={<EventDetailsPage/>}/>
+        <Route path="/my-events" element={<MyEvents />} />
+        <Route
+          path="/event/:eventName/:eventId/sports/cricket"
+          element={<CricketEventPage />}
+        />
       </Routes>
     </>
   );
