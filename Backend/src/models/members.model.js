@@ -2,7 +2,7 @@ import { Schema } from "mongoose";
 
 const memberSchema = new Schema(
   {
-    name: {
+    owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

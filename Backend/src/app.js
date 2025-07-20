@@ -27,6 +27,6 @@ import particpantRouter from "./routes/participant.route.js";
 app.use("/api/cpsh/users", userRouter);
 app.use("/api/cpsh/events", eventRouter);
 app.use("/api/cpsh/participants", particpantRouter);
-
+app.use("/api/cpsh/members", particpantRouter);
 
 export { app };

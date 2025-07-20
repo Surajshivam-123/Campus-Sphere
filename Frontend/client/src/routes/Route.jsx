@@ -12,7 +12,6 @@ import CricketEventPage from "../pages/Event Creation/CricketEventPage";
 import UpdateEventPage from "../pages/Edit Event/updateEvent";
 import EventDetailsPage from "../pages/ParticipateEvent/EventDetails";
 
-
 export default function AppRoutes() {
   return (
     <>
@@ -29,10 +28,7 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
         <Route path="/new-events-hosted" element={<CreateEvent />} />
-        <Route
-          path="/event/:eventName/:eventId/workshop"
-          element={<WorkshopEventDetails />}
-        />
+        <Route path="/event/:eventName/:eventId/workshop" element={<WorkshopEventDetails />}/>
         <Route path="/events-hosted" element={<EventList />} />
         <Route path="/update-event/:eventId" element={<UpdateEventPage />} />
         <Route path="/join-event" element={<JoinEvent />} />

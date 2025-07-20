@@ -72,18 +72,21 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { usermail, password } = req.body;
-  if (!(usermail && password)) {
-    throw new ApiError(400, "Email or UserName and password is required");
+  if (!(usermail)) {
+    res.status(400).json(new ApiResponse(400, {}, "Username or Email is required"));
+  }
+  if (!password) {
+    res.status(400).json(new ApiResponse(400, {}, "Password is required"));
   }
   const finduser = await User.findOne({
     $or: [{ email: usermail }, { username: usermail }],
   });
   if (!finduser) {
-    throw new ApiError(400, "User is not registered");
+    res.status(400).json(new ApiResponse(400,{}, "User not found"));
   }
   const validPassword = await finduser.isPasswordCorrect(password);
   if (!validPassword) {
-    throw new ApiError(400, "Wrong Password");
+    res.status(400).json(new ApiResponse(400,{}, "Wrong Password"));
   }
   const { accessToken, refreshToken } = await genetateAccessAndRefreshToken(
     finduser._id

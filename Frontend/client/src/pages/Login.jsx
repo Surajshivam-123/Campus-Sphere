@@ -5,6 +5,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [usermail, setusermail] = useState("");
   const [password, setpassword] = useState("");
+  const [message, setmessage] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -13,7 +14,7 @@ export default function Login() {
         {
           method: "POST",
           credentials: "include",
-          headers:{
+          headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -24,7 +25,12 @@ export default function Login() {
       );
       const result = await response.json();
       console.log("Server Response:", result);
-      navigate("/home");
+      if (result?.statusCode === 200) {
+        navigate("/home");
+      }
+      else{
+        setmessage(result?.message);
+      }
     } catch (error) {
       console.error("Error sending data while logging in:", error);
     }
@@ -93,6 +99,7 @@ export default function Login() {
               }}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-red-500 text-center">{message}</p>
             <button
               type="submit"
               className="cursor-pointer w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
