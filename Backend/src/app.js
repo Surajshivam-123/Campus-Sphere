@@ -22,11 +22,11 @@ app.get("/profile", (req, res) => {
 import userRouter from "./routes/user.route.js";
 import eventRouter from "./routes/event.route.js";
 import particpantRouter from "./routes/participant.route.js";
-
+import memberRouter from "./routes/member.route.js";
 
 app.use("/api/cpsh/users", userRouter);
 app.use("/api/cpsh/events", eventRouter);
 app.use("/api/cpsh/participants", particpantRouter);
-app.use("/api/cpsh/members", particpantRouter);
+app.use("/api/cpsh/members", memberRouter);
 
 export { app };

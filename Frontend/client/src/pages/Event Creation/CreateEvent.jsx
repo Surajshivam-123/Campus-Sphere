@@ -90,7 +90,7 @@ export default function CreateEvent() {
       formData.append("cultural", cultural);
       formData.append("others", others);
       formData.append("poster", poster);
-      formData.append("rules", rules.split(","));
+      formData.append("rules", rules);
       const response = await fetch(
         "http://localhost:3000/api/cpsh/events/create",
         {

@@ -3,17 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function JoinMember() {
   const [invitationCode, setInvitationCode] = useState("");
-  const [identityNumber, setIdentityNumber] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!invitationCode.trim()) {
       setError("Invitation code is required.");
-      setSuccess("");
-    } else if (!identityNumber.trim()) {
-      setError("Identity number is required.");
       setSuccess("");
     } else if (invitationCode.length !== 5) {
       setError("Invalid invitation code. Please try again.");
@@ -30,22 +26,20 @@ export default function JoinMember() {
             credentials: "include",
             body: JSON.stringify({
               invitationCode,
-              identityNumber,
             }),
           }
         );
         const result = await response.json();
+        console.log("Server Response", result);
         if (!result?.success) {
           setError(result?.message);
           setSuccess("");
-        }
-        else{
-          navigate(`/event-details/${identityNumber}/${invitationCode}`)
+        } else {
+          navigate(`/get-event/${invitationCode}`);
         }
       } catch (error) {
-        console.log("Error while submitting",error);
+        console.log("Error while submitting", error);
       }
-
     }
   };
 
@@ -65,18 +59,6 @@ export default function JoinMember() {
               value={invitationCode}
               onChange={(e) => setInvitationCode(e.target.value)}
               placeholder="Enter your invitation code"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-          <div>
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Identity Number
-            </label>
-            <input
-              type="text"
-              value={identityNumber}
-              onChange={(e) => setIdentityNumber(e.target.value)}
-              placeholder="Enter your IdentityNumber"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>

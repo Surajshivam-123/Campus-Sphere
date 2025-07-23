@@ -11,19 +11,16 @@ import MyEvents from "../pages/MyParticipatedEvents/MyEvents";
 import CricketEventPage from "../pages/Event Creation/CricketEventPage";
 import UpdateEventPage from "../pages/Edit Event/updateEvent";
 import EventDetailsPage from "../pages/ParticipateEvent/EventDetails";
+import JoinMember from "../pages/JoinMember/JoinMember";
+import EventDetailsMemberPage from "../pages/JoinMember/EventDetailsMember";
+import MemberEvents from "../pages/MyParticipatedEvents/ParticipateateasMember";
+import Profile from "../pages/Profile"
 
 export default function AppRoutes() {
   return (
     <>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Front />
-            </>
-          }
-        />
+        <Route path="/" element={<Front />}/>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
@@ -34,10 +31,11 @@ export default function AppRoutes() {
         <Route path="/join-event" element={<JoinEvent />} />
         <Route path="/event-details/:identityNumber/:participantCode" element={<EventDetailsPage/>}/>
         <Route path="/my-events" element={<MyEvents />} />
-        <Route
-          path="/event/:eventName/:eventId/sports/cricket"
-          element={<CricketEventPage />}
-        />
+        <Route path="/event/:eventName/:eventId/sports/cricket" element={<CricketEventPage />}/>
+        <Route path="/joinMember" element={<JoinMember />}/>
+        <Route path="/get-event/:memberCode" element={<EventDetailsMemberPage/>}/>
+        <Route path="/my-events-member" element={<MemberEvents/>}/>
+        <Route path="/profile" element={<Profile/>}/>
       </Routes>
     </>
   );

@@ -15,7 +15,7 @@ export default function Body() {
           <p className="text-gray-600">Register for exciting campus events and contests.</p>
         </Link>
       <Link
-          to="/join-event-member"
+          to="/joinMember"
           className="bg-white shadow-xl rounded-2xl p-8 text-center hover:scale-105 transform transition duration-300 hover:shadow-2xl border-t-4 border-purple-500"
         >
           <h2 className="text-2xl font-semibold text-purple-700 mb-2">Participate in an Event as a Member</h2>

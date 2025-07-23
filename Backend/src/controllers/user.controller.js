@@ -72,8 +72,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { usermail, password } = req.body;
-  if (!(usermail)) {
-    res.status(400).json(new ApiResponse(400, {}, "Username or Email is required"));
+  if (!usermail) {
+    res
+      .status(400)
+      .json(new ApiResponse(400, {}, "Username or Email is required"));
   }
   if (!password) {
     res.status(400).json(new ApiResponse(400, {}, "Password is required"));
@@ -82,11 +84,11 @@ const loginUser = asyncHandler(async (req, res) => {
     $or: [{ email: usermail }, { username: usermail }],
   });
   if (!finduser) {
-    res.status(400).json(new ApiResponse(400,{}, "User not found"));
+    res.status(400).json(new ApiResponse(400, {}, "User not found"));
   }
   const validPassword = await finduser.isPasswordCorrect(password);
   if (!validPassword) {
-    res.status(400).json(new ApiResponse(400,{}, "Wrong Password"));
+    res.status(400).json(new ApiResponse(400, {}, "Wrong Password"));
   }
   const { accessToken, refreshToken } = await genetateAccessAndRefreshToken(
     finduser._id
@@ -165,14 +167,15 @@ const refreshToken = asyncHandler(async (req, res) => {
   }
 });
 
-// const getUser=asyncHandler(async(req,res)=>{
-//   try {
-//     const user = await User.findById(req.user._id);
-//     if (!user) {
-//       throw new ApiError(404, "User not found");
-//     }
-//   } catch (error) {
-
-//   }
-// })
-export { registerUser, loginUser, logoutUser, refreshToken };
+const getUser = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+    res.status(200).json(new ApiResponse(200, user, "User fetched successfully"))
+  } catch (error) {
+    console.log("Error while getting user", error);
+  }
+});
+export { registerUser, loginUser, logoutUser, refreshToken, getUser };

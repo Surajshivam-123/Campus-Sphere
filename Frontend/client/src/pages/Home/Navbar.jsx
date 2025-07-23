@@ -38,7 +38,10 @@ export default function Navbar() {
         {/* Nav Links */}
         <ul className="hidden md:flex space-x-20 text-white font-medium text-lg">
           <li className="hover:text-yellow-300 transition">
-            <Link to="/my-events">Events Participated</Link>
+            <Link to="/my-events-member">Events Participated as Member</Link>
+          </li>
+          <li className="hover:text-yellow-300 transition">
+            <Link to="/my-events">Events Participated as Participant</Link>
           </li>
           <li className="hover:text-yellow-300 transition">
             <Link to="/events-hosted">Events Hosted</Link>

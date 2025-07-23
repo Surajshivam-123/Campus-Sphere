@@ -1,4 +1,5 @@
 import { Schema } from "mongoose";
+import mongoose from "mongoose";
 
 const memberSchema = new Schema(
   {
@@ -8,7 +9,6 @@ const memberSchema = new Schema(
     },
     role: {
       type: String,
-      required: true,
     },
     event: {
       type: Schema.Types.ObjectId,

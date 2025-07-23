@@ -4,13 +4,13 @@ import EventCard from "./EventCard";
 import { useState } from "react";
 
 
-export default function MyEvents() {
+export default function MemberEvents() {
   const [events, setEvents] = useState(null);
   const [message,setmessage]=useState("");
   useEffect(() => {
     const getEvent = async () => {
       const response = await fetch(
-        "http://localhost:3000/api/cpsh/participants/my-events",
+        "http://localhost:3000/api/cpsh/members/get-all-events",
         {
           method: "GET",
           headers: {
@@ -42,7 +42,7 @@ export default function MyEvents() {
   return (
     <div className="min-h-screen bg-gray-100 pt-20 px-4">
       <h1 className="text-3xl font-bold text-center text-purple-800 mb-8">
-        Events You Participated In as Participant
+        Events You Participated In as Member
       </h1>
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
