@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FaCalendarAlt, FaMapMarkerAlt, FaFileUpload } from "react-icons/fa";
 import Rules from "./Rule";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function CreateEvent() {
   const [imagePreview, setImagePreview] = useState(null);
@@ -23,12 +24,14 @@ export default function CreateEvent() {
     poster: "",
     rules: [],
   });
+
   const handleRule = (allrules) => {
     setEventdata((prev) => ({
       ...prev,
       rules: allrules,
     }));
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEventdata((prev) => ({ ...prev, [name]: value }));
@@ -64,6 +67,7 @@ export default function CreateEvent() {
         poster,
         rules,
       } = eventData;
+
       if (
         !eventName.trim() ||
         !startDate.trim() ||
@@ -75,7 +79,9 @@ export default function CreateEvent() {
         !maxParticipants
       ) {
         seterr("All mandatory fields are required.");
+        return;
       }
+
       const formData = new FormData();
       formData.append("eventName", eventName);
       formData.append("startDate", startDate);
@@ -91,6 +97,7 @@ export default function CreateEvent() {
       formData.append("others", others);
       formData.append("poster", poster);
       formData.append("rules", rules);
+
       const response = await fetch(
         "http://localhost:3000/api/cpsh/events/create",
         {
@@ -102,222 +109,141 @@ export default function CreateEvent() {
       const result = await response.json();
       console.log("Server Response:", result);
       navigate("/events-hosted");
-      console.log("Event Created!");
     } catch (error) {
-      console.log("Error while creating event and Error:", error);
+      console.log("Error while creating event:", error);
     }
   };
 
   return (
-    <div className="pt-28 min-h-screen bg-gradient-to-r from-purple-400 to-blue-500 px-4 flex justify-center items-start">
-      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-3xl">
+    <div className="pt-28 min-h-screen bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-600 px-4 flex justify-center items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="bg-white bg-opacity-80 backdrop-blur-lg shadow-2xl rounded-xl p-8 w-full max-w-3xl border border-purple-200"
+      >
         <h1 className="text-4xl font-bold text-purple-700 mb-6 text-center">
-          Create New Event
+          🎉 Create New Event
         </h1>
-        <p>*-Mandatory fields</p>
+        <p className="text-sm text-red-600 mb-4 italic">* Mandatory fields</p>
+
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* FESTIVAL NAME */}
+          <Input label="Festival name" name="festivalName" value={eventData.festivalName} onChange={handleInputChange} placeholder="Enter festival name (if any)" />
+
+          {/* EVENT NAME */}
+          <Input label="Event Name *" required name="eventName" value={eventData.eventName} onChange={handleInputChange} placeholder="Enter event name" />
+
+          {/* ORGANIZATION */}
+          <Input label="Organization *" required name="organization" value={eventData.organization} onChange={handleInputChange} placeholder="Enter organizer name" />
+
+          {/* MODE */}
+          <Select label="Mode *" required name="mode" value={eventData.mode} onChange={handleInputChange} options={["Offline", "Online"]} defaultLabel="-- Select Mode --" />
+
+          {/* DESCRIPTION */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Festival name
-            </label>
-            <input
-              type="text"
-              name="festivalName"
-              value={eventData.festivalName}
-              onChange={handleInputChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-              placeholder="Enter festival name (if any)"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Event Name *
-            </label>
-            <input
-              type="text"
-              required
-              name="eventName"
-              value={eventData.eventName}
-              onChange={handleInputChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-              placeholder="Enter event name"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Organization *
-            </label>
-            <input
-              type="text"
-              required
-              name="organization"
-              value={eventData.organization}
-              onChange={handleInputChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-              placeholder="Enter organizer name"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Mode *
-            </label>
-            <select
-              required
-              name="mode"
-              value={eventData.mode}
-              onChange={handleInputChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-            >
-              <option>-- Select Mode of Event --</option>
-              <option value={"Offline"}>Offline</option>
-              <option value={"Online"}>Online</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Description *
-            </label>
+            <label className="block text-gray-700 font-semibold mb-1">Description *</label>
             <textarea
-              rows="4"
               required
+              rows="4"
               name="description"
               value={eventData.description}
               onChange={handleInputChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
               placeholder="Brief description about the event"
+              className="w-full p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
             />
           </div>
 
+          {/* DATE & LOCATION */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className=" text-gray-700 font-medium mb-1 flex items-center">
-                <FaCalendarAlt className="mr-2" /> Date & Time *
-              </label>
-              <input
-                type="datetime-local"
-                required
-                name="startDate"
-                value={eventData.startDate}
-                onChange={handleInputChange}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-              />
-            </div>
-
-            <div>
-              <label className=" text-gray-700 font-medium mb-1 flex items-center">
-                <FaMapMarkerAlt className="mr-2" /> Location / Venue *
-              </label>
-              <input
-                type="text"
-                required
-                name="eventLocation"
-                value={eventData.eventLocation}
-                onChange={handleInputChange}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-                placeholder="e.g. Main Auditorium"
-              />
-            </div>
+            <Input label={<><FaCalendarAlt className="mr-2" /> Date & Time *</>} type="datetime-local" required name="startDate" value={eventData.startDate} onChange={handleInputChange} />
+            <Input label={<><FaMapMarkerAlt className="mr-2" /> Location / Venue *</>} required name="eventLocation" value={eventData.eventLocation} onChange={handleInputChange} placeholder="e.g. Main Auditorium" />
           </div>
 
+          {/* CATEGORY */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Category *
-              </label>
-              <select
-                required
-                name="category"
-                value={eventData.category}
-                onChange={handleInputChange}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-              >
-                <option value="">-- Select Category --</option>
-                <option value="sports">Sports</option>
-                <option value="coding">Coding</option>
-                <option value="cultural">Cultural</option>
-                <option value="workshop">Workshop</option>
-                <option value="others">Others</option>
-              </select>
-            </div>
+            <Select label="Category *" required name="category" value={eventData.category} onChange={handleInputChange}
+              options={["sports", "coding", "cultural", "workshop", "others"]}
+              defaultLabel="-- Select Category --"
+            />
             {eventData.category === "sports" && (
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">
-                  Sports *
-                </label>
-                <select
-                  required
-                  name="sports"
-                  value={eventData.sports}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-                >
-                  <option value="">-- Select Sports --</option>
-                  <option value="cricket">Cricket</option>
-                  <option value="volleyball">Volleyball</option>
-                  <option value="basketball">Basketball</option>
-                  <option value="others">others</option>
-                </select>
-              </div>
+              <Select label="Sports *" required name="sports" value={eventData.sports} onChange={handleInputChange}
+                options={["cricket", "volleyball", "basketball", "others"]}
+                defaultLabel="-- Select Sport --"
+              />
             )}
             {eventData.sports === "others" && (
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">
-                  Please specify name of other event
-                </label>
-                <input
-                  type="text"
-                  required
-                  name="others"
-                  value={eventData.others}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-                />
-              </div>
+              <Input label="Other Sport Name *" required name="others" value={eventData.others} onChange={handleInputChange} />
             )}
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Max Participants *
-              </label>
-              <input
-                type="number"
-                required
-                name="maxParticipants"
-                value={eventData.maxParticipants}
-                onChange={handleInputChange}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
-                placeholder="e.g. 50"
-              />
-            </div>
+            <Input label="Max Participants *" type="number" required name="maxParticipants" value={eventData.maxParticipants} onChange={handleInputChange} placeholder="e.g. 50" />
           </div>
+
+          {/* RULES */}
           <Rules save={handleRule} />
+
+          {/* POSTER */}
           <div>
-            <label className=" text-gray-700 font-medium mb-1 flex items-center">
+            <label className="text-gray-700 font-medium mb-1 flex items-center">
               <FaFileUpload className="mr-2" /> Upload Poster / Image *
             </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-[30%] text-sm text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+              className="block w-[50%] text-sm text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
             />
             {imagePreview && (
               <img
                 src={imagePreview}
                 alt="Event Preview"
-                className="mt-3 rounded-md w-[20%] max-h-64 object-cover shadow"
+                className="mt-3 rounded-md w-[25%] max-h-64 object-cover shadow-lg"
               />
             )}
           </div>
-          <p className="text-red-500 text-xs">{err}</p>
-          <button
+
+          {err && <p className="text-red-500 text-sm">{err}</p>}
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg hover:bg-purple-700 transition duration-200"
-            onClick={handleSubmit}
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition duration-200"
           >
             Create Event
-          </button>
+          </motion.button>
         </form>
-      </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// REUSABLE INPUT COMPONENT
+function Input({ label, ...rest }) {
+  return (
+    <div>
+      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
+      <input
+        {...rest}
+        className="w-full p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+      />
+    </div>
+  );
+}
+
+// REUSABLE SELECT COMPONENT
+function Select({ label, options = [], defaultLabel, ...rest }) {
+  return (
+    <div>
+      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
+      <select
+        {...rest}
+        className="w-full p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+      >
+        <option value="">{defaultLabel}</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
     </div>
   );
 }

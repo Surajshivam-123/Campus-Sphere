@@ -1,45 +1,56 @@
 import { useState } from "react";
-import { FaFontAwesome } from "react-icons/fa";
+import { motion } from "framer-motion";
 
-export default function Rules({save,oldrule=[]}) {
+export default function Rules({ save, oldrule = [] }) {
   const [rules, setRules] = useState(oldrule);
   const [newRule, setNewRule] = useState("");
-  const handleAddRule = (e) => {
+
+  const handleAddRule = () => {
     if (newRule.trim()) {
-      e.preventDefault();
-      setRules([...rules, newRule]);
+      setRules([...rules, newRule.trim()]);
       setNewRule("");
     }
   };
+
   const handleRemoveRule = (indexToRemove) => {
     setRules(rules.filter((_, index) => index !== indexToRemove));
   };
-  const handleSubmit=(e)=>{
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    save(rules);
-  }
+    if (newRule.trim()) {
+      handleAddRule(); // Add rule if present in input
+    }
+    save(rules); // Then save all rules
+  };
+
   return (
-    <div className="max-w-md mx-auto bg-white  overflow-hidden md:max-w-2xl ">
-      <h2 className="flex items-center text-xl text-gray-700 font-medium mb-6">
-        {/* <FaFontAwesome icon="fa-solid fa-scale-balanced" /> */}
-        <span>Rules</span>
-      </h2>
-      <div className="mb-8">
+    <motion.form
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, x: 60 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="max-w-2xl mx-auto mt-10 bg-white rounded-2xl p-8"
+    >
+      <h2 className="text-xl mb-6">Event Rules</h2>
+
+      <div className="mb-6">
         <ul className="space-y-3">
           {rules.map((rule, index) => (
-            <li
+            <motion.li
               key={index}
-              className="flex items-center justify-between group hover:bg-gray-50 rounded p-2"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2 border border-blue-200 hover:bg-blue-100"
             >
-              <div className="flex items-center flex-1">
-                <span className="w-8 text-gray-500 font-medium">
-                  {index + 1}.
-                </span>
-                <span className="flex-1 text-gray-700">{rule}</span>
-              </div>
+              <span className="text-gray-800 font-medium">
+                {index + 1}. {rule}
+              </span>
               <button
+                type="button"
                 onClick={() => handleRemoveRule(index)}
-                className="ml-4 text-red-500 hover:text-red-700 transition-colors"
+                className="text-red-500 hover:text-red-700 transition-colors duration-200"
                 title="Remove rule"
               >
                 <svg
@@ -57,42 +68,36 @@ export default function Rules({save,oldrule=[]}) {
                   />
                 </svg>
               </button>
-            </li>
+            </motion.li>
           ))}
         </ul>
       </div>
 
-      <div className="flex space-x-2 items-center mb-8">
+      <div className="flex gap-3 items-center mb-6">
         <input
           type="text"
           value={newRule}
           onChange={(e) => setNewRule(e.target.value)}
           placeholder="Enter a new rule"
-          className="flex-1 border ml-1 border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 border border-blue-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
         />
         <button
+          type="button"
           onClick={handleAddRule}
-          className="bg-blue-500 hover:bg-blue-600 text-white rounded-md px-4 py-2 transition-colors flex items-center"
-          title="Add rule"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-md shadow transition-transform hover:scale-105"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          <span className="ml-2">Add</span>
+          + Add
         </button>
       </div>
-      <button onClick={handleSubmit} className="cursor-pointer hover:bg-blue-600 transition-colors rounded w-[50%] bg-blue-500 text-white]">Save Rules</button>
-    </div>
+
+      <div className="text-center">
+        <button
+          type="submit"
+          className="w-1/2 py-2 rounded-md bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold hover:from-purple-500 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+        >
+          Save Rules
+        </button>
+      </div>
+    </motion.form>
   );
 }

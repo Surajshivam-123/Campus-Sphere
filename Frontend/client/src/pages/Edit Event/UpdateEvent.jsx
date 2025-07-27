@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import getsingleEvent from "../../components/getsingleevent";
-import { useParams } from "react-router-dom";
-import { FaCalendarAlt, FaMapMarkerAlt, FaFileUpload } from "react-icons/fa";
+import { useNavigate, useParams } from "react-router-dom";
+import getsingleEvent from "../../components/getsingleEvent";
+import { FaCalendarAlt } from "react-icons/fa";
 import Rules from "../Event Creation/Rule";
+import { motion } from "framer-motion";
 
 function UpdateEventForm({ event, onSubmit }) {
   const [formData, setFormData] = useState(event);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -15,6 +16,12 @@ function UpdateEventForm({ event, onSubmit }) {
       [name]: value,
     }));
   };
+  function formatDateTimeLocal(dateString) {
+    const date = new Date(dateString);
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16); // "yyyy-MM-ddTHH:mm"
+  }
 
   const handleRule = (allrules) => {
     setFormData((prev) => ({
@@ -27,118 +34,116 @@ function UpdateEventForm({ event, onSubmit }) {
     e.preventDefault();
     if (onSubmit) onSubmit(formData);
     navigate("/events-hosted");
-     // Trigger parent function (API call, etc.)
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md mt-8">
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Update Event</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="max-w-4xl mx-auto bg-white p-10 mt-10 rounded-3xl shadow-2xl"
+    >
+      <h2 className="text-3xl font-extrabold text-center text-blue-700 mb-8 tracking-wide">
+       Update Your Event
+      </h2>
+      <form className="space-y-6">
         <Input
           name="festivalName"
           label="Festival Name"
-          //   defaultValue={event.festivalName}
           value={formData.festivalName}
           onChange={handleChange}
         />
         <Input
           name="eventName"
           label="Event Name"
-          //   defaultValue={event.eventName}
           value={formData.eventName}
           onChange={handleChange}
         />
         <Input
           name="organization"
           label="Organization"
-          //   defaultValue={event.organization}
           value={formData.organization}
           onChange={handleChange}
         />
+
         <div>
-          <label className="block text-gray-700 font-medium mb-1">
+          <label className="block text-gray-700 font-semibold mb-2">
             Change Mode
           </label>
           <select
             name="mode"
-            // defaultValue={event.mode}
             value={formData.mode}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+            className="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
           >
             <option>-- Select Mode of Event --</option>
             <option value={"Offline"}>Offline</option>
             <option value={"Online"}>Online</option>
           </select>
         </div>
+
         <div>
-          <label className=" text-gray-700 font-medium mb-1 flex items-center">
-            <FaCalendarAlt className="mr-2" />
-            Change Start Date & Time
+          <label className="text-gray-700 font-semibold flex items-center mb-2">
+            <FaCalendarAlt className="mr-2 text-blue-600" />
+            Start Date & Time
           </label>
           <input
             type="datetime-local"
             name="startDate"
-            //faultValue={event.startDate}
-            value={formData.startDate}
+            value={formatDateTimeLocal(formData.startDate)}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
           />
         </div>
-        {/* <Input
-          name="startDate"
-          label="Start Date"
-          defaultValue={event.startDate}}
-          value={formData.startDate}
-          onChange={handleChange}
-          type="date"
-        /> */}
+
         <Input
           name="maxParticipants"
           label="Max Participants"
-          //defaultValue={event.maxParticipants}
           value={formData.maxParticipants}
           onChange={handleChange}
           type="number"
         />
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">
+          <label className="block text-gray-700 font-semibold mb-2">
             Description
           </label>
           <textarea
             name="description"
-            //defaultValue={event.description}
             value={formData.description}
             onChange={handleChange}
             rows={4}
-            className="w-full p-2 border rounded"
+            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
           ></textarea>
         </div>
-        <Rules save={handleRule} oldrule={formData.rules} />
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="curosr-pointer bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-        >
-          Update Event
-        </button>
+
       </form>
-    </div>
+      <Rules save={handleRule} oldrule={formData.rules} />
+      <div className="flex">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type="submit"
+            onClick={handleSubmit}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all"
+          >
+            Update Event
+          </motion.button>
+        </div>
+    </motion.div>
   );
 }
 
 function Input({ label, name, value, onChange, type = "text" }) {
   return (
     <div>
-      <label className="block font-semibold text-gray-700 mb-1">{label}</label>
+      <label className="block text-gray-700 font-semibold mb-2">{label}</label>
       <input
         type={type}
         name={name}
         value={value}
-        //defaultValue={defaultValue}
         onChange={onChange}
-        className="w-full p-2 border rounded"
+        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
       />
     </div>
   );
@@ -146,10 +151,8 @@ function Input({ label, name, value, onChange, type = "text" }) {
 
 export default function UpdateEventPage() {
   const { eventId } = useParams();
-  if (!eventId) {
-    console.log("EventId is not available");
-  }
   const [event, setevent] = useState(null);
+
   useEffect(() => {
     const loadEvent = async () => {
       const result = await getsingleEvent(eventId);
@@ -157,29 +160,31 @@ export default function UpdateEventPage() {
     };
     loadEvent();
   }, []);
+
   if (!event) {
     return (
-      <div className="text-center mt-10 text-gray-600">
+      <div className="h-screen flex items-center justify-center bg-gray-100 text-xl text-gray-600">
         Loading event details...
       </div>
     );
   }
+
   const handleUpdate = async (updatedData) => {
     console.log("Updated Event Data:", updatedData);
     const res = await fetch(
       `http://localhost:3000/api/cpsh/events/update/${eventId}`,
       {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify(updatedData),
       }
     );
     const result = await res.json();
     console.log("Server response:", result);
   };
 
-  return <UpdateEventForm event={event} onSubmit={handleUpdate} />;
+  return <div className="min-h-screen bg-purple-400 py-10">
+    <UpdateEventForm event={event} onSubmit={handleUpdate} />
+  </div>;
 }

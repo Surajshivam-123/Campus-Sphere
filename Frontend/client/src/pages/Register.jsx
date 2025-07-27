@@ -1,7 +1,7 @@
 import { useState } from "react";
 import profile from "../assets/download.jpeg";
 import { useNavigate } from "react-router-dom";
-import { set } from "mongoose";
+
 
 export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");

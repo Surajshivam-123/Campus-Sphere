@@ -15,6 +15,10 @@ import JoinMember from "../pages/JoinMember/JoinMember";
 import EventDetailsMemberPage from "../pages/JoinMember/EventDetailsMember";
 import MemberEvents from "../pages/MyParticipatedEvents/ParticipateateasMember";
 import Profile from "../pages/Profile"
+import IamChoice from "../pages/Home/Option"
+import AllEvents from "../pages/Home/AllEvents";
+import CreateCricketFormat from "../pages/Cricket/Cricket";
+
 
 export default function AppRoutes() {
   return (
@@ -36,6 +40,9 @@ export default function AppRoutes() {
         <Route path="/get-event/:memberCode" element={<EventDetailsMemberPage/>}/>
         <Route path="/my-events-member" element={<MemberEvents/>}/>
         <Route path="/profile" element={<Profile/>}/>
+        <Route path="/choice" element={<IamChoice/>}/>
+        <Route path="/all-events" element={<AllEvents/>}/>
+        <Route path='/cricket-format' element={<CreateCricketFormat/>}/>
       </Routes>
     </>
   );
