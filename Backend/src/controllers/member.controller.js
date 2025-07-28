@@ -1,3 +1,4 @@
+import { User } from "../models/user.models.js";
 import { Member } from "../models/members.model.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import { Event } from "../models/event.model.js";
@@ -20,6 +21,7 @@ const participateEvent = asyncHandler(async (req, res) => {
     }
     const member = await Member.create({
       owner: req.user?._id,
+      name: req.user?.fullname,
       event: event._id,
       role: "",
     });
@@ -66,4 +68,48 @@ const getAllEvents = asyncHandler(async (req, res) => {
     console.log("Error while getting all events", error);
   }
 });
-export { participateEvent, getEvent, getAllEvents };
+
+const editRole = asyncHandler(async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    if(!memberId){
+      throw new ApiError(400,"Member id is required")
+    }
+    const { role } = req.body;
+    const member = await Member.findByIdAndUpdate(memberId, { role }, { new: true });
+    if (!member) {
+      throw new ApiError(404, "Member not found");
+    }
+    res
+      .status(200)
+      .json(new ApiResponse(200, member, "Role updated successfully"));
+  } catch (error) {
+    console.log("Error while editing role", error);
+  }
+});
+
+const getMember = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const members = await Member.find({ event: eventId });
+    if (!members) {
+      throw new ApiError(404, "Member not found");
+    }
+    const ownerName=req?.user.fullname
+    res
+      .status(200)
+      .json(new ApiResponse(200, {members,ownerName}, "All Member fetched successfully"));
+  } catch (error) {
+    console.log("Error while getting all members", error);
+  }
+});
+
+
+
+export {
+  participateEvent,
+  getEvent,
+  getAllEvents,
+  editRole,
+  getMember,
+};

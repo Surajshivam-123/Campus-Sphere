@@ -1,8 +1,8 @@
 // src/pages/MyEvents.jsx
 import { useEffect } from "react";
-import EventCard from "./EventCard";
+import EventCardParticipant from "./EventCardParticipant";
 import { useState } from "react";
-
+import LoadingPage from "../LoadingPage";
 
 export default function MyEvents() {
   const [events, setEvents] = useState(null);
@@ -37,7 +37,7 @@ export default function MyEvents() {
     </div>
   )
   if(!events)return(
-    <div>Loading...</div>
+    <div><LoadingPage/></div>
   )
   return (
     <div className="min-h-screen bg-gray-100 pt-20 px-4">
@@ -46,7 +46,7 @@ export default function MyEvents() {
       </h1>
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
-          <EventCard key={event._id} event={event} />
+          <EventCardParticipant key={event._id} event={event} />
         ))}
       </div>
     </div>

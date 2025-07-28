@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import EventCard from "./EventCard";
 import { useState } from "react";
-
+import LoadingPage from "../LoadingPage";
 
 export default function MemberEvents() {
   const [events, setEvents] = useState(null);
@@ -37,7 +37,7 @@ export default function MemberEvents() {
     </div>
   )
   if(!events)return(
-    <div>Loading...</div>
+    <div><LoadingPage/></div>
   )
   return (
     <div className="min-h-screen bg-gray-100 pt-20 px-4">

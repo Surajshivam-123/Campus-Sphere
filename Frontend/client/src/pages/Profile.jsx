@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { motion } from "framer-motion";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -23,38 +23,57 @@ const Profile = () => {
           setUser(result?.data);
         }
       } catch (error) {
-        console.log("Error while getting user from server:",error)
+        console.log("Error while getting user from server:", error);
       }
     };
     profile();
-  });
-  
-  if (!user) return <div className="text-center mt-10">Loading profile...</div>;
+  }, []);
+
+  if (!user)
+    return (
+      <div className="flex justify-center items-center h-screen text-gray-600 text-xl">
+        Loading profile...
+      </div>
+    );
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
+    <div className="bg-purple-500 h-screen flex justify-center items-center">
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-[600px] h-[500px] mx-auto mt-12 p-6 bg-gradient-to-br from-white to-gray-50 shadow-2xl rounded-3xl border border-purple-100"
+    >
       <div className="flex flex-col items-center">
-        <img
-          className="w-24 h-24 rounded-full object-cover mb-4"
+        <motion.img
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="w-28 h-28 rounded-full object-cover shadow-md border-4 border-purple-300 mb-4"
           src={user.profileImage || "/default-avatar.png"}
           alt="Profile"
         />
-        <h2 className="text-2xl font-semibold">{user.name}</h2>
-        <p className="text-gray-500">{user.email}</p>
-        <div className="mt-4 w-full">
-          <h3 className="text-lg font-medium mb-2">Details</h3>
-          <div className="text-sm text-gray-600">
+        <h2 className="text-2xl font-bold text-purple-700">{user.name}</h2>
+        <p className="text-gray-500 mb-4">{user.email}</p>
+
+        <div className="w-full text-left">
+          <h3 className="text-lg font-semibold text-gray-700 border-b pb-1 mb-3">
+            📋 User Details
+          </h3>
+          <div className="space-y-2 text-sm text-gray-600">
             <p>
-              <strong>Username:</strong> {user.username}
+              <strong className="text-gray-800">Username:</strong>{" "}
+              <span className="text-indigo-600">{user.username}</span>
             </p>
             <p>
-              <strong>Joined:</strong>{" "}
-              {new Date(user.createdAt).toLocaleDateString()}
+              <strong className="text-gray-800">Joined:</strong>{" "}
+              <span className="text-indigo-600">
+                {new Date(user.createdAt).toLocaleDateString()}
+              </span>
             </p>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div></div>
   );
 };
 

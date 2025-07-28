@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
+
 // src/components/EventCard.jsx
 export default function EventCard({ event }) {
+  const navigate=useNavigate();
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 w-full max-w-md mx-auto hover:shadow-xl transition duration-300">
+    <div onClick={()=>navigate(`/get-event/${event.memberCode}`)}className="cursor-pointer bg-white shadow-md rounded-xl p-4 w-full max-w-md mx-auto hover:shadow-xl transition duration-300">
       {event.fullname!=='' &&(
         <div className="text-purple-700 font-bold flex items-center mb-2">{event.festivalName}</div>
       )}

@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 export default function EventDetailsPage() {
   const { identityNumber, participantCode } = useParams();
   const [eventData, setEventData] = useState(null);
+
   useEffect(() => {
     const loadEvent = async () => {
       const response = await fetch(
@@ -25,26 +26,42 @@ export default function EventDetailsPage() {
     loadEvent();
   }, [participantCode, identityNumber]);
 
-  if (!eventData) return <p>Loading...</p>;
+  if (!eventData)
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <p className="text-lg font-medium text-gray-600 animate-pulse">Loading...</p>
+      </div>
+    );
 
   return (
-    <div className="p-4 max-w-xl mx-auto shadow-lg rounded-lg bg-white">
-      <h1 className="text-2xl font-bold mb-4">Event Details</h1>
-      <p>
-        <strong>Identity Number:</strong> {identityNumber}
-      </p>
-      <p>
-        <strong>Event Name:</strong> {eventData.eventName}
-      </p>
-      <p>
-        <strong>Date:</strong> {eventData.startDate}
-      </p>
-      <p>
-        <strong>Location:</strong> {eventData.location}
-      </p>
-      <p>
-        <strong>Description:</strong> {eventData.description}
-      </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white py-10 px-4">
+      <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-2xl border border-gray-200">
+        <h1 className="text-3xl font-extrabold text-blue-700 mb-6 text-center">
+          Event Details
+        </h1>
+        <div className="space-y-4 text-gray-700 text-lg">
+          <p>
+            <span className="font-semibold text-blue-600">Identity Number:</span>{" "}
+            {identityNumber}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-600">Event Name:</span>{" "}
+            {eventData.eventName}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-600">Date:</span>{" "}
+            {eventData.startDate}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-600">Location:</span>{" "}
+            {eventData.location}
+          </p>
+          <p>
+            <span className="font-semibold text-blue-600">Description:</span>{" "}
+            {eventData.description}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

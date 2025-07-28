@@ -70,4 +70,29 @@ const getMyEvent = asyncHandler(async (req, res) => {
   } catch (error) {}
 });
 
-export { participateEvent, getEvent, getMyEvent };
+const getAllParticipant =asyncHandler(async(req,res)=>{
+  try {
+    const {eventId}=req.params;
+    const participants=await Participant.find({event:eventId});
+    if(!participants){
+      throw new ApiError(404,"Participants not found")
+    }
+    res.status(200).json(new ApiResponse(200,participants,"Participants found successfully"))
+  } catch (error) {
+    console.log("Error while getting all participants",error)
+  }
+})
+
+const getSingleParticipant =asyncHandler(async(req,res)=>{
+  try {
+    const {eventId}=req.params;
+    const participants=await Participant.find({event:eventId,owner:req.user._id});
+    if(!participants){
+      throw new ApiError(404,"Participants not found")
+    }
+    res.status(200).json(new ApiResponse(200,participants,"Participants found successfully"))
+  } catch (error) {
+    console.log("Error while getting single participants",error)
+  }
+})
+export { participateEvent, getEvent, getMyEvent ,getAllParticipant,getSingleParticipant};

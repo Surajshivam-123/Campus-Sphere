@@ -18,7 +18,7 @@ import Profile from "../pages/Profile"
 import IamChoice from "../pages/Home/Option"
 import AllEvents from "../pages/Home/AllEvents";
 import CreateCricketFormat from "../pages/Cricket/Cricket";
-
+import CricketEventDetailsPageParticipant from "../pages/MyParticipatedEvents/CricketEventDetailsPageParticipant";
 
 export default function AppRoutes() {
   return (
@@ -43,6 +43,7 @@ export default function AppRoutes() {
         <Route path="/choice" element={<IamChoice/>}/>
         <Route path="/all-events" element={<AllEvents/>}/>
         <Route path='/cricket-format' element={<CreateCricketFormat/>}/>
+        <Route path="/cricket-event-details/:eventId/:identityNumber/:participantCode" element={<CricketEventDetailsPageParticipant/>}/>
       </Routes>
     </>
   );

@@ -7,6 +7,10 @@ const memberSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    name: {
+      type: String,
+      trim: true,
+    },
     role: {
       type: String,
     },

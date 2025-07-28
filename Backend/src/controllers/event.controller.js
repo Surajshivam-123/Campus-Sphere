@@ -6,7 +6,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 const generateUniqueCode = () => {
   let code = "";
   const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+=?|`~";
   const length = characters.length;
   for (let i = 0; i < 5; i++) {
     code += characters.charAt(Math.floor(Math.random() * length));
