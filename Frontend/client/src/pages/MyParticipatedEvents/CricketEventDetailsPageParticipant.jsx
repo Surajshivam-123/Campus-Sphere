@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -16,41 +15,41 @@ export default function CricketEventDetailsPageParticipant() {
   const { eventId } = useParams();
   const [teamName, setTeamName] = useState("");
   const [editName, setEditName] = useState(false);
-  const [cteam, setcTeam] = useState(false);
-  const [teamdata,setTeamdata]=useState(null)
-  if (!eventId) {
-    console.log("EventId is not available");
-  }
+  const [cteam, setcTeam] = useState(0);
+  const [teamdata, setTeamdata] = useState(null);
+  const [teamlogo, setTeamlogo] = useState(null);
+  const [editlogo, setEditlogo] = useState(false);
   const [event, setevent] = useState(null);
   const [member, setMember] = useState([]);
 
   useEffect(() => {
     const loadEvent = async () => {
       const result = await getsingleEvent(eventId);
-      
-      const response =await fetch(`http://localhost:3000/api/cpsh/teams/get-team/${eventId}`,{
-        method:"GET",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        credentials:"include"
-      })
-      const team=await response.json();
-      console.log("Server Response",team);
-      if(team?.success){
+      const response = await fetch(
+        `http://localhost:3000/api/cpsh/teams/get-team/${eventId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+      const team = await response.json();
+      console.log("Server response", team);
+      if (team?.success) {
         setTeamdata(team?.data);
+        setcTeam(1);
+        setTeamName(team?.data?.name);
+        setTeamlogo(team?.data?.teamlogo);
       }
       setevent(result?.data);
-    }
+    };
     loadEvent();
   }, []);
 
   if (!event) {
-    return (
-      <div>
-        <LoadingPage />
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   const {
@@ -67,18 +66,11 @@ export default function CricketEventDetailsPageParticipant() {
     rules,
   } = event;
 
-  const poster =
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s";
-  let members = [];
-  for (let i = 0; i < (member?.length || 0); i++) {
-    members.push({
-      _id: member[i]._id,
-      name: member[i].name,
-      role: member[i].role,
-    });
-  }
-  const team = ["csk", "rcb", "mi", "kkr"];
-  const hanldecreateTeam = async () => {
+  const handleFileChange = (e) => {
+    setTeamlogo(e.target.files[0]);
+  };
+
+  const handlecreateTeam = async () => {
     try {
       const formData = new FormData();
       formData.append("name", teamName);
@@ -87,67 +79,70 @@ export default function CricketEventDetailsPageParticipant() {
         `http://localhost:3000/api/cpsh/teams/create-team/${eventId}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           credentials: "include",
           body: formData,
         }
       );
-      const result=await response.json();
-      console.log("Server Response",result);
-      if(result.success){
-        setcTeam(true);
-      }
-    } catch (error) {
-      console.log("Error in handlecreateTeam",error);
-    }
-  };
-  const handeldelete = async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/cpsh/events/delete/${eventId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-    const result = await response.json();
-    console.log("Server response");
-    navigate("/events-hosted");
-  };
-  const handleSaveRole = async (memberId) => {
-    try {
-      const role = editedRoles[memberId];
-      const response = await fetch(
-        `http://localhost:3000/api/cpsh/members/edit-role/${memberId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ role }),
-        }
-      );
       const result = await response.json();
-      console.log("Server Resposne", result);
+      console.log("Server response", result);
+
       if (result.success) {
-        const updatedMembers = member.map((m) =>
-          m._id === memberId ? { ...m, role } : m
-        );
-        setMember(updatedMembers);
-        setEditableMemberId(null);
-      } else {
-        console.error("Failed to update role");
+        setcTeam(1);
       }
     } catch (error) {
-      console.error("Error updating role:", error);
+      console.log("Error in handlecreateTeam", error);
     }
   };
 
+  const handleUpdateTeam = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("name", teamName);
+      formData.append("teamlogo", teamlogo);
+      const response = await fetch(
+        `http://localhost:3000/api/cpsh/teams/update-team/${eventId}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          body: formData,
+        }
+      );
+      const result = await response.json();
+      console.log("Server response", result);
+
+      if (result?.success) {
+        setcTeam(1);
+      }
+    } catch (error) {
+      console.log("Error in handleUpdateTeam", error);
+    }
+  };
+
+  const handleSave = () => {
+    if (cteam === 2) {
+      handlecreateTeam();
+    } else {
+      handleUpdateTeam();
+    }
+  };
+  const handledeleteTeam = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/cpsh/teams/delete-team/${eventId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      const result=await response.json();
+      console.log("Server response",result);
+      if(result?.success){
+        setcTeam(0);
+      }
+    } catch (error) {
+      console.log("Error while deleting team",error);
+    }
+  }
   return (
     <motion.div
       className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-6"
@@ -156,14 +151,11 @@ export default function CricketEventDetailsPageParticipant() {
       transition={{ duration: 0.6 }}
     >
       <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-200">
-        {poster && (
-          <img
-            src={poster}
-            alt="Cricket Event Poster"
-            className="w-full h-64 object-cover"
-          />
-        )}
-
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s"
+          alt="Cricket Event Poster"
+          className="w-full h-64 object-cover"
+        />
         <div className="p-8 space-y-6">
           <div className="flex flex-col gap-1">
             <h1 className="text-4xl font-extrabold text-blue-800">
@@ -199,6 +191,7 @@ export default function CricketEventDetailsPageParticipant() {
               <strong>Max Participants:</strong> {maxParticipants}
             </p>
           </div>
+
           <div>
             <h2 className="text-xl font-semibold text-gray-800">Description</h2>
             <p className="mt-1 text-gray-600 leading-relaxed">{description}</p>
@@ -213,71 +206,130 @@ export default function CricketEventDetailsPageParticipant() {
             </ul>
           </div>
         </div>
-        {!cteam && (
-          <button onClick={hanldecreateTeam} className="ml-2 mb-3 rounded px-3 py-1 bg-blue-600 hover:bg-blue-800">
-            Create Team
+
+        <div className="px-6 pb-6 space-x-3">
+          {cteam === 0 && (
+            <button
+              onClick={() => setcTeam(2)}
+              className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800 transition shadow"
+            >
+              Create Team
+            </button>
+          )}
+          {cteam === 1 && (
+            <button
+              onClick={() => setcTeam(3)}
+              className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800 transition shadow"
+            >
+              Edit Team
+            </button>
+          )}
+          {(cteam === 2 || cteam === 3) && (
+            <button
+              onClick={handleSave}
+              className="bg-green-600 text-white rounded px-4 py-2 hover:bg-green-800 transition shadow"
+            >
+              Save Team
+            </button>
+          )}
+          <button onClick={handledeleteTeam} className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-700 transition shadow">
+            Delete Team
           </button>
-        )}
-        {cteam && (
-          <button className="ml-2 mb-3 rounded px-3 py-1 bg-blue-600 hover:bg-blue-800">
-            My Team
-          </button>
-        )}
-        <button className="ml-2 mb-3 rounded px-3 py-1 bg-red-400 hover:bg-red-600">
-          Delete Team
-        </button>
-        <div>
-          <div className="flex justify-between p-2 text-xl font-semibold text-gray-800">
-            Team Name-
-            {editName ? (
-              <input
-                type="text"
-                value={teamName}
-                className=" border-b border-gray-300 focus:outline-none px-2 py-1 rounded"
-                onChange={(e) => setTeamName(e.target.value)}
-              />
-            ) : (
-              teamName || "N/A"
-            )}
-            <div className="mr-0">
-              {!editName && (
-                <button
-                  onClick={() => setEditName(true)}
-                  className="cursor-pointer text-blue-600 font-semibold"
-                >
-                  Edit Name
-                </button>
-              )}
-              {editName && (
-                <button
-                  onClick={() => setEditName(false)}
-                  className="cursor-pointer text-green-600 font-semibold"
-                >
-                  Save Name
-                </button>
-              )}
-            </div>
-          </div>
-          <h2 className="p-2 text-xl font-semibold text-gray-800">
-            Team Code-{}
-          </h2>
-          <table className="w-full mt-4 text-left border border-gray-300 rounded-md overflow-hidden">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-2 px-4 border-b">Player Name</th>
-                <th className="py-2 px-4 border-b">Role</th>
-                <th className="py-2 px-4 border-b">Edit Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* {team.map((participant, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">{participant}</td>
-                  </tr>
-                ))} */}
-            </tbody>
-          </table>
         </div>
+
+        {(cteam === 2 || cteam === 3) && (
+          <div className="p-6 bg-gray-50 rounded-xl shadow-md mx-6 mb-6 space-y-6">
+            <div className="flex justify-between items-center text-xl font-semibold text-gray-800">
+              Team Name:
+              {editName ? (
+                <input
+                  type="text"
+                  value={teamName}
+                  className="border-b border-gray-300 px-3 py-1 rounded w-2/3 text-base focus:outline-none focus:ring focus:ring-blue-300"
+                  onChange={(e) => setTeamName(e.target.value)}
+                />
+              ) : (
+                <span>{teamName || "N/A"}</span>
+              )}
+              <div>
+                {!editName ? (
+                  <button
+                    onClick={() => setEditName(true)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setEditName(false)}
+                    className="text-green-600 hover:underline"
+                  >
+                    Save
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center text-xl font-semibold text-gray-800">
+              Team Logo:
+              {editlogo ? (
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="block text-sm text-gray-700 file:mr-4 file:py-2 file:px-4
+                             file:rounded-md file:border-0 file:font-semibold
+                             file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  onChange={handleFileChange}
+                />
+              ) : (
+                <span className="truncate max-w-xs">{teamlogo}</span>
+              )}
+              <div>
+                {!editlogo ? (
+                  <button
+                    onClick={() => setEditlogo(true)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setEditlogo(false)}
+                    className="text-green-600 hover:underline"
+                  >
+                    Save
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <h2 className="text-xl font-semibold text-gray-800">
+              Team Code:{" "}
+              <span className="font-mono text-blue-700">
+                {teamdata?.teamCode}
+              </span>
+            </h2>
+
+            <table className="w-full mt-4 text-left border border-gray-300 rounded-md shadow-md overflow-hidden">
+              <thead className="bg-blue-50 text-blue-800 font-semibold">
+                <tr>
+                  <th className="py-3 px-4 border-b">Player Name</th>
+                  <th className="py-3 px-4 border-b">Role</th>
+                  <th className="py-3 px-4 border-b">Edit Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamdata?.teamPlayer?.map((participant, index) => (
+                  <tr key={index} className="hover:bg-blue-50 transition">
+                    <td className="py-3 px-4 border-b">{participant?.name}</td>
+                    <td className="py-3 px-4 border-b">{participant?.role}</td>
+                    <td className="py-3 px-4 border-b text-center">—</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </motion.div>
   );
