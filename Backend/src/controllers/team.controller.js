@@ -35,7 +35,6 @@ const createTeam = asyncHandler(async (req, res) => {
       owner: req.user._id,
       teamlogo,
       teamCode,
-      teamPlayer: [],
     });
     if (!team) {
       throw new ApiError(404, "Error while creating team");
@@ -52,9 +51,6 @@ const getTeam = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
     const team = await Team.findOne({ event: eventId, owner: req.user._id });
-    if (!team) {
-      throw new ApiError(404, "Team not found");
-    }
     res.status(200).json(new ApiResponse(200, team, "Team found successfully"));
   } catch (error) {
     console.log("Error while getting team", error);
@@ -93,16 +89,40 @@ const updateTeam = asyncHandler(async (req, res) => {
   }
 });
 
-const deleteTeam = asyncHandler(async(req,res)=>{
+const deleteTeam = asyncHandler(async (req, res) => {
   try {
-    const {eventId}=req.params;
-    const team=await Team.findOneAndDelete({event:eventId,owner:req.user._id});
-    if(!team){
-      throw new ApiError(404,"Team not found");
+    const { eventId } = req.params;
+    const team = await Team.findOneAndDelete({
+      event: eventId,
+      owner: req.user._id,
+    });
+    if (!team) {
+      throw new ApiError(404, "Team not found");
     }
-    res.status(200).json(new ApiResponse(200,team,"Team deleted successfully"))
+    res
+      .status(200)
+      .json(new ApiResponse(200, team, "Team deleted successfully"));
   } catch (error) {
-    console.log("Error while deleting team",error);
+    console.log("Error while deleting team", error);
   }
-})
-export { createTeam, getTeam, updateTeam ,deleteTeam};
+});
+
+// const joinTeam = asyncHandler(async (req, res) => {
+//   try {
+//     const { teamCode } = req.params;
+//     const team = await Team.findOne({ teamCode });
+//     if (!team) {
+//       throw new Error("Team not found");
+//     }
+//     res.status(200).json(new ApiResponse(200, team, "Team found successfully"));
+//   } catch (error) {
+//     console.log("Error while joining team", error);
+//   }
+// });
+
+
+export { createTeam,
+         getTeam,
+         updateTeam,
+         deleteTeam,
+};

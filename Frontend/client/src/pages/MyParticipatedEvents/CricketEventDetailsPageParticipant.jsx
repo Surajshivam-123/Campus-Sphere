@@ -20,8 +20,7 @@ export default function CricketEventDetailsPageParticipant() {
   const [teamlogo, setTeamlogo] = useState(null);
   const [editlogo, setEditlogo] = useState(false);
   const [event, setevent] = useState(null);
-  const [member, setMember] = useState([]);
-
+  const [deleteVisibility, setdeleteVisibility] = useState(false);
   useEffect(() => {
     const loadEvent = async () => {
       const result = await getsingleEvent(eventId);
@@ -37,9 +36,9 @@ export default function CricketEventDetailsPageParticipant() {
       );
       const team = await response.json();
       console.log("Server response", team);
-      if (team?.success) {
+      if (team.data) {
         setTeamdata(team?.data);
-        setcTeam(1);
+        setcTeam(1); //team is present
         setTeamName(team?.data?.name);
         setTeamlogo(team?.data?.teamlogo);
       }
@@ -66,9 +65,35 @@ export default function CricketEventDetailsPageParticipant() {
     rules,
   } = event;
 
+
+  const handleRefresh = () => {
+    window.location.reload(); // reloads the page
+  };
+
   const handleFileChange = (e) => {
     setTeamlogo(e.target.files[0]);
   };
+
+  // const handlejoin = async () => {
+  //   try {
+  //     const response=await fetch(`http://localhost:3000/api/cpsh/cricket-players/join-team/${teamdata?.teamCode}`,{
+  //       method:"POST",
+  //       credentials:"include"
+  //     })
+  //     const result=await response.json();
+  //     console.log("Server response",result);
+  //     if(result?.success){
+  //       setcTeam(4);
+  //     }
+  //     handleRefresh();
+  //   } catch (error) {
+  //     console.log("Error while joining team", error);
+  //   }
+  // }
+    const handleJoinBtn=()=>{
+      navigate(`/join-team/${eventId}`)
+    }
+      
 
   const handlecreateTeam = async () => {
     try {
@@ -87,8 +112,9 @@ export default function CricketEventDetailsPageParticipant() {
       console.log("Server response", result);
 
       if (result.success) {
-        setcTeam(1);
+        setcTeam(1); //team created
       }
+      handleRefresh();
     } catch (error) {
       console.log("Error in handlecreateTeam", error);
     }
@@ -111,8 +137,9 @@ export default function CricketEventDetailsPageParticipant() {
       console.log("Server response", result);
 
       if (result?.success) {
-        setcTeam(1);
+        setcTeam(1); //team updated
       }
+      handleRefresh();
     } catch (error) {
       console.log("Error in handleUpdateTeam", error);
     }
@@ -121,6 +148,7 @@ export default function CricketEventDetailsPageParticipant() {
   const handleSave = () => {
     if (cteam === 2) {
       handlecreateTeam();
+      setdeleteVisibility(true);
     } else {
       handleUpdateTeam();
     }
@@ -134,15 +162,16 @@ export default function CricketEventDetailsPageParticipant() {
           credentials: "include",
         }
       );
-      const result=await response.json();
-      console.log("Server response",result);
-      if(result?.success){
-        setcTeam(0);
+      const result = await response.json();
+      console.log("Server response", result);
+      if (result?.success) {
+        setcTeam(0); //delete team
       }
+      setdeleteVisibility(false);
     } catch (error) {
-      console.log("Error while deleting team",error);
+      console.log("Error while deleting team", error);
     }
-  }
+  };
   return (
     <motion.div
       className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-6"
@@ -209,12 +238,20 @@ export default function CricketEventDetailsPageParticipant() {
 
         <div className="px-6 pb-6 space-x-3">
           {cteam === 0 && (
-            <button
-              onClick={() => setcTeam(2)}
-              className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800 transition shadow"
-            >
-              Create Team
-            </button>
+            <>
+              <button
+                onClick={() => setcTeam(2)}
+                className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800 transition shadow"
+              >
+                Create Team
+              </button>
+              <button
+                onClick={handleJoinBtn}
+                className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800 transition shadow"
+              >
+                Join Team
+              </button>
+            </>
           )}
           {cteam === 1 && (
             <button
@@ -232,9 +269,14 @@ export default function CricketEventDetailsPageParticipant() {
               Save Team
             </button>
           )}
-          <button onClick={handledeleteTeam} className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-700 transition shadow">
-            Delete Team
-          </button>
+          {(cteam === 3 || deleteVisibility) && (
+            <button
+              onClick={handledeleteTeam}
+              className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-700 transition shadow"
+            >
+              Delete Team
+            </button>
+          )}
         </div>
 
         {(cteam === 2 || cteam === 3) && (

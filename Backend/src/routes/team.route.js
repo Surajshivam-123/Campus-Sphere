@@ -8,4 +8,7 @@ teamRouter.route('/create-team/:eventId').post(verifyJWT,upload.single("teamlogo
 teamRouter.route('/get-team/:eventId').get(verifyJWT,getTeam);
 teamRouter.route('/update-team/:eventId').patch(verifyJWT,upload.single("teamlogo"),updateTeam);
 teamRouter.route('/delete-team/:eventId').delete(verifyJWT,deleteTeam);
+// teamRouter.route('/join-team/:teamCode').get(joinTeam);
+
+
 export default teamRouter;

@@ -19,6 +19,9 @@ import IamChoice from "../pages/Home/Option";
 import AllEvents from "../pages/Home/AllEvents";
 import CreateCricketFormat from "../pages/Cricket/Cricket";
 import CricketEventDetailsPageParticipant from "../pages/MyParticipatedEvents/CricketEventDetailsPageParticipant";
+import JoinTeam from "../pages/MyParticipatedEvents/JoinTeam";
+// import ParticpantChoice from "../pages/Home/ParticipantChoice";
+// import MyTeams from "../pages/MyTeam/Myteam";
 
 export default function AppRoutes() {
   return (
@@ -44,6 +47,9 @@ export default function AppRoutes() {
          <Route path="/all-events" element={<AllEvents/>}/> 
          <Route path='/cricket-format' element={<CreateCricketFormat/>}/> 
          <Route path="/cricket-event-details/:eventId/:identityNumber/:participantCode" element={<CricketEventDetailsPageParticipant/>}/> 
+         {/* <Route path="/participant-choice" element={<ParticpantChoice/>}/> */}
+         {/* <Route path="/my-teams" element={<MyTeams/>}/> */}
+         <Route path="/join-team/:eventId" element={<JoinTeam/>}/>
       </Routes>
     </>
   );

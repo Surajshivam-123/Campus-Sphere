@@ -12,11 +12,11 @@ const participateEvent = asyncHandler(async (req, res) => {
     }
     const event = await Event.findOne({ participantCode: invitationCode });
     if (!event) {
-      res.status(404).json(ApiResponse(404, "Event not found"));
+      res.status(404).json(new ApiResponse(404, "Event not found"));
     }
     const participantExists = await Participant.findOne({ identityNumber });
     if (participantExists) {
-      res.status(400).json(ApiResponse(400, {}, "Participant already exists"));
+      res.status(400).json(new ApiResponse(400, {}, "Participant already exists"));
     }
     const participant = await Participant.create({
       owner: req.user._id,

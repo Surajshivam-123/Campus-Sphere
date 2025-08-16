@@ -21,10 +21,6 @@ const teamSchema=new Schema({
         type:String,
         required:true
     },
-    teamPlayer:{
-        type:Array,
-        default:[]
-    }
 },{timestamps:true});
 
 export const Team=mongoose.model('Team',teamSchema);
