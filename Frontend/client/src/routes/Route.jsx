@@ -9,7 +9,7 @@ import EventList from "../pages/MyHostedEvent/EventList";
 import JoinEvent from "../pages/ParticipateEvent/JoinEvent";
 import MyEvents from "../pages/MyParticipatedEvents/MyEvents";
 import CricketEventPage from "../pages/Event Creation/CricketEventPage";
-import UpdateEventPage from "../pages/Edit Event/updateEvent";
+import UpdateEventPage from "../pages/EditEvent/UpdateEvent";
 import EventDetailsPage from "../pages/ParticipateEvent/EventDetails";
 import JoinMember from "../pages/JoinMember/JoinMember";
 import EventDetailsMemberPage from "../pages/JoinMember/EventDetailsMember";
