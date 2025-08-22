@@ -5,17 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Surajshivam-123/campus-sphere.git"
-  },
-  "author": "Suraj Kumar",
-  "license": "ISC",
-  "bugs": {
+    "start": "node src/index.js",
+    "build":"echo \"No build step\"",
     "url": "https://github.com/Surajshivam-123/campus-sphere/issues"
   },
+  "engines": {"node":">=18"},
   "homepage": "https://github.com/Surajshivam-123/campus-sphere#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
