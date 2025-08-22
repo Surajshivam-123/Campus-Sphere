@@ -1,3 +1,0 @@
-name:SPA 404 copy
-working_directory:frontend/client
-run: cp dist/index.html dist/404.html
