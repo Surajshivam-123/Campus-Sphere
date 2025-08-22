@@ -10,4 +10,5 @@ export default defineConfig({
   //     '/api': 'http://localhost:3000'
   //   }
   // }
+  base:"/Campus-Sphere/"
 })
