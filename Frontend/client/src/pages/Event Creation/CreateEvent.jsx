@@ -127,7 +127,7 @@ export default function CreateEvent() {
         </h1>
         <p className="text-sm text-red-600 mb-4 italic">* Mandatory fields</p>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" >
           {/* FESTIVAL NAME */}
           <Input label="Festival name" name="festivalName" value={eventData.festivalName} onChange={handleInputChange} placeholder="Enter festival name (if any)" />
 
@@ -177,7 +177,7 @@ export default function CreateEvent() {
             )}
             <Input label="Max Participants *" type="number" required name="maxParticipants" value={eventData.maxParticipants} onChange={handleInputChange} placeholder="e.g. 50" />
           </div>
-
+            </form>
           {/* RULES */}
           <Rules save={handleRule} />
 
@@ -207,11 +207,12 @@ export default function CreateEvent() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             type="submit"
+            onClick={handleSubmit}
             className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition duration-200"
           >
             Create Event
           </motion.button>
-        </form>
+        
       </motion.div>
     </div>
   );
