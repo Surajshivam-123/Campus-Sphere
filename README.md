@@ -1,99 +1,246 @@
-#Purpose and Scope
-This document provides a high-level introduction to Campus-Sphere, a full-stack web application designed for organizing and managing campus events. It covers the system's purpose, architecture, technology stack, and core features. For detailed information about specific subsystems, see:
+# Campus-Sphere
 
-Frontend architecture and routing: Frontend Architecture
-Backend API structure: Backend Architecture
-Authentication mechanisms: Authentication & Authorization
-Event creation and management: Event Management System
-User workflows by role: User Roles & Workflows
-Cricket tournament features: Cricket Tournament Management
+Campus-Sphere is a full-stack web application designed to organize and manage campus events efficiently. It supports multiple event types, role-based participation, secure authentication, and specialized sports (cricket) tournament management — all delivered through a modern single-page application (SPA).
 
-#System Description
-Campus-Sphere is an event organizer platform for campus activities, implemented as a single-page application (SPA) with a RESTful backend API. The system supports multiple event types including workshops, sports tournaments (with specialized cricket management), cultural events, and coding competitions.
+---
 
-The platform implements a multi-role architecture where users can act as Hosts (event creators), Participants (event joiners using invitation codes), or Members (alternative participation pathway with different access levels). Events use unique invitation codes (participantCode and memberCode) to control access.
+## Purpose and Scope
 
-Sources: 
-Backend/package.json
-Frontend/client/src/routes/Route.jsx
+This document provides a high-level overview of the **Campus-Sphere** platform, including:
 
-#Technology Stack
-##Frontend
-###| Component | Technology | Purpose |
-| Build Tool | Vite | Development server and build optimization |
-| Framework | React | Component-based UI |
-| Routing|React | Router | Client-side navigation |
-| Styling | Tailwind | CSS | Utility-first styling |
-| HTTP Client	| Fetch API	| Backend communication |
+* System purpose and architecture
+* Technology stack
+* Core features and workflows
+* Frontend routing structure
+* Environment and configuration details
 
-##Backend
-###| Component | Technology	| Purpose |
-| Runtime	| Node.js (>=18) | JavaScript execution environment |
-| Framework |	Express.js(v5.1.0) | Web server and routing |
-| Database	| MongoDB	| Document-based data persistence |
-| ODM	| Mongoose (v8.16.3)	| Schema modeling and queries |
-| Authentication	| JWT (jsonwebtoken v9.0.2) |	Token-based auth |
-|Password Hashing	| bcrypt (v6.0.0) |	Secure password storage |
-| File Upload	| Multer (v2.0.1)	| Multipart form data handling |
-| Image Storage	| Cloudinary (v2.7.0)	| External image hosting |
+For deeper dives into specific subsystems, refer to:
 
-API Base Path: All backend endpoints are namespaced under /api/cpsh/ to avoid conflicts and provide clear API versioning.
+* Frontend Architecture
+* Backend Architecture
+* Authentication & Authorization
+* Event Management System
+* User Roles & Workflows
+* Cricket Tournament Management
 
-#Core Features
-Authentication & Session Management
-Registration/Login: User creation with fullname, username, email, password, and optional avatar
-JWT Tokens: Dual-token system with accessToken (short-lived) and refreshToken (long-lived)
-HTTP-Only Cookies: Tokens stored as secure cookies to prevent XSS attacks
-Token Refresh: Automatic token renewal via /api/cpsh/users/refresh-token endpoint
-Session Invalidation: Logout clears both client cookies and server-stored refresh tokens
+---
 
-#Event Management
-Event Creation: Hosts create events with metadata including eventName, festivalName, location, startDate, category, and sports type
-Invitation Codes: Auto-generated memberCode and participantCode for controlled access
-Image Upload: Event posters uploaded to Cloudinary via multer middleware
-CRUD Operations: Full create, read, update, delete capabilities for event hosts
-Event Categories: Workshop, Sports (Cricket), Cultural, Coding, Others
+## System Description
 
-#Multi-Role Participation
-Host Role: Create, update, delete events; view participant/member lists; manage cricket formats
-Participant Role: Join events with participantCode; view participation history; join cricket teams
-Member Role: Join events with memberCode; separate tracking and access level from participants
+Campus-Sphere is an event organizer platform for campus activities, implemented as a **single-page application (SPA)** backed by a **RESTful API**.
 
-#Frontend Routing Structure
-The application uses a hub-and-spoke routing pattern centered around /home:
+The system supports multiple event categories, including:
 
-| Route |	Component	| Role	| Purpose |
-| /	| Front.jsx	| Public	| Landing page |
-|/login	| Login	| Public	| User authentication |
-| /register	| Register	| Public	| User registration |
-| /home |	Home(Body + Navbar)	|Authenticated |	Central navigation hub |
-| /choice	| IamChoice	| Authenticated	| Role | selection gateway |
-| /all-events	| AllEvents	| Authenticated |	Browse all events |
-| /profile	| Profile	| Authenticated	| User profile management |
-|/new-events-hosted	 | CreateEvent |	Host	| Create new event |
-| /events-hosted	| EventList	| Host	| View/manage hosted events |
-| /update-event/:eventId	| UpdateEventPage	| Host	| Edit event details |
-| /join-event	| JoinEvent	| Participant	| Join with invitation code |
-| /my-events	| MyEvents	| Participant	| View participated events |
-| /event-details/:identityNumber/:participantCode |	EventDetailsPage	| Participant	| View event as participant |
-| /joinMember	| JoinMember	| Member	| Join as member |
-| /my-events-member	MemberEvents	| Member	| View member events |
-| /get-event/:memberCode	| EventDetailsMemberPage	| Member	| View event as member |
-| /cricket-format	| CreateCricketFormat	| Host	| Set up cricket tournament format |
-| /join-team/:eventId	| JoinTeam	| Participant	| Join cricket team |
-###Protected Routes: All routes except /, /login, and /register require authentication via cookie-based JWT.
+* Workshops
+* Sports tournaments (with advanced cricket management)
+* Cultural events
+* Coding competitions
+* Other campus activities
 
-#Environment Configuration
-##Backend Environment Variables
-The backend relies on environment variables for configuration (loaded via dotenv):
--Database connection strings
--JWT secrets (access and refresh token signing keys)
--Cloudinary credentials (cloud name, API key, API secret)
--CORS origin settings
+A **multi-role architecture** allows users to participate in different capacities:
 
-##Frontend Environment Variables
+* **Host** – creates and manages events
+* **Participant** – joins events using invitation codes
+* **Member** – joins events via an alternative access pathway
+
+Access to events is controlled through auto-generated invitation codes:
+
+* `participantCode`
+* `memberCode`
+
+**Sources**:
+
+* `Backend/package.json`
+* `Frontend/client/src/routes/Route.jsx`
+
+---
+
+## Technology Stack
+
+### Frontend
+
+| Component   | Technology   | Purpose                                      |
+| ----------- | ------------ | -------------------------------------------- |
+| Build Tool  | Vite         | Fast development server and optimized builds |
+| Framework   | React        | Component-based user interface               |
+| Routing     | React Router | Client-side navigation                       |
+| Styling     | Tailwind CSS | Utility-first styling                        |
+| HTTP Client | Fetch API    | Backend communication                        |
+
+### Backend
+
+| Component        | Technology                | Purpose                          |
+| ---------------- | ------------------------- | -------------------------------- |
+| Runtime          | Node.js (>=18)            | JavaScript execution environment |
+| Framework        | Express.js (v5.1.0)       | Web server and routing           |
+| Database         | MongoDB                   | Document-based data storage      |
+| ODM              | Mongoose (v8.16.3)        | Schema modeling and queries      |
+| Authentication   | JWT (jsonwebtoken v9.0.2) | Token-based authentication       |
+| Password Hashing | bcrypt (v6.0.0)           | Secure password storage          |
+| File Upload      | Multer (v2.0.1)           | Multipart form-data handling     |
+| Image Storage    | Cloudinary (v2.7.0)       | External image hosting           |
+
+### API Base Path
+
+All backend endpoints are namespaced under:
+
+```
+/api/cpsh/
+```
+
+This ensures clear API versioning and avoids route conflicts.
+
+---
+
+## Core Features
+
+### Authentication & Session Management
+
+* **User Registration & Login**
+  Users register with fullname, username, email, password, and an optional avatar.
+
+* **JWT-Based Authentication**
+  A dual-token system is used:
+
+  * `accessToken` (short-lived)
+  * `refreshToken` (long-lived)
+
+* **Secure Cookies**
+  Tokens are stored in **HTTP-only cookies** to prevent XSS attacks.
+
+* **Token Refresh**
+  Automatic access-token renewal via:
+
+  ```
+  /api/cpsh/users/refresh-token
+  ```
+
+* **Logout & Session Invalidation**
+  Logout clears client-side cookies and invalidates refresh tokens on the server.
+
+---
+
+## Event Management
+
+* **Event Creation**
+  Hosts create events with metadata such as:
+
+  * Event name
+  * Festival name
+  * Location
+  * Start date
+  * Category
+  * Sports type (if applicable)
+
+* **Invitation Codes**
+  Auto-generated codes (`participantCode`, `memberCode`) control event access.
+
+* **Image Uploads**
+  Event posters are uploaded using Multer middleware and stored on Cloudinary.
+
+* **CRUD Operations**
+  Hosts can create, read, update, and delete events.
+
+* **Supported Categories**
+
+  * Workshop
+  * Sports (Cricket)
+  * Cultural
+  * Coding
+  * Others
+
+---
+
+## Multi-Role Participation
+
+### Host
+
+* Create, update, and delete events
+* View participant and member lists
+* Configure cricket tournament formats
+
+### Participant
+
+* Join events using `participantCode`
+* View participation history
+* Join cricket teams within events
+
+### Member
+
+* Join events using `memberCode`
+* Separate access level and tracking from participants
+* View member-specific event details
+
+---
+
+## Frontend Routing Structure
+
+The frontend follows a **hub-and-spoke routing pattern** centered around `/home`.
+
+| Route                                             | Component              | Access Level  | Purpose                   |
+| ------------------------------------------------- | ---------------------- | ------------- | ------------------------- |
+| `/`                                               | Front.jsx              | Public        | Landing page              |
+| `/login`                                          | Login                  | Public        | User authentication       |
+| `/register`                                       | Register               | Public        | User registration         |
+| `/home`                                           | Home (Body + Navbar)   | Authenticated | Central navigation hub    |
+| `/choice`                                         | IamChoice              | Authenticated | Role selection gateway    |
+| `/all-events`                                     | AllEvents              | Authenticated | Browse all events         |
+| `/profile`                                        | Profile                | Authenticated | User profile management   |
+| `/new-events-hosted`                              | CreateEvent            | Host          | Create new event          |
+| `/events-hosted`                                  | EventList              | Host          | Manage hosted events      |
+| `/update-event/:eventId`                          | UpdateEventPage        | Host          | Edit event details        |
+| `/join-event`                                     | JoinEvent              | Participant   | Join with invitation code |
+| `/my-events`                                      | MyEvents               | Participant   | View participated events  |
+| `/event-details/:identityNumber/:participantCode` | EventDetailsPage       | Participant   | Participant event view    |
+| `/joinMember`                                     | JoinMember             | Member        | Join as member            |
+| `/my-events-member`                               | MemberEvents           | Member        | View member events        |
+| `/get-event/:memberCode`                          | EventDetailsMemberPage | Member        | Member event view         |
+| `/cricket-format`                                 | CreateCricketFormat    | Host          | Configure cricket format  |
+| `/join-team/:eventId`                             | JoinTeam               | Participant   | Join cricket team         |
+
+### Protected Routes
+
+All routes except `/`, `/login`, and `/register` require authentication using cookie-based JWTs.
+
+---
+
+## Environment Configuration
+
+### Backend Environment Variables
+
+Backend configuration is managed via environment variables (loaded using `dotenv`):
+
+* MongoDB connection URI
+* JWT access and refresh secrets
+* Cloudinary credentials (cloud name, API key, API secret)
+* CORS origin settings
+
+### Frontend Environment Variables
+
+```env
 VITE_API_URL=https://campus-sphere-1.onrender.com
-The frontend uses VITE_API_URL to determine the backend base URL for API calls. During development, CORS is configured to allow http://localhost:5173.
+```
 
+The frontend uses `VITE_API_URL` as the base URL for all API calls.
 
-##CORS Configuration: The backend explicitly allows http://localhost:5173 as the origin with credentials: true to enable cookie-based authentication during development.
+---
+
+## CORS Configuration
+
+During development, the backend explicitly allows:
+
+```
+http://localhost:5173
+```
+
+CORS is configured with:
+
+* `credentials: true`
+
+This enables secure cookie-based authentication between the frontend and backend.
+
+---
+
+## Conclusion
+
+Campus-Sphere provides a scalable, secure, and role-driven platform for managing campus events. Its modular architecture, modern tech stack, and flexible participation model make it suitable for a wide range of academic and extracurricular use
