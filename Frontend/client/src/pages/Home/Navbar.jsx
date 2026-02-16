@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react"; // or use SVG if you don't want this lib
 import logo from "/logo.jpg";
+import API_URL from "../../config/api";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function Navbar() {
   const logout = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:3000/api/cpsh/users/logout", {
+      const response = await fetch(`${API_URL}/api/cpsh/users/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -3,6 +3,7 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaFileUpload } from "react-icons/fa";
 import Rules from "./Rule";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import API_URL from "../../config/api.js";
 
 export default function CreateEvent() {
   const [imagePreview, setImagePreview] = useState(null);
@@ -99,7 +100,7 @@ export default function CreateEvent() {
       formData.append("rules", rules);
 
       const response = await fetch(
-        "http://localhost:3000/api/cpsh/events/create",
+        `${API_URL}/api/cpsh/events/create`,
         {
           method: "POST",
           credentials: "include",

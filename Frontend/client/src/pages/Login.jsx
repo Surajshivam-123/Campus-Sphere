@@ -1,6 +1,8 @@
 import logo from "../../public/logo.jpg";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import API_URL from "../config/api.js";
+
 export default function Login() {
   const navigate = useNavigate();
   const [usermail, setusermail] = useState("");
@@ -10,7 +12,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/users/login`,
+        `${API_URL}/api/cpsh/users/login`,
         {
           method: "POST",
           credentials: "include",

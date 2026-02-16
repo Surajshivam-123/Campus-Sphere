@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "../LoadingPage";
+import API_URL from "../../config/api";
 
 export default function EventCardTeam({ event }) {
   const navigate=useNavigate();
   const [participant,setParticipant]=useState(null)
   useEffect(()=>{
     const getParticipant=async()=>{
-        const response=await fetch(`http://localhost:3000/api/cpsh/participants/get-single-participant/${event._id}`,{
+        const response=await fetch(`${API_URL}/api/cpsh/participants/get-single-participant/${event._id}`,{
             method:"GET",
             headers:{
                 "Content-Type":"application/json"

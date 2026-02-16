@@ -8,6 +8,7 @@ import {
   FaChalkboardTeacher,
 } from "react-icons/fa";
 import LoadingPage from "../LoadingPage";
+import API_URL from "../../config/api";
 
 export default function CricketEventDetailsPageParticipant() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function CricketEventDetailsPageParticipant() {
     const loadEvent = async () => {
       const getsingleEvent = async()=>{
         try {
-            const event=await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`,{
+            const event=await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`,{
                 method:"GET",
                 headers:{
                     "Content-Type":"application/json"

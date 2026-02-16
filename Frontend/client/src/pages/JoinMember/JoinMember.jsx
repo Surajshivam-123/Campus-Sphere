@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import API_URL from "../../config/api";
 
 export default function JoinMember() {
   const [invitationCode, setInvitationCode] = useState("");
@@ -20,7 +21,7 @@ export default function JoinMember() {
     } else {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/cpsh/members/participate/${invitationCode}`,
+          `${API_URL}/api/cpsh/members/participate/${invitationCode}`,
           {
             method: "POST",
             headers: {

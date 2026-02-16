@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import EventCard from "./EventCard";
 import { useState } from "react";
 import LoadingPage from "../LoadingPage";
+import API_URL from "../../config/api";
 
 export default function MemberEvents() {
   const [events, setEvents] = useState(null);
@@ -10,7 +11,7 @@ export default function MemberEvents() {
   useEffect(() => {
     const getEvent = async () => {
       const response = await fetch(
-        "http://localhost:3000/api/cpsh/members/get-all-events",
+        `${API_URL}/api/cpsh/members/get-all-events`,
         {
           method: "GET",
           headers: {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import API_URL from "../config/api";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -8,7 +9,7 @@ const Profile = () => {
     const profile = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3000/api/cpsh/users/profile",
+          "${API_URL}/api/cpsh/users/profile",
           {
             method: "GET",
             credentials: "include",

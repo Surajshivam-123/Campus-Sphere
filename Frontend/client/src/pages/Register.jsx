@@ -1,7 +1,7 @@
 import { useState } from "react";
 import profile from "../assets/download.jpeg";
 import { useNavigate } from "react-router-dom";
-
+import API_URL from "../config/api";
 
 export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -59,7 +59,7 @@ export default function Register() {
     if (fn && un && em && pw && cp) {
       try {
         const response = await fetch(
-          "http://localhost:3000/api/cpsh/users/register",
+          `${API_URL}/api/cpsh/users/register`,
           {
             method: "POST",
             credentials: "include",

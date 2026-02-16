@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import LoadingPage from "../LoadingPage";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Info, Star } from "lucide-react";
+import API_URL from "../../config/api";
 
 export default function EventDetailsMemberPage() {
   const { memberCode } = useParams();
@@ -12,7 +13,7 @@ export default function EventDetailsMemberPage() {
     const loadEvent = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/cpsh/members/participate/${memberCode}`,
+          `${API_URL}/api/cpsh/members/participate/${memberCode}`,
           {
             method: "GET",
             headers: {

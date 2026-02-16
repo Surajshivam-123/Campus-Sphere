@@ -10,7 +10,7 @@ export default function MyTeams() {
   useEffect(() => {
     const getEvent = async () => {
       const response = await fetch(
-        "http://localhost:3000/api/cpsh/participants/my-events",
+        `${API_URL}/api/cpsh/participants/my-events`,
         {
           method: "GET",
           headers: {

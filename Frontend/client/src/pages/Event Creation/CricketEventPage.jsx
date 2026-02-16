@@ -13,6 +13,7 @@ import {
   FaTrophy,
 } from "react-icons/fa";
 import LoadingPage from "../LoadingPage";
+import API_URL from "../../config/api";
 
 export default function CricketEventPage() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function CricketEventPage() {
     const loadEvent = async () => {
       const getsingleEvent = async () => {
         try {
-          const event = await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`, {
+          const event = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json"
@@ -48,7 +49,7 @@ export default function CricketEventPage() {
       }
       getsingleEvent();
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/members/get-member/${eventId}`,
+        `${API_URL}/api/cpsh/members/get-member/${eventId}`,
         {
           method: "GET",
           headers: {
@@ -102,7 +103,7 @@ export default function CricketEventPage() {
   };
   const handeldelete = async () => {
     const response = await fetch(
-      `http://localhost:3000/api/cpsh/events/delete/${eventId}`,
+      `${API_URL}/api/cpsh/events/delete/${eventId}`,
       {
         method: "DELETE",
         headers: {
@@ -119,7 +120,7 @@ export default function CricketEventPage() {
     try {
       const role = editedRoles[memberId];
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/members/edit-role/${memberId}`,
+        `${API_URL}/api/cpsh/members/edit-role/${memberId}`,
         {
           method: "PATCH",
           headers: {

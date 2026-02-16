@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useParams } from "react-router-dom";
+import API_URL from "../../config/api";
 
 export default function JoinTeam() {
   const [teamCode, setteamCode] = useState("");
@@ -23,7 +24,7 @@ export default function JoinTeam() {
     } else {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/cpsh/cricket-players/join-team/${teamCode}/${eventId}`,
+          `${API_URL}/api/cpsh/cricket-players/join-team/${teamCode}/${eventId}`,
           {
             method: "POST",
             credentials: "include",

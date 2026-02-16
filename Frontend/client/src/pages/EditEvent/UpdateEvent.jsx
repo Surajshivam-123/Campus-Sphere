@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaCalendarAlt } from "react-icons/fa";
 import Rules from "../Event Creation/Rule";
 import { motion } from "framer-motion";
+import API_URL from "../../config/api.js";
 
 function UpdateEventForm({ event, onSubmit }) {
   const [formData, setFormData] = useState(event);
@@ -184,7 +185,7 @@ export default function UpdateEventPage() {
   const handleUpdate = async (updatedData) => {
     console.log("Updated Event Data:", updatedData);
     const res = await fetch(
-      `http://localhost:3000/api/cpsh/events/update/${eventId}`,
+      `${API_URL}/api/cpsh/events/update/${eventId}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
