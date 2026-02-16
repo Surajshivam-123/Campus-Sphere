@@ -156,7 +156,7 @@ export default function UpdateEventPage() {
   useEffect(() => {
     const loadEvent = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`,
+        const response = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`,
           {
             method:"GET",
             headers: { "Content-Type": "application/json" },

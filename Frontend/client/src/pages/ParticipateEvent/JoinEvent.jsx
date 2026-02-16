@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import API_URL from "../../config/api";
 
 export default function JoinEvent() {
   const [invitationCode, setInvitationCode] = useState("");
@@ -25,7 +26,7 @@ export default function JoinEvent() {
     } else {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/cpsh/participants/participate/${invitationCode}`,
+          `${API_URL}/api/cpsh/participants/participate/${invitationCode}`,
           {
             method: "POST",
             headers: {

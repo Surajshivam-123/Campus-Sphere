@@ -1,6 +1,8 @@
+import API_URL from "../config/api";
+
 const getsingleEvent = async(eventId)=>{
         try {
-            const event=await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`,{
+            const event=await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`,{
                 method:"GET",
                 headers:{
                     "Content-Type":"application/json"

@@ -7,8 +7,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-      "https://surajshivam-123.github.io"
+      process.env.FRONTEND_ORIGIN,
     ],
     credentials: true,
   })

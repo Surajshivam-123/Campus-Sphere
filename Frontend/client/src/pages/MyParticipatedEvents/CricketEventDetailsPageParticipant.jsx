@@ -44,7 +44,7 @@ export default function CricketEventDetailsPageParticipant() {
     }
     getsingleEvent();
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/teams/get-team/${eventId}`,
+        `${API_URL}/api/cpsh/teams/get-team/${eventId}`,
         {
           method: "GET",
           headers: {
@@ -120,7 +120,7 @@ export default function CricketEventDetailsPageParticipant() {
       formData.append("name", teamName);
       formData.append("teamlogo", teamlogo);
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/teams/create-team/${eventId}`,
+        `${API_URL}/api/cpsh/teams/create-team/${eventId}`,
         {
           method: "POST",
           credentials: "include",
@@ -145,7 +145,7 @@ export default function CricketEventDetailsPageParticipant() {
       formData.append("name", teamName);
       formData.append("teamlogo", teamlogo);
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/teams/update-team/${eventId}`,
+        `${API_URL}/api/cpsh/teams/update-team/${eventId}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -175,7 +175,7 @@ export default function CricketEventDetailsPageParticipant() {
   const handledeleteTeam = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/teams/delete-team/${eventId}`,
+        `${API_URL}/api/cpsh/teams/delete-team/${eventId}`,
         {
           method: "DELETE",
           credentials: "include",

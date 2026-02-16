@@ -1,9 +1,9 @@
-
+import API_URL from "../config/api";
 
 const getAllEvents = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3000/api/cpsh/events/get-all-events",
+        `${API_URL}/api/cpsh/events/get-all-events`,
         {
           method: "GET",
           headers: {

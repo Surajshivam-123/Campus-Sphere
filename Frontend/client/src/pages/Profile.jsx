@@ -9,7 +9,7 @@ const Profile = () => {
     const profile = async () => {
       try {
         const response = await fetch(
-          "${API_URL}/api/cpsh/users/profile",
+          `${API_URL}/api/cpsh/users/profile`,
           {
             method: "GET",
             credentials: "include",

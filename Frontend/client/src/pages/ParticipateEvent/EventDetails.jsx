@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import API_URL from "../../config/api";
 
 export default function EventDetailsPage() {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ export default function EventDetailsPage() {
   useEffect(() => {
     const loadEvent = async () => {
       const response = await fetch(
-        `http://localhost:3000/api/cpsh/participants/participate/${participantCode}`,
+        `${API_URL}/api/cpsh/participants/participate/${participantCode}`,
         {
           method: "GET",
           headers: {
@@ -30,7 +31,7 @@ export default function EventDetailsPage() {
   const handleDelete = async (e) => {
     try {
       e.preventDefault();
-      const response = await fetch(`http://localhost:3000/api/cpsh/participants/delete-participant/${participantId}`, {
+      const response = await fetch(`${API_URL}/api/cpsh/participants/delete-participant/${participantId}`, {
         method: "DELETE",
         credentials:"include"
       });
