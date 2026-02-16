@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import getsingleEvent from "../../components/getsingleEvent";
 import { FaCalendarAlt } from "react-icons/fa";
 import Rules from "../Event Creation/Rule";
 import { motion } from "framer-motion";
@@ -155,8 +154,21 @@ export default function UpdateEventPage() {
 
   useEffect(() => {
     const loadEvent = async () => {
-      const result = await getsingleEvent(eventId);
-      setevent(result?.data || null);
+      try {
+        const response = await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`,
+          {
+            method:"GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }
+        );
+        const result=await response.json();
+        if (result?.statusCode === 200) {
+            setevent(result?.data);
+        }
+      } catch (error) {
+        console.log("Error while getting a single event in client side: ",error);
+      }
     };
     loadEvent();
   }, []);

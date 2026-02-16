@@ -121,9 +121,13 @@ const updateEvent = asyncHandler(async (req, res) => {
     if (!event) {
       throw new ApiError(404, "Event not found");
     }
-    const poster = req.file?.path;
+    const posterfilePath = req.file?.path;
+    let poster=null;
+    if(posterfilePath){
+      poster=await uploadOnCloudinary(posterfilePath);
+    }
     if (poster) {
-      event.poster = poster;
+      event.poster = poster.url;
     }
     if (festivalName?.trim()) {
       event.festivalName = festivalName;
