@@ -8,6 +8,8 @@ app.use(
   cors({
     origin: [
       process.env.FRONTEND_ORIGIN,
+      process.env.FRONTEND_ORIGIN_WITH_PATH,
+      "http://localhost:5173", // For local development
     ],
     credentials: true,
   })
