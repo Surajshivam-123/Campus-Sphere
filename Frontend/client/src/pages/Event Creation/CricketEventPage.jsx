@@ -12,7 +12,6 @@ import {
   FaChalkboardTeacher,
   FaTrophy,
 } from "react-icons/fa";
-import getsingleEvent from "../../components/getsingleEvent";
 import LoadingPage from "../LoadingPage";
 
 export default function CricketEventPage() {
@@ -28,8 +27,26 @@ export default function CricketEventPage() {
   const [ownerName, setOwnerName] = useState("");
   useEffect(() => {
     const loadEvent = async () => {
-      const result = await getsingleEvent(eventId);
-      setevent(result?.data);
+      const getsingleEvent = async () => {
+        try {
+          const event = await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include"
+          })
+          const result = await event.json();
+          console.log("Server response", result);
+          if (!result) {
+            console.log("No event found");
+          }
+          setevent(result?.data);
+        } catch (error) {
+          console.log("Error while getting single event", error);
+        }
+      }
+      getsingleEvent();
       const response = await fetch(
         `http://localhost:3000/api/cpsh/members/get-member/${eventId}`,
         {
@@ -76,7 +93,7 @@ export default function CricketEventPage() {
 
   let members = [];
   for (let i = 0; i < (member?.length || 0); i++) {
-    members.push({_id:member[i]._id , name: member[i].name, role: member[i].role });
+    members.push({ _id: member[i]._id, name: member[i].name, role: member[i].role });
   }
   const team = ["csk", "rcb", "mi", "kkr"];
 
@@ -99,34 +116,34 @@ export default function CricketEventPage() {
     navigate("/events-hosted");
   };
   const handleSaveRole = async (memberId) => {
-  try {
-    const role = editedRoles[memberId];
-    const response = await fetch(
-      `http://localhost:3000/api/cpsh/members/edit-role/${memberId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ role }),
-      }
-    );
-    const result = await response.json();
-    console.log("Server Resposne",result)
-    if (result.success) {
-      const updatedMembers = member.map((m) =>
-        m._id === memberId ? { ...m, role } : m
+    try {
+      const role = editedRoles[memberId];
+      const response = await fetch(
+        `http://localhost:3000/api/cpsh/members/edit-role/${memberId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ role }),
+        }
       );
-      setMember(updatedMembers);
-      setEditableMemberId(null);
-    } else {
-      console.error("Failed to update role");
+      const result = await response.json();
+      console.log("Server Resposne", result)
+      if (result.success) {
+        const updatedMembers = member.map((m) =>
+          m._id === memberId ? { ...m, role } : m
+        );
+        setMember(updatedMembers);
+        setEditableMemberId(null);
+      } else {
+        console.error("Failed to update role");
+      }
+    } catch (error) {
+      console.error("Error updating role:", error);
     }
-  } catch (error) {
-    console.error("Error updating role:", error);
-  }
-};
+  };
 
   return (
     <motion.div
@@ -211,10 +228,10 @@ export default function CricketEventPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr  className="hover:bg-gray-50">
+                <tr className="hover:bg-gray-50">
                   <td className="py-2 px-4 border-b">{ownerName} (You)</td>
                   <td className="py-2 px-4 border-b">Organizer</td>
-                 <td className="py-2 px-4 border-b">N/A</td>
+                  <td className="py-2 px-4 border-b">N/A</td>
                 </tr>
                 {members.map((member, index) => (
                   <tr key={index} className="hover:bg-gray-50">

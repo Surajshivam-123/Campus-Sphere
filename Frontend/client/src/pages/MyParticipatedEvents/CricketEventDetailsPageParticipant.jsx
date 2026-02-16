@@ -22,6 +22,26 @@ export default function CricketEventDetailsPageParticipant() {
   const [deleteVisibility, setdeleteVisibility] = useState(false);
   useEffect(() => {
     const loadEvent = async () => {
+      const getsingleEvent = async()=>{
+        try {
+            const event=await fetch(`http://localhost:3000/api/cpsh/events/get-single-event/${eventId}`,{
+                method:"GET",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                credentials:"include"
+            })
+            const result=await event.json();
+            console.log("Server response",result);
+            if(!result){
+                console.log("No event found");
+            }
+            setevent(result?.data);
+        } catch (error) {
+            console.log("Error while getting single event",error);
+        }
+    }
+    getsingleEvent();
       const response = await fetch(
         `http://localhost:3000/api/cpsh/teams/get-team/${eventId}`,
         {
@@ -40,7 +60,6 @@ export default function CricketEventDetailsPageParticipant() {
         setTeamName(team?.data?.name);
         setTeamlogo(team?.data?.teamlogo);
       }
-      setevent(result?.data);
     };
     loadEvent();
   }, []);
