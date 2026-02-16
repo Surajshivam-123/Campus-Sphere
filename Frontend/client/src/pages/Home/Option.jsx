@@ -6,24 +6,25 @@ const IamChoice = () => {
   const navigate=useNavigate()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+    <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center px-4">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8 }}
-        className="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl p-10 w-full max-w-md text-center space-y-8 border border-white/20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white border border-gray-200 rounded-lg shadow-sm p-10 w-full max-w-md text-center space-y-8"
       >
-        <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">I am</h1>
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+        <h1 className="font-heading text-3xl font-semibold text-[#1e3a5f] tracking-tight">I am</h1>
+        <div className="w-12 h-px bg-[#b8860b]/50 mx-auto" />
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
           <button
             onClick={() => navigate('/joinMember')}
-            className="px-8 py-3 bg-white/20 border border-white/30 text-white text-lg rounded-full hover:bg-white hover:text-purple-700 hover:scale-105 transition-all duration-300 shadow-lg"
+            className="w-full sm:w-auto px-6 py-3 bg-[#1e3a5f] text-white rounded border border-[#1e3a5f] font-medium text-sm hover:bg-[#2d4a6f] transition-colors"
           >
             Member
           </button>
           <button
             onClick={() => navigate('/join-event')}
-            className="px-8 py-3 bg-white/20 border border-white/30 text-white text-lg rounded-full hover:bg-white hover:text-pink-600 hover:scale-105 transition-all duration-300 shadow-lg"
+            className="w-full sm:w-auto px-6 py-3 bg-white text-[#1e3a5f] border border-[#1e3a5f] rounded font-medium text-sm hover:bg-[#f0ede6] transition-colors"
           >
             Participant
           </button>

@@ -36,7 +36,7 @@ export default function AppRoutes() {
          <Route path="/events-hosted" element={<EventList />} /> 
          <Route path="/update-event/:eventId" element={<UpdateEventPage />} /> 
          <Route path="/join-event" element={<JoinEvent />} /> 
-         <Route path="/event-details/:identityNumber/:participantCode" element={<EventDetailsPage/>}/> 
+         <Route path="/event-details/:identityNumber/:participantCode/:participantId" element={<EventDetailsPage/>}/> 
          <Route path="/my-events" element={<MyEvents />} />
          <Route path="/event/:eventName/:eventId/sports/cricket" element={<CricketEventPage />}/> 
          <Route path="/joinMember" element={<JoinMember />}/> 

@@ -2,20 +2,21 @@ import logo from '../../../public/logo.jpg';
 
 export default function Top({ onGetStartedClick }) {
   return (
-    <section className="bg-purple-600 text-white min-h-screen flex flex-col items-center justify-center text-center p-6">
+    <section className="bg-[#1e3a5f] text-white min-h-screen flex flex-col items-center justify-center text-center p-8">
       <img
         src={logo}
         alt="Campus Sphere Logo"
-        className="h-30 w-48 rounded-full shadow-lg"
+        className="h-24 w-36 rounded-md border border-[#c9a227]/30 shadow"
       />
-      <h1 className="text-4xl md:text-6xl font-bold mb-4">Campus Sphere</h1>
-      <p className="text-lg md:text-xl max-w-2xl">
-        Organize, manage, and join campus events like coding contests, sports tournaments, and more — all in one place.
+      <div className="mt-6 w-16 h-px bg-[#c9a227]/50" />
+      <h1 className="font-heading text-4xl md:text-5xl font-semibold mt-6 mb-4 tracking-tight">Campus Sphere</h1>
+      <p className="text-[#e8e6e1] text-base md:text-lg max-w-xl leading-relaxed">
+        Organize, manage, and join campus events — coding contests, sports tournaments, and more — all in one place.
       </p>
-      <div className="mt-6 space-x-4">
+      <div className="mt-8">
         <button
           onClick={onGetStartedClick}
-          className="cursor-pointer bg-white text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition"
+          className="cursor-pointer bg-[#b8860b] text-white px-6 py-2.5 rounded border border-[#b8860b] font-medium text-sm hover:bg-[#a67a0a] transition-colors"
         >
           Get Started
         </button>

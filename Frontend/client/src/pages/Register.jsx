@@ -76,120 +76,87 @@ export default function Register() {
     }
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">
-          Create an Account
+    <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center py-10 px-4">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 w-full max-w-md">
+        <h2 className="font-heading text-2xl font-semibold text-center text-[#1e3a5f] mb-6 tracking-tight">
+          Create an account
         </h2>
-        <div className="flex justify-center mb-4">
-          <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden">
-            <img
-              src={profileImage}
-              alt="Profile Preview"
-              className="w-full h-full object-cover"
-            />
+        <div className="flex justify-center mb-6">
+          <div className="w-20 h-20 rounded-md bg-[#f0ede6] overflow-hidden border border-gray-200">
+            <img src={profileImage} alt="Profile Preview" className="w-full h-full object-cover" />
           </div>
         </div>
         <form className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Upload Profile Image
+            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">
+              Profile image
             </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4
-                         file:rounded-full file:border-0 file:text-sm file:font-semibold
-                         file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:border-gray-200 file:text-sm file:font-medium file:bg-[#faf9f6] file:text-[#1e3a5f] hover:file:bg-[#f0ede6]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
+            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Full name</label>
             <input
               type="text"
               placeholder="John Doe"
-              onChange={(e) => {
-                setfullname(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setfullname(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
-            </label>
+            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Username</label>
             <input
               type="text"
               placeholder="John123"
-              onChange={(e) => {
-                setusername(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setusername(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
+            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Email</label>
             <input
               type="email"
               placeholder="you@example.com"
-              onChange={(e) => {
-                setemail(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setemail(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Password</label>
             <input
               type="password"
               placeholder="••••••••"
-              onChange={(e) => {
-                setpassword(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setpassword(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
-            </label>
+            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Confirm password</label>
             <input
               type="password"
               placeholder="••••••••"
               value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </div>
-          <p className="text-red-500" style={{ textAlign: "center" }}>
-            {errorMessage}
-          </p>
+          {errorMessage && <p className="text-red-600 text-sm text-center">{errorMessage}</p>}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+            className="w-full bg-[#1e3a5f] text-white py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm font-medium"
             onClick={handleSubmit}
           >
-            Register
+            Create account
           </button>
         </form>
-
-        <p className="mt-6 text-sm text-center text-gray-600">
+        <p className="mt-6 text-sm text-center text-gray-500">
           Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-blue-600 hover:underline font-medium"
-          >
-            Login here
+          <a href="/login" className="text-[#b8860b] hover:underline font-medium">
+            Sign in
           </a>
         </p>
       </div>

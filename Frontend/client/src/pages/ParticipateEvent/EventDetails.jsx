@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function EventDetailsPage() {
-  const { identityNumber, participantCode } = useParams();
+  const navigate = useNavigate();
+  const { identityNumber, participantCode, participantId } = useParams();
   const [eventData, setEventData] = useState(null);
-
   useEffect(() => {
     const loadEvent = async () => {
       const response = await fetch(
@@ -26,6 +26,21 @@ export default function EventDetailsPage() {
     loadEvent();
   }, [participantCode, identityNumber]);
 
+
+  const handleDelete = async (e) => {
+    try {
+      e.preventDefault();
+      const response = await fetch(`http://localhost:3000/api/cpsh/participants/delete-participant/${participantId}`, {
+        method: "DELETE",
+        credentials:"include"
+      });
+      const result = await response.json();
+      console.log("Response: ",result);
+      navigate("/my-events")
+    } catch (error) {
+      console.log("Error while deleting Participant: ", error);
+    }
+  }
   if (!eventData)
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -60,6 +75,11 @@ export default function EventDetailsPage() {
             <span className="font-semibold text-blue-600">Description:</span>{" "}
             {eventData.description}
           </p>
+        </div>
+        <div class="flex justify-end pr-4">
+          <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded" onClick={handleDelete}>
+            Unregister
+          </button>
         </div>
       </div>
     </div>

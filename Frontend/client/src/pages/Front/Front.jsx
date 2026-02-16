@@ -11,7 +11,7 @@ export default function Front() {
   };
 
   return (
-    <div className="font-sans">
+    <div>
       <Top onGetStartedClick={handleScrollToFeatures} />
       <div ref={featuresRef}>
         <Features />

@@ -70,12 +70,10 @@ export default function CricketEventPage() {
     rules,
     memberCode,
     participantCode,
-    Poster,
+    poster,
     createdAt,
   } = event;
 
-  const poster =
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s";
   let members = [];
   for (let i = 0; i < (member?.length || 0); i++) {
     members.push({_id:member[i]._id , name: member[i].name, role: member[i].role });

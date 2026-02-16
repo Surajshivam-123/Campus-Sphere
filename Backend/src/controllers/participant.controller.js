@@ -14,10 +14,12 @@ const participateEvent = asyncHandler(async (req, res) => {
     if (!event) {
       res.status(404).json(new ApiResponse(404, "Event not found"));
     }
-    const participantExists = await Participant.findOne({ identityNumber });
-    if (participantExists) {
-      res.status(400).json(new ApiResponse(400, {}, "Participant already exists"));
-    }
+    const participantExists = await Participant.find({ identityNumber });
+    participantExists.forEach((partpt) => {
+      if (partpt?.event === event?._id) {
+        res.status(400).json(new ApiResponse(400, {}, "Participant already exists"));
+      }
+    });
     const participant = await Participant.create({
       owner: req.user._id,
       event: event._id,
@@ -67,32 +69,45 @@ const getMyEvent = asyncHandler(async (req, res) => {
     res
       .status(200)
       .json(new ApiResponse(200, myEvent, "Events found successfully"));
-  } catch (error) {}
+  } catch (error) { }
 });
 
-const getAllParticipant =asyncHandler(async(req,res)=>{
+const getAllParticipant = asyncHandler(async (req, res) => {
   try {
-    const {eventId}=req.params;
-    const participants=await Participant.find({event:eventId});
-    if(!participants){
-      throw new ApiError(404,"Participants not found")
+    const { eventId } = req.params;
+    const participants = await Participant.find({ event: eventId });
+    if (!participants) {
+      throw new ApiError(404, "Participants not found")
     }
-    res.status(200).json(new ApiResponse(200,participants,"Participants found successfully"))
+    res.status(200).json(new ApiResponse(200, participants, "Participants found successfully"))
   } catch (error) {
-    console.log("Error while getting all participants",error)
+    console.log("Error while getting all participants", error)
   }
 })
 
-const getSingleParticipant =asyncHandler(async(req,res)=>{
+const getSingleParticipant = asyncHandler(async (req, res) => {
   try {
-    const {eventId}=req.params;
-    const participants=await Participant.find({event:eventId,owner:req.user._id});
-    if(!participants){
-      throw new ApiError(404,"Participants not found")
+    const { eventId } = req.params;
+    const participants = await Participant.find({ event: eventId, owner: req.user._id });
+    if (!participants) {
+      throw new ApiError(404, "Participants not found")
     }
-    res.status(200).json(new ApiResponse(200,participants,"Participants found successfully"))
+    res.status(200).json(new ApiResponse(200, participants, "Participants found successfully"))
   } catch (error) {
-    console.log("Error while getting single participants",error)
+    console.log("Error while getting single participants", error)
   }
-})
-export { participateEvent, getEvent, getMyEvent ,getAllParticipant,getSingleParticipant};
+});
+
+const deleteParticipant=asyncHandler(async(req,res)=>{
+  try {
+    const participantId=req.params.participantId;
+    const participant = await Participant.findByIdAndDelete(participantId);
+    if(!participant){
+      throw new ApiError(400,"Participation is Not deleted");
+    }
+    res.status(200).json(new ApiResponse(200,"Participant is deleted successfully"));
+  } catch (error) {
+    console.log("Error while deleting Participant:",error);
+  }
+});
+export { participateEvent, getEvent, getMyEvent, getAllParticipant, getSingleParticipant ,deleteParticipant};

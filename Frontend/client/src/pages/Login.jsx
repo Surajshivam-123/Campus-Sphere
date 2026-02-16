@@ -10,7 +10,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await fetch(
-        "http://localhost:3000/api/cpsh/users/login",
+        `http://localhost:3000/api/cpsh/users/login`,
         {
           method: "POST",
           credentials: "include",
@@ -36,57 +36,48 @@ export default function Login() {
     }
   };
   return (
-    <div className="bg-gray-400 min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100 px-4">
-      <div className="bg-white shadow-xl rounded-2xl overflow-hidden w-full max-w-5xl flex flex-col md:flex-row transition-all">
-        {/* Left: Branding Section */}
-        <div className="w-full md:w-1/2 bg-purple-600 text-white p-10 flex flex-col justify-center items-center">
-          <img src={logo} alt="Campus Sphere Logo" className="rounded-full" />
-          <p className="mt-4 text-center text-lg font-light">
-            Organize, Participate, and Celebrate Campus Events Seamlessly.
+    <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center px-4">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
+        {/* Left: Branding */}
+        <div className="w-full md:w-1/2 bg-[#1e3a5f] text-white p-10 flex flex-col justify-center items-center text-center">
+          <img src={logo} alt="Campus Sphere Logo" className="rounded-md w-24 h-24 object-cover border border-[#c9a227]/30" />
+          <p className="mt-4 text-[#e8e6e1] text-sm leading-relaxed max-w-xs">
+            Organize, participate, and celebrate campus events seamlessly.
           </p>
+          <div className="mt-6 w-12 h-px bg-[#c9a227]/50" />
         </div>
 
         {/* Right: Login Form */}
         <div className="w-full md:w-1/2 bg-white p-10 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">
-            Login to your account
+          <h2 className="font-heading text-2xl font-semibold text-[#1e3a5f] mb-6 tracking-tight">
+            Sign in to your account
           </h2>
 
-          {/* Google Login */}
-          <button className="cursor-pointer flex items-center justify-center gap-3 border border-gray-300 rounded-md py-2 w-full hover:bg-gray-100 transition">
+          <button className="cursor-pointer flex items-center justify-center gap-3 border border-gray-200 rounded py-2.5 w-full hover:bg-[#faf9f6] transition-colors text-sm text-[#374151]">
             <img
               src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s48-fcrop64=1,00000000ffffffff-rw"
               alt="Google"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
-            <span className="text-gray-600 font-medium">
-              Continue with Google
-            </span>
+            <span className="font-medium">Continue with Google</span>
           </button>
 
           <div className="flex items-center my-6">
-            <div className="flex-grow h-px bg-gray-300" />
-            <span className="px-3 text-gray-400 text-sm">
-              or login with email or username
-            </span>
-            <div className="flex-grow h-px bg-gray-300" />
+            <div className="flex-grow h-px bg-gray-200" />
+            <span className="px-3 text-gray-400 text-xs uppercase tracking-wider">or</span>
+            <div className="flex-grow h-px bg-gray-200" />
           </div>
 
           <form className="space-y-4">
             <input
               type="text"
-              placeholder="Email or Username"
+              placeholder="Email or username"
               value={usermail}
-              onChange={(e) => {
-                setusermail(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setusermail(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
-            <div className="flex justify-between items-center">
-              <button
-                type="button"
-                className="text-sm cursor-pointer text-blue-600 hover:underline focus:outline-none"
-              >
+            <div className="flex justify-end">
+              <button type="button" className="text-sm cursor-pointer text-[#b8860b] hover:underline focus:outline-none">
                 Login via OTP
               </button>
             </div>
@@ -94,25 +85,23 @@ export default function Login() {
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(e) => {
-                setpassword(e.target.value);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setpassword(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
-            <p className="text-red-500 text-center">{message}</p>
+            {message && <p className="text-red-600 text-sm text-center">{message}</p>}
             <button
               type="submit"
-              className="cursor-pointer w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
+              className="cursor-pointer w-full bg-[#1e3a5f] text-white py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm font-medium"
               onClick={handleSubmit}
             >
-              Login
+              Sign in
             </button>
           </form>
 
           <p className="mt-4 text-sm text-gray-500 text-center">
             Don’t have an account?{" "}
-            <a href="/register" className="text-blue-600 hover:underline">
-              Sign Up
+            <a href="/register" className="text-[#b8860b] hover:underline font-medium">
+              Sign up
             </a>
           </p>
         </div>

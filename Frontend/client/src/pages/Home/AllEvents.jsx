@@ -6,46 +6,44 @@ const AllEvents = () => {
   const navigate=useNavigate()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[#faf9f6] flex flex-col items-center justify-center px-4">
       <motion.h1
-        initial={{ y: -30, opacity: 0 }}
+        initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="text-5xl font-extrabold text-gray-800 mb-12"
+        transition={{ duration: 0.5 }}
+        className="font-heading text-4xl font-semibold text-[#1e3a5f] mb-10 tracking-tight"
       >
         My Events
       </motion.h1>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-white/30 backdrop-blur-lg shadow-xl rounded-2xl p-8 w-full max-w-lg space-y-6 border border-white/40"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 w-full max-w-lg space-y-6"
       >
-        {/* Participated Section */}
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Participated</h2>
-          <div className="flex justify-center gap-6">
+          <h2 className="font-heading text-lg font-semibold text-[#374151] mb-4 tracking-tight">Participated</h2>
+          <div className="flex justify-center gap-4">
             <button
               onClick={() => navigate('/my-events-member')}
-              className="px-6 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition-all shadow-md"
+              className="px-5 py-2.5 bg-[#1e3a5f] text-white rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm font-medium"
             >
               Member
             </button>
             <button
               onClick={() => navigate('/my-events')}
-              className="px-6 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-all shadow-md"
+              className="px-5 py-2.5 bg-white text-[#1e3a5f] border border-[#1e3a5f] rounded hover:bg-[#f0ede6] transition-colors text-sm font-medium"
             >
               Participant
             </button>
           </div>
         </div>
 
-        {/* Hosted Events Section */}
-        <div className="text-center pt-6 border-t border-gray-300">
+        <div className="border-t border-gray-200 pt-6 text-center">
           <button
             onClick={() => navigate('/events-hosted')}
-            className="px-8 py-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-all shadow-md"
+            className="px-6 py-3 bg-[#b8860b] text-white rounded border border-[#b8860b] hover:bg-[#a67a0a] transition-colors text-sm font-medium"
           >
             Hosted Events
           </button>

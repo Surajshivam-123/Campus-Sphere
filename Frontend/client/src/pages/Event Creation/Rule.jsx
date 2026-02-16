@@ -27,45 +27,41 @@ export default function Rules({ save, oldrule = [] }) {
   return (
     <motion.form
       onSubmit={handleSubmit}
-      initial={{ opacity: 0, x: 60 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="max-w-2xl mx-auto mt-10 bg-white rounded-2xl p-8"
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="mt-8 pt-8 border-t border-gray-200"
     >
-      <h2 className="text-xl mb-6">Event Rules</h2>
+      <h2 className="font-heading text-lg font-semibold text-[#1e3a5f] mb-4 tracking-tight">Event rules</h2>
+      <div className="w-10 h-px bg-[#b8860b]/40 mb-4" />
 
       <div className="mb-6">
-        <ul className="space-y-3">
+        <ul className="space-y-2">
           {rules.map((rule, index) => (
             <motion.li
               key={index}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: index * 0.05 }}
-              className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2 border border-blue-200 hover:bg-blue-100"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.03 }}
+              className="flex justify-between items-center bg-[#faf9f6] rounded border border-gray-200 px-4 py-2.5 hover:border-[#b8860b]/30 transition-colors"
             >
-              <span className="text-gray-800 font-medium">
+              <span className="text-[#374151] text-sm font-medium">
                 {index + 1}. {rule}
               </span>
               <button
                 type="button"
                 onClick={() => handleRemoveRule(index)}
-                className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                className="text-red-600 hover:text-red-700 transition-colors p-1"
                 title="Remove rule"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 12H4"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                 </svg>
               </button>
             </motion.li>
@@ -79,12 +75,12 @@ export default function Rules({ save, oldrule = [] }) {
           value={newRule}
           onChange={(e) => setNewRule(e.target.value)}
           placeholder="Enter a new rule"
-          className="flex-1 border border-blue-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          className="flex-1 px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
         />
         <button
           type="button"
           onClick={handleAddRule}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-md shadow transition-transform hover:scale-105"
+          className="bg-[#1e3a5f] hover:bg-[#2d4a6f] text-white font-medium px-4 py-2.5 rounded border border-[#1e3a5f] text-sm transition-colors"
         >
           + Add
         </button>
@@ -93,9 +89,9 @@ export default function Rules({ save, oldrule = [] }) {
       <div className="text-center">
         <button
           type="submit"
-          className="w-1/2 py-2 rounded-md bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold hover:from-purple-500 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+          className="px-6 py-2.5 rounded bg-[#b8860b] text-white font-medium text-sm border border-[#b8860b] hover:bg-[#a67a0a] transition-colors"
         >
-          Save Rules
+          Save rules
         </button>
       </div>
     </motion.form>

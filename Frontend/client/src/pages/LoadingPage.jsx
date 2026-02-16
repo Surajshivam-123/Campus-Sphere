@@ -2,47 +2,32 @@ import { motion } from "framer-motion";
 
 export default function LoadingPage() {
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-gradient-to-r from-purple-400 via-pink-500 to-red-400">
+    <div className="h-screen w-full flex items-center justify-center bg-[#faf9f6]">
       <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          duration: 0.8,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "reverse"
-        }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         className="flex flex-col items-center"
       >
         <motion.div
-          className="text-white text-5xl font-extrabold tracking-wide"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{
-            repeat: Infinity,
-            duration: 1.5,
-            ease: "easeInOut",
-          }}
+          className="font-heading text-[#1e3a5f] text-2xl font-semibold tracking-tight"
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
         >
-          🚀 Loading...
+          Loading…
         </motion.div>
-
         <motion.div
-          className="mt-6 h-2 w-40 rounded-full bg-white/30 overflow-hidden relative"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 2,
-            ease: "easeInOut",
-          }}
+          className="mt-6 h-0.5 w-32 rounded bg-[#e0e0e0] overflow-hidden relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
         >
           <motion.div
-            className="absolute left-0 top-0 h-full bg-white rounded-full"
+            className="absolute left-0 top-0 h-full bg-[#b8860b] rounded"
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{
-              duration: 2,
+              duration: 1.2,
               repeat: Infinity,
               repeatType: "loop",
               ease: "easeInOut",

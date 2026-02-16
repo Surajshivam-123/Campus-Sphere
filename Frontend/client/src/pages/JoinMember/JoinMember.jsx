@@ -45,67 +45,62 @@ export default function JoinMember() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-300 to-purple-300 flex justify-center items-center p-6">
+    <div className="min-h-screen bg-[#faf9f6] flex justify-center items-center p-6">
       <motion.div
-        className="bg-white shadow-xl rounded-2xl p-10 w-full max-w-lg"
-        initial={{ opacity: 0, y: 30 }}
+        className="bg-white border border-gray-200 rounded-lg shadow-sm p-10 w-full max-w-lg"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <motion.h1
-          className="text-3xl font-bold text-center text-purple-700 mb-6"
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-        Join Event
-        </motion.h1>
-
+        <h1 className="font-heading text-2xl font-semibold text-center text-[#1e3a5f] mb-6 tracking-tight">
+          Join event (member)
+        </h1>
+        <div className="w-12 h-px bg-[#b8860b]/40 mx-auto mb-6" />
         <form onSubmit={handleSubmit} className="space-y-6">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.2 }}
           >
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Invitation Code
+            <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">
+              Invitation code
             </label>
             <input
               type="text"
               value={invitationCode}
               onChange={(e) => setInvitationCode(e.target.value)}
               placeholder="Enter your invitation code"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </motion.div>
 
           {error && (
             <motion.p
-              className="text-red-600 font-medium bg-red-100 px-4 py-2 rounded-lg flex items-center gap-2"
+              className="text-red-600 text-sm font-medium bg-red-50 border border-red-100 px-4 py-2 rounded flex items-center gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <FaExclamationTriangle className="text-red-500" /> {error}
+              <FaExclamationTriangle className="text-red-500 shrink-0" /> {error}
             </motion.p>
           )}
 
           {success && (
             <motion.p
-              className="text-green-600 font-medium bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2"
+              className="text-green-700 text-sm font-medium bg-green-50 border border-green-100 px-4 py-2 rounded flex items-center gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <FaCheckCircle className="text-green-500" /> {success}
+              <FaCheckCircle className="text-green-600 shrink-0" /> {success}
             </motion.p>
           )}
 
           <motion.button
             type="submit"
-            className="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg hover:bg-purple-700 transition duration-200 shadow-md"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            className="w-full bg-[#1e3a5f] text-white font-medium py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
           >
-            Join Event
+            Join event
           </motion.button>
         </form>
       </motion.div>

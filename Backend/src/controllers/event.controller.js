@@ -2,6 +2,7 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import { Event } from "../models/event.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const generateUniqueCode = () => {
   let code = "";
@@ -42,10 +43,11 @@ const createEvent = asyncHandler(async (req, res) => {
     ) {
       throw new ApiError(400, "All fields are required");
     }
-    const poster = req.file?.path;
-    if (!poster) {
+    const posterLocalPath = req.file?.path;
+    if (!posterLocalPath) {
       throw new ApiError(400, "Poster is required");
     }
+    const poster=await uploadOnCloudinary(posterLocalPath)
     let memberCode = generateUniqueCode();
     let participantCode = generateUniqueCode();
     while (await Event.findOne({ memberCode })) {
@@ -69,7 +71,7 @@ const createEvent = asyncHandler(async (req, res) => {
       others,
       maxParticipants,
       rules,
-      poster,
+      poster:poster.url,
       memberCode,
       participantCode,
     });
@@ -178,7 +180,6 @@ const getallEvents = asyncHandler(async (req, res) => {
   try {
     const userId= req.user?._id;
     const events=await Event.find({organizer:userId});
-    console.log("Events",events)
     if (!events) {
       throw new ApiError(404, "Events not found");
     }

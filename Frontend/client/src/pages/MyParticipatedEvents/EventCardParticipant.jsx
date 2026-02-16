@@ -25,10 +25,10 @@ export default function EventCardParticipant({ event }) {
   )
   const handlenavigation=()=>{
     if(event.category==='sports' && event.sports==='cricket'){
-        navigate(`/cricket-event-details/${event._id}/${participant.identityNumber}/${event.participantCode}`)
+        navigate(`/cricket-event-details/${event._id}/${participant.identityNumber}/${event.participantCode}/${participant._id}`)
     }
     else{
-        navigate(`/event-details/${participant.identityNumber}/${event.participantCode}`)
+        navigate(`/event-details/${participant.identityNumber}/${event.participantCode}/${participant._id}`)
     }
   }
   return (

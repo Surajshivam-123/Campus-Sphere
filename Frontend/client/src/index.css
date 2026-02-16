@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+:root {
+  --color-navy: #1e3a5f;
+  --color-navy-light: #2d4a6f;
+  --color-charcoal: #374151;
+  --color-gold: #b8860b;
+  --color-gold-light: #c9a227;
+  --color-cream: #faf9f6;
+  --color-cream-dark: #f0ede6;
+  --font-heading: system-ui, -apple-system, sans-serif;
+  --font-body: system-ui, -apple-system, sans-serif;
+}
+
+html {
+  font-family: var(--font-body);
+  font-weight: normal;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: normal;
+}

@@ -36,54 +36,52 @@ export default function EventList() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-200 to-indigo-200 py-16 px-6">
+    <div className="min-h-screen bg-[#faf9f6] py-16 px-6">
       <motion.h1
-        className="text-4xl font-bold text-center text-purple-800 mb-12 flex justify-center items-center gap-2"
-        initial={{ opacity: 0, y: -50 }}
+        className="font-heading text-3xl font-semibold text-center text-[#1e3a5f] mb-10 flex justify-center items-center gap-2 tracking-tight"
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.5 }}
       >
-        <MdEventNote className="text-purple-600 text-5xl" />
-        Events You Conducted
+        <MdEventNote className="text-[#b8860b] text-4xl" />
+        Events you conducted
       </motion.h1>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         {allEvents.map((event, index) => (
           <motion.div
             key={index}
-            className="bg-white shadow-xl rounded-xl p-6 hover:shadow-2xl transition-shadow duration-300 cursor-pointer border border-purple-100 hover:scale-[1.02]"
-            whileHover={{ scale: 1.03 }}
-            initial={{ opacity: 0, y: 30 }}
+            className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#b8860b]/40 transition-colors cursor-pointer"
+            whileHover={{ scale: 1.01 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
+            transition={{ delay: index * 0.05, duration: 0.4 }}
             onClick={() => handleEventClick(event)}
           >
             {event.festivalName !== "" && (
-              <h2 className="text-3xl font-extrabold text-purple-700 mb-2">
+              <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">
                 {event.festivalName}
               </h2>
             )}
-            <h2 className="text-2xl font-bold text-purple-700 mb-2">
+            <h2 className="font-heading text-lg font-semibold text-[#1e3a5f] mb-3">
               {event.eventName}
             </h2>
-            <p className="text-gray-700 mb-1">
-              <span className="font-semibold">🕒 Date:</span>{" "}
+            <div className="w-8 h-px bg-[#b8860b]/40 mb-3" />
+            <p className="text-[#374151] text-sm mb-1">
+              <span className="font-medium text-[#1e3a5f]">Date:</span>{" "}
               {new Date(event.startDate).toDateString()}
             </p>
-            <p className="text-gray-700 mb-1">
-              <span className="font-semibold">🏠 Venue:</span> {event.location}
+            <p className="text-[#374151] text-sm mb-1">
+              <span className="font-medium text-[#1e3a5f]">Venue:</span> {event.location}
             </p>
-            <p className="text-gray-700 mb-1">
-              <span className="font-semibold">🎯 Category:</span>{" "}
-              {event.category}
+            <p className="text-[#374151] text-sm mb-1">
+              <span className="font-medium text-[#1e3a5f]">Category:</span> {event.category}
             </p>
-            <p className="text-gray-700 mb-1">
-              <span className="font-semibold">📌 Organizer:</span>{" "}
-              {event.organization}
+            <p className="text-[#374151] text-sm mb-1">
+              <span className="font-medium text-[#1e3a5f]">Organizer:</span> {event.organization}
             </p>
-            <p className="text-gray-700">
-              <span className="font-semibold">👥 Max Participants:</span>{" "}
-              {event.maxParticipants}
+            <p className="text-[#374151] text-sm">
+              <span className="font-medium text-[#1e3a5f]">Max participants:</span> {event.maxParticipants}
             </p>
           </motion.div>
         ))}

@@ -115,34 +115,27 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="pt-28 min-h-screen bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-600 px-4 flex justify-center items-start">
+    <div className="pt-28 min-h-screen bg-[#faf9f6] px-4 flex justify-center items-start pb-12">
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="bg-white bg-opacity-80 backdrop-blur-lg shadow-2xl rounded-xl p-8 w-full max-w-3xl border border-purple-200"
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 w-full max-w-3xl"
       >
-        <h1 className="text-4xl font-bold text-purple-700 mb-6 text-center">
-          🎉 Create New Event
+        <h1 className="font-heading text-2xl font-semibold text-[#1e3a5f] mb-2 text-center tracking-tight">
+          Create new event
         </h1>
-        <p className="text-sm text-red-600 mb-4 italic">* Mandatory fields</p>
+        <div className="w-12 h-px bg-[#b8860b]/50 mx-auto mb-4" />
+        <p className="text-xs text-[#374151] mb-6 text-center">* Mandatory fields</p>
 
-        <form className="space-y-6" >
-          {/* FESTIVAL NAME */}
+        <form className="space-y-6">
           <Input label="Festival name" name="festivalName" value={eventData.festivalName} onChange={handleInputChange} placeholder="Enter festival name (if any)" />
-
-          {/* EVENT NAME */}
-          <Input label="Event Name *" required name="eventName" value={eventData.eventName} onChange={handleInputChange} placeholder="Enter event name" />
-
-          {/* ORGANIZATION */}
+          <Input label="Event name *" required name="eventName" value={eventData.eventName} onChange={handleInputChange} placeholder="Enter event name" />
           <Input label="Organization *" required name="organization" value={eventData.organization} onChange={handleInputChange} placeholder="Enter organizer name" />
+          <Select label="Mode *" required name="mode" value={eventData.mode} onChange={handleInputChange} options={["Offline", "Online"]} defaultLabel="-- Select mode --" />
 
-          {/* MODE */}
-          <Select label="Mode *" required name="mode" value={eventData.mode} onChange={handleInputChange} options={["Offline", "Online"]} defaultLabel="-- Select Mode --" />
-
-          {/* DESCRIPTION */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">Description *</label>
+            <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">Description *</label>
             <textarea
               required
               rows="4"
@@ -150,95 +143,89 @@ export default function CreateEvent() {
               value={eventData.description}
               onChange={handleInputChange}
               placeholder="Brief description about the event"
-              className="w-full p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
             />
           </div>
 
-          {/* DATE & LOCATION */}
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label={<><FaCalendarAlt className="mr-2" /> Date & Time *</>} type="datetime-local" required name="startDate" value={eventData.startDate} onChange={handleInputChange} />
-            <Input label={<><FaMapMarkerAlt className="mr-2" /> Location / Venue *</>} required name="eventLocation" value={eventData.eventLocation} onChange={handleInputChange} placeholder="e.g. Main Auditorium" />
+            <Input label={<><FaCalendarAlt className="mr-2 inline" /> Date & time *</>} type="datetime-local" required name="startDate" value={eventData.startDate} onChange={handleInputChange} />
+            <Input label={<><FaMapMarkerAlt className="mr-2 inline" /> Location / venue *</>} required name="eventLocation" value={eventData.eventLocation} onChange={handleInputChange} placeholder="e.g. Main Auditorium" />
           </div>
 
-          {/* CATEGORY */}
           <div className="grid md:grid-cols-2 gap-6">
             <Select label="Category *" required name="category" value={eventData.category} onChange={handleInputChange}
               options={["sports", "coding", "cultural", "workshop", "others"]}
-              defaultLabel="-- Select Category --"
+              defaultLabel="-- Select category --"
             />
             {eventData.category === "sports" && (
               <Select label="Sports *" required name="sports" value={eventData.sports} onChange={handleInputChange}
                 options={["cricket", "volleyball", "basketball", "others"]}
-                defaultLabel="-- Select Sport --"
+                defaultLabel="-- Select sport --"
               />
             )}
             {eventData.sports === "others" && (
-              <Input label="Other Sport Name *" required name="others" value={eventData.others} onChange={handleInputChange} />
+              <Input label="Other sport name *" required name="others" value={eventData.others} onChange={handleInputChange} />
             )}
-            <Input label="Max Participants *" type="number" required name="maxParticipants" value={eventData.maxParticipants} onChange={handleInputChange} placeholder="e.g. 50" />
+            <Input label="Max participants *" type="number" required name="maxParticipants" value={eventData.maxParticipants} onChange={handleInputChange} placeholder="e.g. 50" />
           </div>
-            </form>
-          {/* RULES */}
-          <Rules save={handleRule} />
+        </form>
 
-          {/* POSTER */}
-          <div>
-            <label className="text-gray-700 font-medium mb-1 flex items-center">
-              <FaFileUpload className="mr-2" /> Upload Poster / Image *
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="block w-[50%] text-sm text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+        <Rules save={handleRule} />
+
+        <div className="mt-6">
+          <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider flex items-center gap-2">
+            <FaFileUpload className="shrink-0" /> Upload poster / image *
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="block w-full max-w-xs text-sm text-[#374151] file:mr-4 file:py-2 file:px-4 file:rounded file:border file:border-gray-200 file:text-sm file:font-medium file:bg-[#faf9f6] file:text-[#1e3a5f] hover:file:bg-[#f0ede6]"
+          />
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Event preview"
+              className="mt-3 rounded-md w-1/4 max-h-48 object-cover border border-gray-200"
             />
-            {imagePreview && (
-              <img
-                src={imagePreview}
-                alt="Event Preview"
-                className="mt-3 rounded-md w-[25%] max-h-64 object-cover shadow-lg"
-              />
-            )}
-          </div>
+          )}
+        </div>
 
-          {err && <p className="text-red-500 text-sm">{err}</p>}
+        {err && <p className="text-red-600 text-sm mt-4">{err}</p>}
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            type="submit"
-            onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition duration-200"
-          >
-            Create Event
-          </motion.button>
-        
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          type="submit"
+          onClick={handleSubmit}
+          className="w-full mt-6 bg-[#1e3a5f] text-white font-medium py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm"
+        >
+          Create event
+        </motion.button>
       </motion.div>
     </div>
   );
 }
 
-// REUSABLE INPUT COMPONENT
 function Input({ label, ...rest }) {
   return (
     <div>
-      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
+      <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">{label}</label>
       <input
         {...rest}
-        className="w-full p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+        className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
       />
     </div>
   );
 }
 
-// REUSABLE SELECT COMPONENT
 function Select({ label, options = [], defaultLabel, ...rest }) {
   return (
     <div>
-      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
+      <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">{label}</label>
       <select
         {...rest}
-        className="w-full p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200"
+        className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm bg-white"
       >
         <option value="">{defaultLabel}</option>
         {options.map((opt) => (
