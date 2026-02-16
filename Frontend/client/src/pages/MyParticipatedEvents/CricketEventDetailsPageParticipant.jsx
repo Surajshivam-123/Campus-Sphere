@@ -7,7 +7,6 @@ import {
   FaUsers,
   FaChalkboardTeacher,
 } from "react-icons/fa";
-import getsingleEvent from "../../components/getsingleEvent";
 import LoadingPage from "../LoadingPage";
 
 export default function CricketEventDetailsPageParticipant() {
@@ -23,7 +22,6 @@ export default function CricketEventDetailsPageParticipant() {
   const [deleteVisibility, setdeleteVisibility] = useState(false);
   useEffect(() => {
     const loadEvent = async () => {
-      const result = await getsingleEvent(eventId);
       const response = await fetch(
         `http://localhost:3000/api/cpsh/teams/get-team/${eventId}`,
         {
