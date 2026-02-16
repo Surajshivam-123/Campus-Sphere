@@ -34,7 +34,7 @@ jobs:
           
       - name: Create .env file
         working-directory: ./Frontend/client
-        run: echo "VITE_API_URL=https://campus-sphere-1.onrender.com" > .env
+        run: echo "VITE_API_URL=https://campus-sphere-nn6h.onrender.com" > .env
           
       - name: Build
         working-directory: ./Frontend/client
