@@ -19,11 +19,10 @@ export const connectDB=async ()=>{
 
 
 // import { MongoClient, ServerApiVersion } from 'mongodb';
-// const uri = "mongodb+srv://skumar919810_db_user:<db_password>@campus-sphere.1vcerdd.mongodb.net/?appName=Campus-Sphere";
 
 // // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 // console.log(process.env.MONGODB_URI)
-// const client = new MongoClient("mongodb+srv://skumar919810_db_user:Csph919810@campus-sphere.1vcerdd.mongodb.net/?appName=Campus-Sphere", {
+// const client = new MongoClient(process.env.MONGODB_URI, {
 //   serverApi: {
 //     version: ServerApiVersion.v1,
 //     strict: true,
