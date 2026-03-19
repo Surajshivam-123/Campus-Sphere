@@ -7,10 +7,10 @@ import { Event } from "../models/event.model.js";
 const participateEvent = asyncHandler(async (req, res) => {
   try {
     const { invitationCode, identityNumber } = req.body;
-    if (!invitationCode || !identityNumber) {
+    if (!invitationCode.trim() || !identityNumber.trim()) {
       throw new ApiError(400, "All fields are required");
     }
-    const event = await Event.findOne({ participantCode: invitationCode });
+    const event = await Event.findOne({ participantCode: invitationCode.trim() });
     if (!event) {
       res.status(404).json(new ApiResponse(404, "Event not found"));
     }
@@ -21,8 +21,8 @@ const participateEvent = asyncHandler(async (req, res) => {
       }
     });
     const participant = await Participant.create({
-      owner: req.user._id,
-      event: event._id,
+      owner: req.user?._id,
+      event: event?._id,
       identityNumber,
     });
     if (!participant) {
@@ -41,10 +41,10 @@ const participateEvent = asyncHandler(async (req, res) => {
 const getEvent = asyncHandler(async (req, res) => {
   try {
     const { participantCode } = req.params;
-    if (!participantCode) {
+    if (!participantCode.trim()) {
       throw new ApiError(400, "Participant code is required");
     }
-    const event = await Event.findOne({ participantCode: participantCode });
+    const event = await Event.findOne({ participantCode: participantCode.trim() });
     if (!event) {
       throw new ApiError(404, "Event not found");
     }

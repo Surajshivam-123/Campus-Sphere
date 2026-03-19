@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API_URL from "../../config/api";
+import participantService from "../../services/participant.service";
 
 export default function EventDetailsPage() {
   const navigate = useNavigate();
@@ -8,21 +8,15 @@ export default function EventDetailsPage() {
   const [eventData, setEventData] = useState(null);
   useEffect(() => {
     const loadEvent = async () => {
-      const response = await fetch(
-        `${API_URL}/api/cpsh/participants/participate/${participantCode}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
+      try {
+        const result = await participantService.getEventByParticipantCode(participantCode);
+        if (result) {
+          setEventData(result?.data);
         }
-      );
-      const result = await response.json();
-      if (result) {
-        setEventData(result?.data);
+        console.log("Server Response", result);
+      } catch (error) {
+        console.error("Error loading event:", error);
       }
-      console.log("Server Resposne", result);
     };
     loadEvent();
   }, [participantCode, identityNumber]);
@@ -31,13 +25,9 @@ export default function EventDetailsPage() {
   const handleDelete = async (e) => {
     try {
       e.preventDefault();
-      const response = await fetch(`${API_URL}/api/cpsh/participants/delete-participant/${participantId}`, {
-        method: "DELETE",
-        credentials:"include"
-      });
-      const result = await response.json();
-      console.log("Response: ",result);
-      navigate("/my-events")
+      const result = await participantService.deleteParticipant(participantId);
+      console.log("Response: ", result);
+      navigate("/my-events");
     } catch (error) {
       console.log("Error while deleting Participant: ", error);
     }

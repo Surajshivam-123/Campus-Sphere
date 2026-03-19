@@ -47,7 +47,7 @@ export default function JoinEvent() {
           setError("");
           setSuccess("Event joined successfully!");
           setTimeout(() => {
-            navigate(`/event-details/${identityNumber}/${invitationCode}/${result.data._id}`);
+            navigate(`/event-details/${identityNumber}/${encodeURIComponent(invitationCode)}/${result.data._id}`);
           }, 1200);
         }
       } catch (error) {

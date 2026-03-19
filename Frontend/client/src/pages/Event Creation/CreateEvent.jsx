@@ -3,7 +3,10 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaFileUpload } from "react-icons/fa";
 import Rules from "./Rule";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import API_URL from "../../config/api.js";
+import FormInput from "../../components/shared/FormInput";
+import FormSelect from "../../components/shared/FormSelect";
+import FormTextarea from "../../components/shared/FormTextarea";
+import eventService from "../../services/event.service";
 
 export default function CreateEvent() {
   const [imagePreview, setImagePreview] = useState(null);
@@ -99,19 +102,12 @@ export default function CreateEvent() {
       formData.append("poster", poster);
       formData.append("rules", rules);
 
-      const response = await fetch(
-        `${API_URL}/api/cpsh/events/create`,
-        {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        }
-      );
-      const result = await response.json();
+      const result = await eventService.createEvent(formData);
       console.log("Server Response:", result);
       navigate("/events-hosted");
     } catch (error) {
       console.log("Error while creating event:", error);
+      seterr("Failed to create event. Please try again.");
     }
   };
 
@@ -130,44 +126,41 @@ export default function CreateEvent() {
         <p className="text-xs text-[#374151] mb-6 text-center">* Mandatory fields</p>
 
         <form className="space-y-6">
-          <Input label="Festival name" name="festivalName" value={eventData.festivalName} onChange={handleInputChange} placeholder="Enter festival name (if any)" />
-          <Input label="Event name *" required name="eventName" value={eventData.eventName} onChange={handleInputChange} placeholder="Enter event name" />
-          <Input label="Organization *" required name="organization" value={eventData.organization} onChange={handleInputChange} placeholder="Enter organizer name" />
-          <Select label="Mode *" required name="mode" value={eventData.mode} onChange={handleInputChange} options={["Offline", "Online"]} defaultLabel="-- Select mode --" />
+          <FormInput label="Festival name" name="festivalName" value={eventData.festivalName} onChange={handleInputChange} placeholder="Enter festival name (if any)" />
+          <FormInput label="Event name" required name="eventName" value={eventData.eventName} onChange={handleInputChange} placeholder="Enter event name" />
+          <FormInput label="Organization" required name="organization" value={eventData.organization} onChange={handleInputChange} placeholder="Enter organizer name" />
+          <FormSelect label="Mode" required name="mode" value={eventData.mode} onChange={handleInputChange} options={["Offline", "Online"]} defaultLabel="-- Select mode --" />
 
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">Description *</label>
-            <textarea
-              required
-              rows="4"
-              name="description"
-              value={eventData.description}
-              onChange={handleInputChange}
-              placeholder="Brief description about the event"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
+          <FormTextarea
+            label="Description"
+            required
+            rows={4}
+            name="description"
+            value={eventData.description}
+            onChange={handleInputChange}
+            placeholder="Brief description about the event"
+          />
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <FormInput label="Date & time" icon={<FaCalendarAlt />} type="datetime-local" required name="startDate" value={eventData.startDate} onChange={handleInputChange} />
+            <FormInput label="Location / venue" icon={<FaMapMarkerAlt />} required name="eventLocation" value={eventData.eventLocation} onChange={handleInputChange} placeholder="e.g. Main Auditorium" />
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label={<><FaCalendarAlt className="mr-2 inline" /> Date & time *</>} type="datetime-local" required name="startDate" value={eventData.startDate} onChange={handleInputChange} />
-            <Input label={<><FaMapMarkerAlt className="mr-2 inline" /> Location / venue *</>} required name="eventLocation" value={eventData.eventLocation} onChange={handleInputChange} placeholder="e.g. Main Auditorium" />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <Select label="Category *" required name="category" value={eventData.category} onChange={handleInputChange}
+            <FormSelect label="Category" required name="category" value={eventData.category} onChange={handleInputChange}
               options={["sports", "coding", "cultural", "workshop", "others"]}
               defaultLabel="-- Select category --"
             />
             {eventData.category === "sports" && (
-              <Select label="Sports *" required name="sports" value={eventData.sports} onChange={handleInputChange}
+              <FormSelect label="Sports" required name="sports" value={eventData.sports} onChange={handleInputChange}
                 options={["cricket", "volleyball", "basketball", "others"]}
                 defaultLabel="-- Select sport --"
               />
             )}
             {eventData.sports === "others" && (
-              <Input label="Other sport name *" required name="others" value={eventData.others} onChange={handleInputChange} />
+              <FormInput label="Other sport name" required name="others" value={eventData.others} onChange={handleInputChange} />
             )}
-            <Input label="Max participants *" type="number" required name="maxParticipants" value={eventData.maxParticipants} onChange={handleInputChange} placeholder="e.g. 50" />
+            <FormInput label="Max participants" type="number" required name="maxParticipants" value={eventData.maxParticipants} onChange={handleInputChange} placeholder="e.g. 50" />
           </div>
         </form>
 
@@ -208,31 +201,4 @@ export default function CreateEvent() {
   );
 }
 
-function Input({ label, ...rest }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">{label}</label>
-      <input
-        {...rest}
-        className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-      />
-    </div>
-  );
-}
 
-function Select({ label, options = [], defaultLabel, ...rest }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">{label}</label>
-      <select
-        {...rest}
-        className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm bg-white"
-      >
-        <option value="">{defaultLabel}</option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
-      </select>
-    </div>
-  );
-}

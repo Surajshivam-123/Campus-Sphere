@@ -37,7 +37,7 @@ export default function JoinMember() {
           setError(result?.message);
           setSuccess("");
         } else {
-          navigate(`/get-event/${invitationCode}`);
+          navigate(`/get-event/${encodeURIComponent(invitationCode)}`);
         }
       } catch (error) {
         console.log("Error while submitting", error);

@@ -7,7 +7,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const generateUniqueCode = () => {
   let code = "";
   const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+=?|`~";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
   const length = characters.length;
   for (let i = 0; i < 5; i++) {
     code += characters.charAt(Math.floor(Math.random() * length));

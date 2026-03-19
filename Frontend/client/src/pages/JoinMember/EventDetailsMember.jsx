@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import LoadingPage from "../LoadingPage";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Info, Star } from "lucide-react";
-import API_URL from "../../config/api";
+import eventService from "../../services/event.service";
 
 export default function EventDetailsMemberPage() {
   const { memberCode } = useParams();
@@ -12,17 +12,7 @@ export default function EventDetailsMemberPage() {
   useEffect(() => {
     const loadEvent = async () => {
       try {
-        const response = await fetch(
-          `${API_URL}/api/cpsh/members/participate/${memberCode}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          }
-        );
-        const result = await response.json();
+        const result = await eventService.getEventByMemberCode(memberCode);
         console.log("Server Response", result);
         if (result.success) {
           setEventData(result.data);

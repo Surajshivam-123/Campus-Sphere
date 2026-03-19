@@ -3,7 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaCalendarAlt } from "react-icons/fa";
 import Rules from "../Event Creation/Rule";
 import { motion } from "framer-motion";
-import API_URL from "../../config/api.js";
+import FormInput from "../../components/shared/FormInput";
+import FormSelect from "../../components/shared/FormSelect";
+import FormTextarea from "../../components/shared/FormTextarea";
+import eventService from "../../services/event.service";
 
 function UpdateEventForm({ event, onSubmit }) {
   const [formData, setFormData] = useState(event);
@@ -47,75 +50,64 @@ function UpdateEventForm({ event, onSubmit }) {
        Update Your Event
       </h2>
       <form className="space-y-6">
-        <Input
+        <FormInput
           name="festivalName"
           label="Festival Name"
           value={formData.festivalName}
           onChange={handleChange}
         />
-        <Input
+        <FormInput
           name="eventName"
           label="Event Name"
           value={formData.eventName}
           onChange={handleChange}
+          required
         />
-        <Input
+        <FormInput
           name="organization"
           label="Organization"
           value={formData.organization}
           onChange={handleChange}
+          required
         />
 
-        <div>
-          <label className="block text-gray-700 font-semibold mb-2">
-            Change Mode
-          </label>
-          <select
-            name="mode"
-            value={formData.mode}
-            onChange={handleChange}
-            className="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-          >
-            <option>-- Select Mode of Event --</option>
-            <option value={"Offline"}>Offline</option>
-            <option value={"Online"}>Online</option>
-          </select>
-        </div>
+        <FormSelect
+          name="mode"
+          label="Change Mode"
+          value={formData.mode}
+          onChange={handleChange}
+          options={["Offline", "Online"]}
+          defaultLabel="-- Select Mode of Event --"
+          required
+        />
 
-        <div>
-          <label className="text-gray-700 font-semibold flex items-center mb-2">
-            <FaCalendarAlt className="mr-2 text-blue-600" />
-            Start Date & Time
-          </label>
-          <input
-            type="datetime-local"
-            name="startDate"
-            value={formatDateTimeLocal(formData.startDate)}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-          />
-        </div>
+        <FormInput
+          type="datetime-local"
+          name="startDate"
+          label="Start Date & Time"
+          icon={<FaCalendarAlt />}
+          value={formatDateTimeLocal(formData.startDate)}
+          onChange={handleChange}
+          required
+        />
 
-        <Input
+        <FormInput
           name="maxParticipants"
           label="Max Participants"
           value={formData.maxParticipants}
           onChange={handleChange}
           type="number"
+          required
         />
 
-        <div>
-          <label className="block text-gray-700 font-semibold mb-2">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-          ></textarea>
-        </div>
+        <FormTextarea
+          name="description"
+          label="Description"
+          value={formData.description}
+          onChange={handleChange}
+          rows={4}
+          required
+        />
 
       </form>
       <Rules save={handleRule} oldrule={formData.rules} />
@@ -134,20 +126,7 @@ function UpdateEventForm({ event, onSubmit }) {
   );
 }
 
-function Input({ label, name, value, onChange, type = "text" }) {
-  return (
-    <div>
-      <label className="block text-gray-700 font-semibold mb-2">{label}</label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-      />
-    </div>
-  );
-}
+
 
 export default function UpdateEventPage() {
   const { eventId } = useParams();
@@ -156,23 +135,16 @@ export default function UpdateEventPage() {
   useEffect(() => {
     const loadEvent = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`,
-          {
-            method:"GET",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-          }
-        );
-        const result=await response.json();
+        const result = await eventService.getEventById(eventId);
         if (result?.statusCode === 200) {
-            setevent(result?.data);
+          setevent(result?.data);
         }
       } catch (error) {
-        console.log("Error while getting a single event in client side: ",error);
+        console.log("Error while getting a single event in client side: ", error);
       }
     };
     loadEvent();
-  }, []);
+  }, [eventId]);
 
   if (!event) {
     return (
@@ -184,17 +156,12 @@ export default function UpdateEventPage() {
 
   const handleUpdate = async (updatedData) => {
     console.log("Updated Event Data:", updatedData);
-    const res = await fetch(
-      `${API_URL}/api/cpsh/events/update/${eventId}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(updatedData),
-      }
-    );
-    const result = await res.json();
-    console.log("Server response:", result);
+    try {
+      const result = await eventService.updateEvent(eventId, updatedData);
+      console.log("Server response:", result);
+    } catch (error) {
+      console.error("Error updating event:", error);
+    }
   };
 
   return <div className="min-h-screen bg-purple-400 py-10">
