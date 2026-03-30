@@ -36,6 +36,7 @@ export default function TeamCreatorPage() {
           method: "GET", headers: { "Content-Type": "application/json" }, credentials: "include",
         });
         const teamData = await teamRes.json();
+        console.log("TeamData:",teamData)
         if (teamData?.data) {
           setTeamdata(teamData.data);
           setTeamName(teamData.data.name);
@@ -191,7 +192,11 @@ export default function TeamCreatorPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-500 text-sm truncate max-w-xs">{typeof teamlogo === "string" ? teamlogo : "No logo"}</span>
+                  {typeof teamlogo === "string" && teamlogo ? (
+                    <img src={teamlogo} alt="Team Logo" className="w-12 h-12 rounded-full object-cover border border-gray-200" />
+                  ) : (
+                    <span className="text-gray-400 text-sm">No logo</span>
+                  )}
                   <button onClick={() => setEditlogo(true)} className="text-blue-600 hover:underline text-sm">Edit</button>
                 </div>
               )}
@@ -220,12 +225,19 @@ export default function TeamCreatorPage() {
                   )}
                   {teamdata?.teamPlayer?.map((player, i) => (
                     <tr key={i} className="hover:bg-blue-50 transition">
-                      <td className="py-3 px-4 border-b">{player?.name}</td>
+                      <td className="py-3 px-4 border-b">
+                        <span>{player?.name}</span>
+                        {player?.isCaptain && (
+                          <span className="ml-2 text-yellow-600 font-semibold text-xs">(Captain)</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 border-b text-center">
-                        <button onClick={() => handleRemovePlayer(player._id)}
-                          className="text-red-500 hover:text-red-700 transition" title="Remove player">
-                          <FaTrash />
-                        </button>
+                        {!player?.isCaptain && (
+                          <button onClick={() => handleRemovePlayer(player._id)}
+                            className="text-red-500 hover:text-red-700 transition" title="Remove player">
+                            <FaTrash />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

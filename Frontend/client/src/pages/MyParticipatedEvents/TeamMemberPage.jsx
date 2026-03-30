@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa";
 import LoadingPage from "../LoadingPage";
 import API_URL from "../../config/api";
+import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function TeamMemberPage() {
   const navigate = useNavigate();
@@ -28,8 +29,8 @@ export default function TeamMemberPage() {
       } catch (e) { console.log("Error loading event", e); }
 
       try {
-        const teamRes = await fetch(`${API_URL}/api/cpsh/cricket-players/my-team/${eventId}`, {
-          method: "GET", headers: { "Content-Type": "application/json" }, credentials: "include",
+        const teamRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/my-team/${eventId}`, {
+          method: "GET", headers: { "Content-Type": "application/json" },
         });
         const teamData = await teamRes.json();
         console.log("Data: ", teamData);
@@ -55,8 +56,8 @@ export default function TeamMemberPage() {
 
   const handleLeaveTeam = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/cricket-players/leave-team/${eventId}`, {
-        method: "DELETE", credentials: "include",
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/leave-team/${eventId}`, {
+        method: "DELETE",
       });
       const result = await res.json();
       if (result?.success) {

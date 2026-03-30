@@ -37,6 +37,9 @@ import TeamCreatorPage from "../pages/MyParticipatedEvents/TeamCreatorPage";
 import TeamMemberPage from "../pages/MyParticipatedEvents/TeamMemberPage";
 import CreateTeamPage from "../pages/MyParticipatedEvents/CreateTeamPage";
 
+// Schedule
+import SchedulePage from "../pages/Schedule/SchedulePage";
+
 // User Profile
 import Profile from "../pages/Profile";
 
@@ -57,7 +60,8 @@ export default function AppRoutes() {
       <Route path="/new-events-hosted" element={<CreateEvent />} />
       <Route path="/event/:eventName/:eventId/workshop" element={<WorkshopEventDetails />} />
       <Route path="/event/:eventName/:eventId/sports/cricket" element={<CricketEventPage />} />
-      <Route path="/cricket-format" element={<CreateCricketFormat />} />
+      <Route path="/cricket-format/:eventId" element={<CreateCricketFormat />} />
+      <Route path="/cricket-format/:eventId/view" element={<CreateCricketFormat viewOnly />} />
 
       {/* Event Management Routes */}
       <Route path="/events-hosted" element={<EventList />} />
@@ -82,6 +86,9 @@ export default function AppRoutes() {
 
       {/* User Profile Route */}
       <Route path="/profile" element={<Profile />} />
+
+      {/* Schedule Route */}
+      <Route path="/cricket-schedule/:eventId" element={<SchedulePage />} />
     </Routes>
   );
 }

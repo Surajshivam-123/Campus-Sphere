@@ -19,6 +19,7 @@ export default function Navbar() {
       });
       const result = await response.json();
       console.log("Server Response", result);
+      localStorage.removeItem("accessToken");
       navigate("/");
     } catch (error) {
       console.log("Error", error);

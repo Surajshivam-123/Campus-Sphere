@@ -6,6 +6,7 @@ import {
 } from "react-icons/fa";
 import LoadingPage from "../LoadingPage";
 import API_URL from "../../config/api";
+import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function CricketEventDetailsPageParticipant() {
   const navigate = useNavigate();
@@ -28,8 +29,8 @@ export default function CricketEventDetailsPageParticipant() {
 
       // Check if user is team creator
       try {
-        const teamRes = await fetch(`${API_URL}/api/cpsh/teams/get-team/${eventId}`, {
-          method: "GET", headers: { "Content-Type": "application/json" }, credentials: "include",
+        const teamRes = await fetchWithAuth(`${API_URL}/api/cpsh/teams/get-team/${eventId}`, {
+          method: "GET", headers: { "Content-Type": "application/json" },
         });
         const teamData = await teamRes.json();
         if (teamData?.success && teamData?.data) {
@@ -40,8 +41,8 @@ export default function CricketEventDetailsPageParticipant() {
 
       // Check if user joined as a member
       try {
-        const memberRes = await fetch(`${API_URL}/api/cpsh/cricket-players/my-team/${eventId}`, {
-          method: "GET", headers: { "Content-Type": "application/json" }, credentials: "include",
+        const memberRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/my-team/${eventId}`, {
+          method: "GET", headers: { "Content-Type": "application/json" },
         });
         const memberData = await memberRes.json();
         if (memberData?.success && memberData?.data) {

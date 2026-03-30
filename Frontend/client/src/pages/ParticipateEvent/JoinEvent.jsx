@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import API_URL from "../../config/api";
+import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function JoinEvent() {
   const [invitationCode, setInvitationCode] = useState("");
@@ -25,14 +26,13 @@ export default function JoinEvent() {
       setSuccess("");
     } else {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `${API_URL}/api/cpsh/participants/participate/${invitationCode}`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            credentials: "include",
             body: JSON.stringify({
               invitationCode,
               identityNumber,

@@ -91,14 +91,39 @@ const editRole = asyncHandler(async (req, res) => {
 const getMember = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
-    const members = await Member.find({ event: eventId });
+
+    const [members, event] = await Promise.all([
+      Member.find({ event: eventId }),
+      Event.findById(eventId).populate("organizer", "fullname username"),
+    ]);
+
     if (!members) {
       throw new ApiError(404, "Member not found");
     }
-    const ownerName=req?.user.fullname
+
+    const ownerName = event?.organizer?.fullname || event?.organizer?.username || req?.user?.fullname;
+
+    // Include organizer as a member entry if not already in the list
+    const organizerId = event?.organizer?._id?.toString();
+    const alreadyInList = members.some((m) => m.owner?.toString() === organizerId);
+
+    let allMembers = [...members];
+    if (!alreadyInList && organizerId) {
+      allMembers = [
+        {
+          _id: event.organizer._id,
+          name: ownerName,
+          role: "Organizer",
+          owner: event.organizer._id,
+          isOrganizer: true,
+        },
+        ...allMembers,
+      ];
+    }
+
     res
       .status(200)
-      .json(new ApiResponse(200, {members,ownerName}, "All Member fetched successfully"));
+      .json(new ApiResponse(200, { members: allMembers, ownerName }, "All Member fetched successfully"));
   } catch (error) {
     console.log("Error while getting all members", error);
   }

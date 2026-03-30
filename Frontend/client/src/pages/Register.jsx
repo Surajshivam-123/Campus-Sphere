@@ -69,9 +69,18 @@ export default function Register() {
 
         const result = await response.json();
         console.log("Server Response:", result);
-        navigate("/home");
+        if (result?.statusCode === 201 || result?.success) {
+          // Store token in localStorage as fallback (cookie is also set by backend)
+          if (result?.data?.accessToken) {
+            localStorage.setItem("accessToken", result.data.accessToken);
+          }
+          navigate("/home");
+        } else {
+          setErrorMessage(result?.message || "Registration failed. Please try again.");
+        }
       } catch (err) {
         console.error("Error sending data:", err);
+        setErrorMessage("Something went wrong. Please try again.");
       }
     }
   };

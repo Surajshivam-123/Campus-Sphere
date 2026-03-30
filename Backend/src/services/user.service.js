@@ -11,9 +11,8 @@ class UserService {
   /**
    * Generate access and refresh tokens for a user
    */
-  async generateTokens(userId) {
+  async generateTokens(user) {
     try {
-      const user = await User.findById(userId);
       if (!user) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
       }
@@ -68,7 +67,7 @@ class UserService {
     });
 
     // Generate tokens
-    const { accessToken, refreshToken } = await this.generateTokens(user._id);
+    const { accessToken, refreshToken } = await this.generateTokens(user);
 
     // Get user without sensitive data
     const createdUser = await User.findById(user._id).select(
@@ -98,7 +97,7 @@ class UserService {
     }
 
     // Generate tokens
-    const { accessToken, refreshToken } = await this.generateTokens(user._id);
+    const { accessToken, refreshToken } = await this.generateTokens(user);
 
     // Get user without sensitive data
     const loggedInUser = await User.findById(user._id).select(
@@ -130,7 +129,7 @@ class UserService {
     }
 
     const { accessToken, refreshToken: newRefreshToken } =
-      await this.generateTokens(user._id);
+      await this.generateTokens(user);
 
     return { accessToken, refreshToken: newRefreshToken };
   }

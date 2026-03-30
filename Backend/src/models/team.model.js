@@ -1,4 +1,4 @@
-import { Schema ,mongoose} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const teamSchema=new Schema({
     name:{

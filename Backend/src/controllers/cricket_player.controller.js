@@ -40,21 +40,21 @@ const getMyTeam = asyncHandler(async (req, res) => {
     const { eventId } = req.params;
     if (!eventId) throw new Error("Event id is required");
 
-    // First find the team for this event
-    const team = await Team.findOne({ event: eventId })
-      .populate("owner", "fullname username email avatar");
+    // Find the player record for this user in this event
+    const allTeams = await Team.find({ event: eventId }).select("_id owner");
+    const teamIds = allTeams.map((t) => t._id);
 
-    if (!team) throw new Error("No team found for this event");
-
-    // Check the logged-in user is actually a player in this team
     const myPlayerRecord = await Cricket_Player.findOne({
       owner: req.user._id,
-      team: team._id,
+      team: { $in: teamIds },
     });
 
     if (!myPlayerRecord) {
-      throw new Error("You are not a player in any team for this event");
+      return res.status(200).json(new ApiResponse(200, null, "You are not a player in any team for this event"));
     }
+
+    const team = await Team.findById(myPlayerRecord.team)
+      .populate("owner", "fullname username email avatar");
 
     // Fetch all players in this team with their user details
     const teammates = await Cricket_Player.find({ team: team._id })
@@ -78,7 +78,7 @@ const getMyTeam = asyncHandler(async (req, res) => {
         overs: p.overs,
       })),
     };
-    // console.log("Data: ",data);
+
     res.status(200).json(new ApiResponse(200, data, "Team fetched successfully"));
   } catch (error) {
     console.log("Error while fetching team", error);
@@ -112,21 +112,24 @@ const leaveTeam = asyncHandler(async (req, res) => {
     const { eventId } = req.params;
     if (!eventId) throw new Error("Event id is required");
 
-    // Find the team for this event
-    const team = await Team.findOne({ event: eventId });
-    if (!team) throw new Error("No team found for this event");
+    // Find the specific team the user is in for this event
+    const allTeams = await Team.find({ event: eventId }).select("_id owner");
+    const teamIds = allTeams.map((t) => t._id);
 
-    // Check if user is the owner/captain — captain cannot leave
-    if (team.owner.toString() === req.user._id.toString()) {
-      throw new Error("Captain cannot leave the team");
-    }
-
-    const player = await Cricket_Player.findOneAndDelete({
+    const playerRecord = await Cricket_Player.findOne({
       owner: req.user._id,
-      team: team._id,
+      team: { $in: teamIds },
     });
 
-    if (!player) throw new Error("You are not a player in this team");
+    if (!playerRecord) throw new Error("You are not a player in any team for this event");
+
+    // Check if user is the captain of that team — captain cannot leave
+    const team = allTeams.find((t) => t._id.toString() === playerRecord.team.toString());
+    if (team?.owner?.toString() === req.user._id.toString()) {
+      throw new Error("Captain cannot leave the team. Delete the team instead.");
+    }
+
+    await Cricket_Player.findByIdAndDelete(playerRecord._id);
 
     res.status(200).json(new ApiResponse(200, {}, "Left team successfully"));
   } catch (error) {

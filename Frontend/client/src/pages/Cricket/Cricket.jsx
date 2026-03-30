@@ -1,149 +1,208 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaTrashAlt, FaPlus, FaTrophy } from "react-icons/fa";
+import { FaTrophy, FaCheckCircle } from "react-icons/fa";
+import API_URL from "../../config/api";
 
-export default function CreateCricketFormat() {
-  const [format, setFormat] = useState("League");
+const TOURNAMENT_TYPES = ["Knockout", "League", "Round Robin", "Double Elimination"];
+
+export default function CreateCricketFormat({ viewOnly = false }) {
+  const { eventId } = useParams();
+  const navigate = useNavigate();
+
+  const [tournamentType, setTournamentType] = useState("Knockout");
+  const [overs, setOvers] = useState("");
+  const [playersPerTeam, setPlayersPerTeam] = useState("");
   const [teams, setTeams] = useState([]);
-  const [teamInput, setTeamInput] = useState("");
-  const [matches, setMatches] = useState([]);
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [existing, setExisting] = useState(null);
 
-  const addTeam = () => {
-    if (teamInput.trim() && !teams.includes(teamInput.trim())) {
-      setTeams([...teams, teamInput.trim()]);
-      setTeamInput("");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const teamsRes = await fetch(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, {
+          credentials: "include",
+        });
+        const teamsData = await teamsRes.json();
+        setTeams(teamsData?.data || []);
+
+        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
+          credentials: "include",
+        });
+        const fmtData = await fmtRes.json();
+        if (fmtData?.data) {
+          const f = fmtData.data;
+          setExisting(f);
+          setTournamentType(f.tournamentType);
+          setOvers(f.overs);
+          setPlayersPerTeam(f.playersPerTeam);
+        }
+      } catch (err) {
+        console.log("Error loading format data", err);
+      }
+    };
+    fetchData();
+  }, [eventId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          tournamentType,
+          overs: Number(overs),
+          playersPerTeam: Number(playersPerTeam),
+        }),
+      });
+      const data = await res.json();
+      if (data?.data) {
+        setSaved(true);
+        setExisting(data.data);
+      }
+    } catch (err) {
+      console.log("Error saving format", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const removeTeam = (index) => {
-    setTeams(teams.filter((_, i) => i !== index));
-  };
-
-  const generateMatches = () => {
-    let generatedMatches = [];
-    if (format === "League" || format === "Round Robin") {
-      for (let i = 0; i < teams.length; i++) {
-        for (let j = i + 1; j < teams.length; j++) {
-          generatedMatches.push({
-            team1: teams[i],
-            team2: teams[j],
-          });
-        }
-      }
-    } else if (format === "Knockout") {
-      for (let i = 0; i < teams.length; i += 2) {
-        if (teams[i + 1]) {
-          generatedMatches.push({
-            team1: teams[i],
-            team2: teams[i + 1],
-          });
-        }
-      }
-    }
-    setMatches(generatedMatches);
-  };
+  const TeamGrid = () =>
+    teams.length === 0 ? (
+      <p className="text-gray-400 text-sm">No teams have joined yet.</p>
+    ) : (
+      <div className="grid grid-cols-2 gap-3">
+        {teams.map((t, i) => (
+          <div
+            key={t._id || i}
+            className="bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-2 text-indigo-800 font-medium text-sm"
+          >
+            {t.name}
+          </div>
+        ))}
+      </div>
+    );
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen bg-gradient-to-r from-indigo-100 to-purple-200 py-10 px-6"
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 py-10 px-6"
     >
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <div className="flex items-center gap-3 mb-6">
+      <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8">
+        <div className="flex items-center gap-3 mb-8">
           <FaTrophy className="text-purple-600 text-3xl" />
-          <h2 className="text-3xl font-bold text-gray-800">Cricket Tournament Setup</h2>
+          <h2 className="text-3xl font-bold text-gray-800">
+            {viewOnly ? "Tournament Format" : existing ? "Update Format" : "Create Format"}
+          </h2>
         </div>
 
-        <label className="block text-lg font-medium mb-2">Select Format:</label>
-        <select
-          value={format}
-          onChange={(e) => setFormat(e.target.value)}
-          className="w-full p-3 border border-purple-300 rounded-xl mb-6 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-        >
-          <option value="League">League</option>
-          <option value="Round Robin">Round Robin</option>
-          <option value="Knockout">Knockout</option>
-        </select>
-
-        {/* Team Input */}
-        <div className="mb-8">
-          <label className="block text-lg font-medium mb-2">Add Teams:</label>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={teamInput}
-              onChange={(e) => setTeamInput(e.target.value)}
-              placeholder="Enter team name"
-              className="flex-1 p-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={addTeam}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-md"
-            >
-              <FaPlus className="inline mr-1" /> Add
-            </motion.button>
+        {saved && (
+          <div className="flex items-center gap-2 bg-green-50 border border-green-300 text-green-700 rounded-xl px-4 py-3 mb-6">
+            <FaCheckCircle />
+            <span>Format {existing ? "updated" : "saved"} successfully.</span>
           </div>
+        )}
 
-          {/* Team List */}
-          {teams.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              {teams.map((team, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex justify-between items-center shadow-sm"
-                >
-                  <span className="font-medium text-indigo-800">{team}</span>
-                  <button
-                    onClick={() => removeTeam(index)}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    <FaTrashAlt />
-                  </button>
-                </motion.div>
-              ))}
+        {viewOnly ? (
+          <div className="space-y-5">
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+              <p className="text-sm text-gray-500 mb-1">Tournament Type</p>
+              <p className="text-lg font-semibold text-indigo-800">{existing?.tournamentType ?? "—"}</p>
             </div>
-          )}
-        </div>
-
-        {/* Generate Matches */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={generateMatches}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg transition duration-300"
-        >
-          Generate Matches
-        </motion.button>
-
-        {/* Match List */}
-        {matches.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-8"
-          >
-            <h3 className="text-xl font-bold mb-4 text-gray-700">Fixtures:</h3>
-            <div className="space-y-3">
-              {matches.map((match, idx) => (
-                <motion.div
-                  key={idx}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white border border-purple-100 shadow-sm rounded-lg p-4 flex justify-between"
-                >
-                  <span className="text-purple-700 font-medium">
-                    {match.team1} 🆚 {match.team2}
-                  </span>
-                </motion.div>
-              ))}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+              <p className="text-sm text-gray-500 mb-1">Overs per Innings</p>
+              <p className="text-lg font-semibold text-indigo-800">{existing?.overs ?? "—"}</p>
             </div>
-          </motion.div>
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+              <p className="text-sm text-gray-500 mb-1">Players per Team</p>
+              <p className="text-lg font-semibold text-indigo-800">{existing?.playersPerTeam ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Participating Teams ({teams.length})
+              </p>
+              <TeamGrid />
+            </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="w-full py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition"
+            >
+              Back
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Tournament Type</label>
+              <select
+                value={tournamentType}
+                onChange={(e) => setTournamentType(e.target.value)}
+                className="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {TOURNAMENT_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Overs per Innings</label>
+              <input
+                type="number"
+                min="1"
+                value={overs}
+                onChange={(e) => setOvers(e.target.value)}
+                placeholder="e.g. 20"
+                required
+                className="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Players per Team</label>
+              <input
+                type="number"
+                min="1"
+                value={playersPerTeam}
+                onChange={(e) => setPlayersPerTeam(e.target.value)}
+                placeholder="e.g. 11"
+                required
+                className="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Participating Teams ({teams.length})
+              </label>
+              <TeamGrid />
+            </div>
+
+            <div className="flex gap-4 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition"
+              >
+                Back
+              </button>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow-md transition disabled:opacity-60"
+              >
+                {loading ? "Saving..." : existing ? "Update Format" : "Save Format"}
+              </motion.button>
+            </div>
+          </form>
         )}
       </div>
     </motion.div>

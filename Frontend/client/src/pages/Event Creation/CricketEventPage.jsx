@@ -26,6 +26,8 @@ export default function CricketEventPage() {
   const [event, setevent] = useState(null);
   const [member, setMember] = useState([]);
   const [ownerName, setOwnerName] = useState("");
+  const [teams, setTeams] = useState([]);
+  const [cricketFormat, setCricketFormat] = useState(null);
   useEffect(() => {
     const loadEvent = async () => {
       const getsingleEvent = async () => {
@@ -62,6 +64,30 @@ export default function CricketEventPage() {
       console.log("Server Response", member);
       setMember(member?.data?.members);
       setOwnerName(member?.data?.ownerName);
+
+      // Fetch teams that have participated in this event
+      try {
+        const teamsRes = await fetch(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+        const teamsData = await teamsRes.json();
+        setTeams(teamsData?.data || []);
+      } catch (error) {
+        console.log("Error while getting event teams", error);
+      }
+
+      // Fetch cricket format if exists
+      try {
+        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
+          credentials: "include",
+        });
+        const fmtData = await fmtRes.json();
+        setCricketFormat(fmtData?.data || null);
+      } catch (error) {
+        console.log("Error while getting cricket format", error);
+      }
     };
     loadEvent();
   }, []);
@@ -96,7 +122,6 @@ export default function CricketEventPage() {
   for (let i = 0; i < (member?.length || 0); i++) {
     members.push({ _id: member[i]._id, name: member[i].name, role: member[i].role });
   }
-  const team = ["csk", "rcb", "mi", "kkr"];
 
   const handleupdatebutton = () => {
     navigate(`/update-event/${eventId}`);
@@ -285,27 +310,47 @@ export default function CricketEventPage() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="py-2 px-4 border-b">Team</th>
+                  <th className="py-2 px-4 border-b">Captain</th>
                 </tr>
               </thead>
               <tbody>
-                {team.map((participant, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">{participant}</td>
+                {teams.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="py-2 px-4 border-b text-gray-400">No teams have joined yet.</td>
                   </tr>
-                ))}
+                ) : (
+                  teams.map((t, index) => (
+                    <tr key={t._id || index} className="hover:bg-gray-50">
+                      <td className="py-2 px-4 border-b">{t.name}</td>
+                      <td className="py-2 px-4 border-b">{t.owner?.fullname || t.owner?.username || "N/A"}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="flex flex-wrap gap-4 justify-start mt-6">
             <button
-              onClick={() => navigate("/cricket-format")}
+              onClick={() => navigate(`/cricket-format/${eventId}`)}
               className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
             >
               <FaFlag className="inline-block mr-2" />
-              Create Format
+              {cricketFormat ? "Update Format" : "Create Format"}
             </button>
-            <button className="cursor-pointer bg-gradient-to-r from-blue-400 to-blue-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105">
+            {cricketFormat && (
+              <button
+                onClick={() => navigate(`/cricket-format/${eventId}/view`)}
+                className="cursor-pointer bg-gradient-to-r from-indigo-400 to-indigo-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+              >
+                <FaFlag className="inline-block mr-2" />
+                View Format
+              </button>
+            )}
+            <button
+              onClick={() => navigate(`/cricket-schedule/${eventId}`)}
+              className="cursor-pointer bg-gradient-to-r from-blue-400 to-blue-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+            >
               <FaTrophy className="inline-block mr-2" />
               Create Schedule
             </button>

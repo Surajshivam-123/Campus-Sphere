@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API_URL from "../../config/api";
+import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function JoinTeam() {
   const [teamCode, setteamCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const {eventId}=useParams();
-  const handleGoBack = () => {
-    window.history.back(); // goes back one step in browser history
-  };
+  const { eventId } = useParams();
+  const navigate = useNavigate();
+  const handleGoBack = () => window.history.back();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,12 +23,9 @@ export default function JoinTeam() {
       setSuccess("");
     } else {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `${API_URL}/api/cpsh/cricket-players/join-team/${teamCode}/${eventId}`,
-          {
-            method: "POST",
-            credentials: "include",
-          }
+          { method: "POST" }
         );
         const result = await response.json();
         console.log("Server Response", result);
@@ -36,7 +33,8 @@ export default function JoinTeam() {
           setError(result?.message);
           setSuccess("");
         } else {
-          handleGoBack();
+          // Navigate back to event details — role check will redirect to TeamMemberPage
+          navigate(`/cricket-team-member/${eventId}`, { replace: true });
         }
       } catch (error) {
         console.log("Error while submitting", error);

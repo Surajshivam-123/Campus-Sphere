@@ -62,13 +62,36 @@ const createTeam = asyncHandler(async (req, res) => {
 const getTeam = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
-    const team = await Team.findOne({ event: eventId, owner: req.user._id });
+    const team = await Team.findOne({ event: eventId, owner: req.user._id })
+      .populate("owner", "fullname username email avatar")
+      .lean();
     if (!team) {
       return res.status(200).json(new ApiResponse(200, null, "Team Not found"));
     }
 
     const players = await Cricket_Player.find({ team: team._id })
-      .populate("owner", "fullname username email avatar");
+      .populate("owner", "fullname username email avatar")
+      .lean();
+
+    const captainId = team.owner._id.toString();
+
+    const captain = {
+      _id: team.owner._id,
+      name: team.owner.fullname || team.owner.username || "Unknown",
+      isCaptain: true,
+    };
+
+    const teamPlayers = players
+      .filter((p) => p.owner?._id?.toString() !== captainId)
+      .map((p) => ({
+        _id: p._id,
+        isCaptain: false,
+        name: p.owner?.fullname || p.owner?.username || "Unknown",
+        runs: p.runs,
+        wickets: p.wickets,
+        balls: p.balls,
+        overs: p.overs,
+      }));
 
     const data = {
       _id: team._id,
@@ -76,14 +99,7 @@ const getTeam = asyncHandler(async (req, res) => {
       teamlogo: team.teamlogo,
       teamCode: team.teamCode,
       event: team.event,
-      teamPlayer: players.map((p) => ({
-        _id: p._id,
-        name: p.owner?.fullname || p.owner?.username || "Unknown",
-        runs: p.runs,
-        wickets: p.wickets,
-        balls: p.balls,
-        overs: p.overs,
-      })),
+      teamPlayer: [captain, ...teamPlayers],
     };
 
     res.status(200).json(new ApiResponse(200, data, "Team found successfully"));
@@ -160,8 +176,25 @@ const deleteTeam = asyncHandler(async (req, res) => {
 // });
 
 
+const getEventTeams = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    if (!eventId) {
+      throw new ApiError(400, "EventId is required");
+    }
+    const teams = await Team.find({ event: eventId })
+      .select("name teamlogo teamCode owner")
+      .populate("owner", "fullname username")
+      .lean();
+    res.status(200).json(new ApiResponse(200, teams, "Teams fetched successfully"));
+  } catch (error) {
+    console.log("Error while getting event teams", error);
+  }
+});
+
 export { createTeam,
          getTeam,
          updateTeam,
          deleteTeam,
+         getEventTeams,
 };

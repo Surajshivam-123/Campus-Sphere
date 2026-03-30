@@ -28,6 +28,10 @@ export default function Login() {
       const result = await response.json();
       console.log("Server Response:", result);
       if (result?.statusCode === 200) {
+        // Store token in localStorage as fallback
+        if (result?.data?.accessToken) {
+          localStorage.setItem("accessToken", result.data.accessToken);
+        }
         navigate("/home");
       }
       else{
