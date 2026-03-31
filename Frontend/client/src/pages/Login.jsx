@@ -1,5 +1,5 @@
 import logo from "../../public/logo.jpg";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,Link} from "react-router-dom";
 import { useState } from "react";
 import API_URL from "../config/api.js";
 
@@ -106,9 +106,7 @@ export default function Login() {
 
           <p className="mt-4 text-sm text-gray-500 text-center">
             Don’t have an account?{" "}
-            <a href="/register" className="text-[#b8860b] hover:underline font-medium">
-              Sign up
-            </a>
+            <Link to="/register" className="text-[#b8860b] hover:underline font-medium">Sign up</Link>
           </p>
         </div>
       </div>

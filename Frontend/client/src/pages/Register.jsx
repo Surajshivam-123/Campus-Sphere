@@ -1,6 +1,6 @@
 import { useState } from "react";
 import profile from "../assets/download.jpeg";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,Link} from "react-router-dom";
 import API_URL from "../config/api";
 
 export default function Register() {
@@ -164,9 +164,7 @@ export default function Register() {
         </form>
         <p className="mt-6 text-sm text-center text-gray-500">
           Already have an account?{" "}
-          <a href="/login" className="text-[#b8860b] hover:underline font-medium">
-            Sign in
-          </a>
+          <Link to="/login" className="text-[#b8860b] hover:underline font-medium">Sign in</Link>
         </p>
       </div>
     </div>
