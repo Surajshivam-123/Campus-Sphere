@@ -23,4 +23,8 @@ const teamSchema=new Schema({
     },
 },{timestamps:true});
 
+// Compound index covers: findOne({event, owner}), find({event}), findOne({teamCode})
+teamSchema.index({ event: 1, owner: 1 });
+teamSchema.index({ teamCode: 1 });
+
 export const Team=mongoose.model('Team',teamSchema);

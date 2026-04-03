@@ -209,7 +209,7 @@ export default function SchedulePage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-gray-500 mb-1 block">Team 1</label>
-                      <select value={match.team1} onChange={(e) => updateMatch(i, "team1", e.target.value)}
+                      <select id={`match-team1-${i}`} name={`match-team1-${i}`} value={match.team1} onChange={(e) => updateMatch(i, "team1", e.target.value)}
                         className="w-full p-2 border border-purple-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
                         <option value="">Select team</option>
                         {teamNames.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -217,7 +217,7 @@ export default function SchedulePage() {
                     </div>
                     <div>
                       <label className="text-xs text-gray-500 mb-1 block">Team 2</label>
-                      <select value={match.team2} onChange={(e) => updateMatch(i, "team2", e.target.value)}
+                      <select id={`match-team2-${i}`} name={`match-team2-${i}`} value={match.team2} onChange={(e) => updateMatch(i, "team2", e.target.value)}
                         className="w-full p-2 border border-purple-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
                         <option value="">Select team</option>
                         {teamNames.filter((t) => t !== match.team1).map((t) => <option key={t} value={t}>{t}</option>)}
@@ -225,18 +225,18 @@ export default function SchedulePage() {
                     </div>
                     <div>
                       <label className="text-xs text-gray-500 mb-1 block">Round</label>
-                      <input value={match.round} onChange={(e) => updateMatch(i, "round", e.target.value)}
+                      <input id={`match-round-${i}`} name={`match-round-${i}`} value={match.round} onChange={(e) => updateMatch(i, "round", e.target.value)}
                         placeholder="e.g. Quarter Final"
                         className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500 mb-1 block">Date</label>
-                      <input type="date" value={match.date} onChange={(e) => updateMatch(i, "date", e.target.value)}
+                      <input id={`match-date-${i}`} name={`match-date-${i}`} type="date" value={match.date} onChange={(e) => updateMatch(i, "date", e.target.value)}
                         className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
                     </div>
                     <div className="col-span-2">
                       <label className="text-xs text-gray-500 mb-1 block">Venue</label>
-                      <input value={match.venue} onChange={(e) => updateMatch(i, "venue", e.target.value)}
+                      <input id={`match-venue-${i}`} name={`match-venue-${i}`} value={match.venue} onChange={(e) => updateMatch(i, "venue", e.target.value)}
                         placeholder="e.g. Ground A"
                         className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
                     </div>

@@ -23,4 +23,7 @@ const scheduleSchema = new Schema(
   { timestamps: true }
 );
 
+// event already has unique:true which creates an index
+scheduleSchema.index({ createdBy: 1 });
+
 export const Schedule = mongoose.model("Schedule", scheduleSchema);

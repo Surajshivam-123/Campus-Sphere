@@ -4,6 +4,10 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+
+const TEAM_TTL = 300;       // 5 min — single team with players
+const TEAMS_TTL = 120;      // 2 min — all teams for an event
 
 const generateUniqueCode = () => {
   let code = "";
@@ -51,6 +55,7 @@ const createTeam = asyncHandler(async (req, res) => {
     if (!team) {
       throw new ApiError(404, "Error while creating team");
     }
+    await cacheDel(`teams:event:${eventId}`);
     res
       .status(201)
       .json(new ApiResponse(200, team, "Team created successfully"));
@@ -62,6 +67,13 @@ const createTeam = asyncHandler(async (req, res) => {
 const getTeam = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
+    const cacheKey = `team:event:${eventId}:owner:${req.user._id}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Team found successfully"));
+    }
+
     const team = await Team.findOne({ event: eventId, owner: req.user._id })
       .populate("owner", "fullname username email avatar")
       .lean();
@@ -102,6 +114,7 @@ const getTeam = asyncHandler(async (req, res) => {
       teamPlayer: [captain, ...teamPlayers],
     };
 
+    await cacheSet(cacheKey, data, TEAM_TTL);
     res.status(200).json(new ApiResponse(200, data, "Team found successfully"));
   } catch (error) {
     console.log("Error while getting team", error);
@@ -136,6 +149,10 @@ const updateTeam = asyncHandler(async (req, res) => {
     if (!updatedTeam) {
       throw new ApiError(400, "Error while updating team");
     }
+    await cacheDel(
+      `team:event:${eventId}:owner:${req.user._id}`,
+      `teams:event:${eventId}`
+    );
     res
       .status(200)
       .json(new ApiResponse(200, updatedTeam, "Team updated successfully"));
@@ -154,6 +171,10 @@ const deleteTeam = asyncHandler(async (req, res) => {
     if (!team) {
       throw new ApiError(404, "Team not found");
     }
+    await cacheDel(
+      `team:event:${eventId}:owner:${req.user._id}`,
+      `teams:event:${eventId}`
+    );
     res
       .status(200)
       .json(new ApiResponse(200, team, "Team deleted successfully"));
@@ -182,10 +203,18 @@ const getEventTeams = asyncHandler(async (req, res) => {
     if (!eventId) {
       throw new ApiError(400, "EventId is required");
     }
+    const cacheKey = `teams:event:${eventId}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Teams fetched successfully"));
+    }
+
     const teams = await Team.find({ event: eventId })
       .select("name teamlogo teamCode owner")
       .populate("owner", "fullname username")
       .lean();
+    await cacheSet(cacheKey, teams, TEAMS_TTL);
     res.status(200).json(new ApiResponse(200, teams, "Teams fetched successfully"));
   } catch (error) {
     console.log("Error while getting event teams", error);

@@ -56,4 +56,16 @@ export const config = {
       "http://localhost:4173", // Vite preview
     ].filter(Boolean),
   },
+
+  // Redis
+  redis: {
+    url: process.env.REDIS_URL || "redis://localhost:6379",
+  },
+
+  // Google OAuth
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/api/cpsh/users/auth/google/callback",
+  },
 };

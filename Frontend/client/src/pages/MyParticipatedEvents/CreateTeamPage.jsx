@@ -48,7 +48,7 @@ export default function CreateTeamPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Team Logo (optional)</label>
-            <input type="file" accept="image/*" onChange={(e) => setTeamlogo(e.target.files[0])}
+            <input id="teamLogo" name="teamLogo" type="file" accept="image/*" onChange={(e) => setTeamlogo(e.target.files[0])}
               className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
           </div>
           {error && <p className="text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg">{error}</p>}

@@ -3,6 +3,10 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { Event } from "../models/event.model.js";
+import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+
+const PARTICIPANT_TTL = 120;
+const EVENT_TTL = 300;
 
 const participateEvent = asyncHandler(async (req, res) => {
   try {
@@ -28,6 +32,10 @@ const participateEvent = asyncHandler(async (req, res) => {
     if (!participant) {
       throw new ApiError(400, "Error while creating participant");
     }
+    await cacheDel(
+      `participants:event:${event?._id}`,
+      `participant:myevents:${req.user?._id}`
+    );
     res
       .status(201)
       .json(
@@ -44,10 +52,18 @@ const getEvent = asyncHandler(async (req, res) => {
     if (!participantCode.trim()) {
       throw new ApiError(400, "Participant code is required");
     }
+    const cacheKey = `event:participantCode:${participantCode}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Event found successfully"));
+    }
+
     const event = await Event.findOne({ participantCode: participantCode.trim() });
     if (!event) {
       throw new ApiError(404, "Event not found");
     }
+    await cacheSet(cacheKey, event, EVENT_TTL);
     res
       .status(200)
       .json(new ApiResponse(200, event, "Event found successfully"));
@@ -58,14 +74,22 @@ const getEvent = asyncHandler(async (req, res) => {
 
 const getMyEvent = asyncHandler(async (req, res) => {
   try {
+    const cacheKey = `participant:myevents:${req.user._id}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Events found successfully"));
+    }
+
     const participate = await Participant.find({ owner: req.user._id });
     if (!participate) {
       res.status(400).json(new ApiResponse(200, {}, "No Events Found"));
     }
-    let myEvent = [];
-    for (let i = 0; i < participate.length; i++) {
-      myEvent.push(await Event.findById(participate[i].event));
-    }
+    // Use $in to avoid N+1
+    const eventIds = participate.map((p) => p.event);
+    const myEvent = await Event.find({ _id: { $in: eventIds } });
+
+    await cacheSet(cacheKey, myEvent, PARTICIPANT_TTL);
     res
       .status(200)
       .json(new ApiResponse(200, myEvent, "Events found successfully"));
@@ -75,10 +99,18 @@ const getMyEvent = asyncHandler(async (req, res) => {
 const getAllParticipant = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
+    const cacheKey = `participants:event:${eventId}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Participants found successfully"));
+    }
+
     const participants = await Participant.find({ event: eventId });
     if (!participants) {
       throw new ApiError(404, "Participants not found")
     }
+    await cacheSet(cacheKey, participants, PARTICIPANT_TTL);
     res.status(200).json(new ApiResponse(200, participants, "Participants found successfully"))
   } catch (error) {
     console.log("Error while getting all participants", error)
@@ -105,6 +137,10 @@ const deleteParticipant=asyncHandler(async(req,res)=>{
     if(!participant){
       throw new ApiError(400,"Participation is Not deleted");
     }
+    await cacheDel(
+      `participants:event:${participant.event}`,
+      `participant:myevents:${participant.owner}`
+    );
     res.status(200).json(new ApiResponse(200,"Participant is deleted successfully"));
   } catch (error) {
     console.log("Error while deleting Participant:",error);

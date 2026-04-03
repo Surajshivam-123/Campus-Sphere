@@ -90,4 +90,41 @@ const getUser = asyncHandler(async (req, res) => {
     .status(HTTP_STATUS.OK)
     .json(new ApiResponse(HTTP_STATUS.OK, user, "User retrieved successfully"));
 });
-export { registerUser, loginUser, logoutUser, refreshToken, getUser };
+
+const sendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email?.trim()) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
+  }
+  await userService.sendLoginOtp(email);
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, {}, "OTP sent to your email"));
+});
+
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email?.trim() || !otp?.trim()) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email and OTP are required");
+  }
+  const { user, accessToken, refreshToken } = await userService.verifyLoginOtp(email, otp);
+  res
+    .status(HTTP_STATUS.OK)
+    .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+    .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+    .json(new ApiResponse(HTTP_STATUS.OK, { user, accessToken, refreshToken }, "Logged in successfully"));
+});
+
+const googleAuthCallback = asyncHandler(async (req, res) => {
+  // req.user is set by passport after successful Google auth
+  const { user, accessToken, refreshToken } = await userService.googleLogin(req.user);
+
+  const frontendUrl = process.env.FRONTEND_ORIGIN_WITH_PATH || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+  const basePath = process.env.FRONTEND_BASE_PATH || "";
+
+  res
+    .status(HTTP_STATUS.OK)
+    .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+    .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+    .redirect(`${frontendUrl}${basePath}/auth/callback?token=${accessToken}`);
+});
+
+export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp };

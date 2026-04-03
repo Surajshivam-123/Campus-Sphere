@@ -4,6 +4,9 @@ import ApiError from "../utils/ApiError.js";
 import { Schedule } from "../models/schedule.model.js";
 import { CricketFormat } from "../models/cricketFormat.model.js";
 import { Team } from "../models/team.model.js";
+import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+
+const SCHEDULE_TTL = 300;
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -96,6 +99,7 @@ Make sure every team gets a fair chance. Randomize the order to avoid bias.`;
     );
 
     res.status(200).json(new ApiResponse(200, schedule, "AI schedule generated successfully"));
+    await cacheDel(`schedule:event:${eventId}`);
   } catch (error) {
     console.log("Error generating AI schedule", error);
     res.status(500).json(new ApiResponse(500, null, error.message || "Error generating schedule"));
@@ -119,6 +123,7 @@ const saveManualSchedule = asyncHandler(async (req, res) => {
     );
 
     res.status(200).json(new ApiResponse(200, schedule, "Schedule saved successfully"));
+    await cacheDel(`schedule:event:${eventId}`);
   } catch (error) {
     console.log("Error saving manual schedule", error);
     res.status(500).json(new ApiResponse(500, null, error.message || "Error saving schedule"));
@@ -130,7 +135,15 @@ const saveManualSchedule = asyncHandler(async (req, res) => {
 const getSchedule = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
+    const cacheKey = `schedule:event:${eventId}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Schedule fetched"));
+    }
+
     const schedule = await Schedule.findOne({ event: eventId });
+    if (schedule) await cacheSet(cacheKey, schedule, SCHEDULE_TTL);
     res.status(200).json(new ApiResponse(200, schedule || null, "Schedule fetched"));
   } catch (error) {
     console.log("Error fetching schedule", error);

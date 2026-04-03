@@ -3,6 +3,10 @@ import { Event } from "../models/event.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+
+const EVENT_TTL = 300;       // 5 min — single event
+const EVENT_LIST_TTL = 120;  // 2 min — list of events (changes more often)
 
 const generateUniqueCode = () => {
   let code = "";
@@ -78,6 +82,8 @@ const createEvent = asyncHandler(async (req, res) => {
     if (!event) {
       throw new ApiError(400, "Error while creating event");
     }
+    // Invalidate organizer's event list cache
+    await cacheDel(`events:organizer:${req.user._id}`);
     res
       .status(201)
       .json(new ApiResponse(201, event, "Event created successfully"));
@@ -93,6 +99,10 @@ const deleteEvent = asyncHandler(async (req, res) => {
     if (!event) {
       throw new ApiError(404, "Event not found");
     }
+    await cacheDel(
+      `event:${eventId}`,
+      `events:organizer:${event.organizer}`
+    );
     res
       .status(200)
       .json(new ApiResponse(200, event, "Event deleted successfully"));
@@ -157,6 +167,10 @@ const updateEvent = asyncHandler(async (req, res) => {
     if (!updateEvent) {
       throw new ApiError(400, "Error while updating event");
     }
+    await cacheDel(
+      `event:${eventId}`,
+      `events:organizer:${req.user._id}`
+    );
     res
       .status(200)
       .json(new ApiResponse(200, updatedEvent, "Event updated successfully"));
@@ -168,10 +182,18 @@ const updateEvent = asyncHandler(async (req, res) => {
 const getsingleEvent = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
+    const cacheKey = `event:${eventId}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Event found successfully"));
+    }
+
     const event = await Event.findById(eventId);
     if (!event) {
       throw new ApiError(404, "Event not found");
     }
+    await cacheSet(cacheKey, event, EVENT_TTL);
     res
       .status(200)
       .json(new ApiResponse(200, event, "Event found successfully"));
@@ -182,11 +204,19 @@ const getsingleEvent = asyncHandler(async (req, res) => {
 
 const getallEvents = asyncHandler(async (req, res) => {
   try {
-    const userId= req.user?._id;
-    const events=await Event.find({organizer:userId});
+    const userId = req.user?._id;
+    const cacheKey = `events:organizer:${userId}`;
+
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "All Events found successfully"));
+    }
+
+    const events = await Event.find({ organizer: userId });
     if (!events) {
       throw new ApiError(404, "Events not found");
     }
+    await cacheSet(cacheKey, events, EVENT_LIST_TTL);
     res
       .status(200)
       .json(new ApiResponse(200, events, "All Events found successfully"));

@@ -83,4 +83,10 @@ const eventSchema = new Schema(
   }
 );
 
+// Frequently queried fields
+eventSchema.index({ organizer: 1 });
+// memberCode and participantCode already have unique:true which creates an index
+eventSchema.index({ category: 1 });
+eventSchema.index({ startDate: 1 });
+
 export const Event = mongoose.model("Event", eventSchema);

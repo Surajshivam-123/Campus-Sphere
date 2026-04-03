@@ -2,6 +2,9 @@ import { User } from "../models/user.models.js";
 import ApiError from "../utils/ApiError.js";
 import { HTTP_STATUS } from "../constants/index.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { cacheSet, cacheGet, cacheDel } from "../utils/redis.js";
+import { sendOtpEmail } from "../utils/mailer.js";
+import crypto from "crypto";
 
 /**
  * User Service - Business logic for user operations
@@ -145,6 +148,88 @@ class UserService {
     }
 
     return user;
+  }
+
+  /**
+   * Google OAuth login/register
+   */
+  async googleLogin(profile) {
+    // profile comes from passport-google-oauth20
+    const { id: googleId, displayName: fullname, emails, photos } = profile;
+    const email = emails?.[0]?.value;
+    const avatar = photos?.[0]?.value || "";
+
+    if (!email) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Google account has no email");
+    }
+
+    // Find existing user by googleId or email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (user) {
+      // Link googleId if they previously registered with email/password
+      if (!user.googleId) {
+        user.googleId = googleId;
+        if (!user.avatar) user.avatar = avatar;
+        await user.save({ validateBeforeSave: false });
+      }
+    } else {
+      // Auto-generate a unique username from email
+      const baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+      let username = baseUsername;
+      let counter = 1;
+      while (await User.findOne({ username })) {
+        username = `${baseUsername}${counter++}`;
+      }
+
+      user = await User.create({ fullname, username, email, googleId, avatar });
+    }
+
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+    const safeUser = await User.findById(user._id).select("-password -refreshToken");
+    return { user: safeUser, accessToken, refreshToken };
+  }
+
+  /**
+   * Send OTP to email for login
+   */
+  async sendLoginOtp(email) {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "No account found with this email");
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+    // Store OTP in Redis with 10-min TTL
+    await cacheSet(`otp:${email.toLowerCase()}`, otp, 600);
+    await sendOtpEmail(email, otp);
+  }
+
+  /**
+   * Verify OTP and log in the user
+   */
+  async verifyLoginOtp(email, otp) {
+    const key = `otp:${email.toLowerCase()}`;
+    const storedOtp = await cacheGet(key);
+
+    if (!storedOtp) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "OTP expired or not requested");
+    }
+    if (storedOtp !== otp) {
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid OTP");
+    }
+
+    // OTP is valid — delete it so it can't be reused
+    await cacheDel(key);
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
+    }
+
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+    const safeUser = await User.findById(user._id).select("-password -refreshToken");
+    return { user: safeUser, accessToken, refreshToken };
   }
 
   /**

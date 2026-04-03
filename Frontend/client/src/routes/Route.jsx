@@ -43,6 +43,9 @@ import SchedulePage from "../pages/Schedule/SchedulePage";
 // User Profile
 import Profile from "../pages/Profile";
 
+// Auth Callback (Google OAuth)
+import AuthCallback from "../pages/AuthCallback";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -86,6 +89,9 @@ export default function AppRoutes() {
 
       {/* User Profile Route */}
       <Route path="/profile" element={<Profile />} />
+
+      {/* Google OAuth Callback */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Schedule Route */}
       <Route path="/cricket-schedule/:eventId" element={<SchedulePage />} />

@@ -2,6 +2,9 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import {Team} from "../models/team.model.js";
 import {Cricket_Player} from "../models/cricket_player.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+
+const PLAYER_TTL = 120;
 
 const joinTeam = asyncHandler(async (req, res) => {
   try {
@@ -27,6 +30,11 @@ const joinTeam = asyncHandler(async (req, res) => {
     if (!player) {
       throw new Error("Error while joining team");
     }
+    await cacheDel(
+      `myteam:event:${eventId}:user:${req.user._id}`,
+      `team:event:${eventId}:owner:${req.user._id}`,
+      `teams:event:${eventId}`
+    );
     res
       .status(200)
       .json(new ApiResponse(200, player, "Team joined successfully"));
@@ -39,6 +47,12 @@ const getMyTeam = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
     if (!eventId) throw new Error("Event id is required");
+
+    const cacheKey = `myteam:event:${eventId}:user:${req.user._id}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return res.status(200).json(new ApiResponse(200, cached, "Team fetched successfully"));
+    }
 
     // Find the player record for this user in this event
     const allTeams = await Team.find({ event: eventId }).select("_id owner");
@@ -80,6 +94,7 @@ const getMyTeam = asyncHandler(async (req, res) => {
     };
 
     res.status(200).json(new ApiResponse(200, data, "Team fetched successfully"));
+    await cacheSet(cacheKey, data, PLAYER_TTL);
   } catch (error) {
     console.log("Error while fetching team", error);
     res.status(500).json(new ApiResponse(500, null, error.message || "Error fetching team"));
@@ -100,6 +115,7 @@ const removePlayer = asyncHandler(async (req, res) => {
     }
 
     await Cricket_Player.findByIdAndDelete(playerId);
+    await cacheDel(`myteam:event:${playerRecord.team.event}:user:${playerRecord.owner}`);
     res.status(200).json(new ApiResponse(200, {}, "Player removed successfully"));
   } catch (error) {
     console.log("Error while removing player", error);
@@ -130,7 +146,7 @@ const leaveTeam = asyncHandler(async (req, res) => {
     }
 
     await Cricket_Player.findByIdAndDelete(playerRecord._id);
-
+    await cacheDel(`myteam:event:${eventId}:user:${req.user._id}`);
     res.status(200).json(new ApiResponse(200, {}, "Left team successfully"));
   } catch (error) {
     console.log("Error while leaving team", error);

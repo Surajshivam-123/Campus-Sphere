@@ -27,4 +27,9 @@ const cricket_playerSchema=new Schema({
     },
 })
 
+// Compound index covers: findOne({team, owner}), find({team}), find({owner, team: {$in}})
+cricket_playerSchema.index({ team: 1, owner: 1 });
+cricket_playerSchema.index({ team: 1 });
+cricket_playerSchema.index({ owner: 1 });
+
 export const Cricket_Player=mongoose.model('Cricket_Player',cricket_playerSchema)

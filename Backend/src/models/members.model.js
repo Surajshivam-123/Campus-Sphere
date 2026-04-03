@@ -24,4 +24,7 @@ const memberSchema = new Schema(
   }
 );
 
+// Compound index covers: find({owner}), find({event}), findOne({owner, event})
+memberSchema.index({ owner: 1, event: 1 });
+
 export const Member = mongoose.model("Member", memberSchema);

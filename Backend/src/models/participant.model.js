@@ -20,4 +20,8 @@ const participantSchema = new Schema(
   }
 );
 
+// Compound index covers: find({owner}), find({event}), findOne({owner, event})
+participantSchema.index({ owner: 1, event: 1 });
+participantSchema.index({ identityNumber: 1 });
+
 export const Participant = mongoose.model("Participant", participantSchema);

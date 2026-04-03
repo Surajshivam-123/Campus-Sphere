@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { config } from "./config/index.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
+import passport from "./config/passport.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json({ limit: "50kb" }));
 app.use(express.urlencoded({ extended: true, limit: "50kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // Health check endpoint
 app.get("/health", (req, res) => {
