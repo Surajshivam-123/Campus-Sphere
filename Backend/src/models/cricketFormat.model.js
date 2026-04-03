@@ -31,8 +31,7 @@ const cricketFormatSchema = new Schema(
   { timestamps: true }
 );
 
-// event is already unique — add explicit index for query planner
-cricketFormatSchema.index({ event: 1 });
+// event already has unique:true which creates an index
 cricketFormatSchema.index({ createdBy: 1 });
 
 export const CricketFormat = mongoose.model("CricketFormat", cricketFormatSchema);

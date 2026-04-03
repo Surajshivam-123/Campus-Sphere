@@ -59,9 +59,11 @@ const generateAISchedule = asyncHandler(async (req, res) => {
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
 
     let matches = [];
+    let usedAI = false;
 
     if (GEMINI_KEY) {
-      const prompt = `You are a cricket tournament scheduler. Generate a fair, unbiased match schedule.
+      try {
+        const prompt = `You are a cricket tournament scheduler. Generate a fair, unbiased match schedule.
 Tournament details:
 - Type: ${format.tournamentType}
 - Teams: ${teamNames.join(", ")}
@@ -72,24 +74,47 @@ Return ONLY a valid JSON array (no markdown, no explanation) like:
 [{"team1":"TeamA","team2":"TeamB","round":"Round 1"},...]
 Make sure every team gets a fair chance. Randomize the order to avoid bias.`;
 
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          }
+        );
+
+        if (!geminiRes.ok) {
+          const errText = await geminiRes.text();
+          console.error("Gemini API error:", geminiRes.status, errText);
+          throw new Error(`Gemini API returned ${geminiRes.status}`);
         }
-      );
-      const geminiData = await geminiRes.json();
-      const raw = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      const jsonStr = raw.replace(/```json|```/g, "").trim();
-      matches = JSON.parse(jsonStr);
-    } else {
-      // Fallback: shuffle teams then apply format logic (unbiased via shuffle)
+
+        const geminiData = await geminiRes.json();
+        const raw = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const jsonStr = raw.replace(/```json|```/g, "").trim();
+
+        if (!jsonStr) {
+          console.error("Gemini returned empty content, falling back to local scheduler");
+          throw new Error("empty_gemini_response");
+        }
+
+        try {
+          matches = JSON.parse(jsonStr);
+          usedAI = true;
+        } catch (parseErr) {
+          console.error("Failed to parse Gemini response:", jsonStr);
+          throw new Error("invalid_gemini_json");
+        }
+      } catch (aiErr) {
+        console.warn("Gemini failed, using local fallback:", aiErr.message);
+      }
+    }
+
+    if (!usedAI) {
       const shuffled = shuffleArray(teamNames);
       if (format.tournamentType === "Knockout") matches = buildKnockoutMatches(shuffled);
       else if (format.tournamentType === "Double Elimination") matches = buildDoubleEliminationMatches(shuffled);
-      else matches = buildRoundRobinMatches(shuffled); // League / Round Robin
+      else matches = buildRoundRobinMatches(shuffled);
     }
 
     const schedule = await Schedule.findOneAndUpdate(
