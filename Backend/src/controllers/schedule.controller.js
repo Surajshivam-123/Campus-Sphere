@@ -64,15 +64,15 @@ const generateAISchedule = asyncHandler(async (req, res) => {
     if (GEMINI_KEY) {
       try {
         const prompt = `You are a cricket tournament scheduler. Generate a fair, unbiased match schedule.
-Tournament details:
-- Type: ${format.tournamentType}
-- Teams: ${teamNames.join(", ")}
-- Overs per match: ${format.overs}
-- Players per team: ${format.playersPerTeam}
+                        Tournament details:
+                        - Type: ${format.tournamentType}
+                        - Teams: ${teamNames.join(", ")}
+                        - Overs per match: ${format.overs}
+                        - Players per team: ${format.playersPerTeam}
 
-Return ONLY a valid JSON array (no markdown, no explanation) like:
-[{"team1":"TeamA","team2":"TeamB","round":"Round 1"},...]
-Make sure every team gets a fair chance. Randomize the order to avoid bias.`;
+                        Return ONLY a valid JSON array (no markdown, no explanation) like:
+                        [{"team1":"TeamA","team2":"TeamB","round":"Round 1"},...]
+                        Make sure every team gets a fair chance. Randomize the order to avoid bias.`;
 
         const geminiRes = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,

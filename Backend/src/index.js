@@ -6,12 +6,15 @@ import http from "http";
 import { app } from "./app.js";
 import { connectDB } from "./db/index.js";
 import { initSocket } from "./socket.js";
+import { getRedisClient } from "./utils/redis.js";
 
 const httpServer = http.createServer(app);
 initSocket(httpServer);
 
 connectDB()
   .then(() => {
+    // Eagerly connect to Redis so we know it's up at startup
+    getRedisClient().connect().catch(() => {});
     httpServer.listen(config.server.port, () => {
       console.log(`✅ Server is running on http://localhost:${config.server.port}`);
       console.log(`📝 Environment: ${config.server.env}`);
