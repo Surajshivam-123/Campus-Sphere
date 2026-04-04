@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaCalendarAlt } from "react-icons/fa";
-import Rules from "../Event Creation/Rule";
+import Rules from "../EventCreation/Rule";
 import { motion } from "framer-motion";
 import FormInput from "../../components/shared/FormInput";
 import FormSelect from "../../components/shared/FormSelect";

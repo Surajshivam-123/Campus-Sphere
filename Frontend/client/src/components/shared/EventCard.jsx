@@ -71,59 +71,55 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
   };
 
   if (variant === 'hosted') {
+    const isCricket = event.category === 'sports' && event.sports?.toLowerCase() === 'cricket';
     return (
       <motion.div
-        className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#b8860b]/40 transition-colors cursor-pointer"
+        className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#b8860b]/40 transition-colors"
         whileHover={{ scale: 1.01 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05, duration: 0.4 }}
-        onClick={handleClick}
       >
-        {event.festivalName && event.festivalName !== "" && (
-          <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">
-            {event.festivalName}
-          </h2>
+        <div className="cursor-pointer" onClick={handleClick}>
+          {event.festivalName && event.festivalName !== "" && (
+            <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">{event.festivalName}</h2>
+          )}
+          <h2 className="font-heading text-lg font-semibold text-[#1e3a5f] mb-3">{event.eventName}</h2>
+          <div className="w-8 h-px bg-[#b8860b]/40 mb-3" />
+          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Date:</span> {new Date(event.startDate).toDateString()}</p>
+          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Venue:</span> {event.location}</p>
+          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Category:</span> {event.category}</p>
+          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Organizer:</span> {event.organization}</p>
+          <p className="text-[#374151] text-sm"><span className="font-medium text-[#1e3a5f]">Max participants:</span> {event.maxParticipants}</p>
+        </div>
+        {isCricket && (
+          <button
+            onClick={(e) => { e.stopPropagation(); navigate(`/cricket-scoreboard/${event._id}`); }}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
+          >
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
+            Watch Live
+          </button>
         )}
-        <h2 className="font-heading text-lg font-semibold text-[#1e3a5f] mb-3">
-          {event.eventName}
-        </h2>
-        <div className="w-8 h-px bg-[#b8860b]/40 mb-3" />
-        <p className="text-[#374151] text-sm mb-1">
-          <span className="font-medium text-[#1e3a5f]">Date:</span>{" "}
-          {new Date(event.startDate).toDateString()}
-        </p>
-        <p className="text-[#374151] text-sm mb-1">
-          <span className="font-medium text-[#1e3a5f]">Venue:</span> {event.location}
-        </p>
-        <p className="text-[#374151] text-sm mb-1">
-          <span className="font-medium text-[#1e3a5f]">Category:</span> {event.category}
-        </p>
-        <p className="text-[#374151] text-sm mb-1">
-          <span className="font-medium text-[#1e3a5f]">Organizer:</span> {event.organization}
-        </p>
-        <p className="text-[#374151] text-sm">
-          <span className="font-medium text-[#1e3a5f]">Max participants:</span> {event.maxParticipants}
-        </p>
       </motion.div>
     );
   }
 
+  // participant / team / basic variant
+  const isCricket = event.category === 'sports' && event.sports?.toLowerCase() === 'cricket';
+
   return (
-    <div
-      onClick={handleClick}
-      className="cursor-pointer bg-white shadow-md rounded-xl p-4 w-full max-w-md mx-auto hover:shadow-xl transition duration-300"
-    >
-      {event.festivalName && event.festivalName !== '' && (
-        <div className="text-purple-700 font-bold flex items-center mb-2">
-          {event.festivalName}
+    <div className="bg-white shadow-md rounded-xl p-4 w-full max-w-md mx-auto hover:shadow-xl transition duration-300">
+      <div className="cursor-pointer" onClick={handleClick}>
+        {event.festivalName && event.festivalName !== '' && (
+          <div className="text-purple-700 font-bold flex items-center mb-2">{event.festivalName}</div>
+        )}
+        <h2 className="text-xl font-bold text-purple-700">{event.eventName}</h2>
+        <p className="text-gray-600 mt-2">{event.description}</p>
+        <div className="flex justify-between mt-4 text-sm text-gray-500">
+          <span>📅 {event.startDate}</span>
+          <span>📍 {event.location}</span>
         </div>
-      )}
-      <h2 className="text-xl font-bold text-purple-700">{event.eventName}</h2>
-      <p className="text-gray-600 mt-2">{event.description}</p>
-      <div className="flex justify-between mt-4 text-sm text-gray-500">
-        <span>📅 {event.startDate}</span>
-        <span>📍 {event.location}</span>
       </div>
       {(variant === 'participant' || variant === 'team') && (
         <button
@@ -132,6 +128,15 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
           className="mt-4 w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50"
         >
           {leaving ? "Leaving..." : "Leave Event"}
+        </button>
+      )}
+      {isCricket && (
+        <button
+          onClick={(e) => { e.stopPropagation(); navigate(`/cricket-scoreboard/${event._id}`); }}
+          className="mt-2 w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
+        >
+          <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
+          Watch Live
         </button>
       )}
     </div>

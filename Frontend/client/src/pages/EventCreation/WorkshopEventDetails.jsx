@@ -1,4 +1,4 @@
-import CopyToClipboard from "../Copy";
+import CopyToClipboard from "../../components/shared/CopyToClipboard";
 import { useLocation} from "react-router-dom";
 
 const WorkshopEventDetails = () => {

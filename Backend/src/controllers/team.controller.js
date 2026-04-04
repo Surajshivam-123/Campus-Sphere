@@ -1,5 +1,5 @@
 import { Team } from "../models/team.model.js";
-import { Cricket_Player } from "../models/cricket_player.model.js";
+import { Cricket_Player } from "../models/cricketPlayer.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";

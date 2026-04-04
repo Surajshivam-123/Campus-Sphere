@@ -1,5 +1,5 @@
 import Router from "express";
-import { joinTeam ,getMyTeam,leaveTeam, removePlayer} from "../controllers/cricket_player.controller.js"
+import { joinTeam ,getMyTeam,leaveTeam, removePlayer} from "../controllers/cricketPlayer.controller.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const cricketPlayerRouter=Router();
 

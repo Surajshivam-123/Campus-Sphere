@@ -1,4 +1,4 @@
-import { User } from "../models/user.models.js";
+import { User } from "../models/user.model.js";
 import { Member } from "../models/members.model.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import { Event } from "../models/event.model.js";

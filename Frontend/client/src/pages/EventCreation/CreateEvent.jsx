@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaCalendarAlt, FaMapMarkerAlt, FaFileUpload } from "react-icons/fa";
-import Rules from "./Rule";
+import Rules from "../EventCreation/Rule";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "../../components/shared/FormInput";

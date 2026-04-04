@@ -123,6 +123,10 @@ export default function TeamMemberPage() {
             className="bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-700 transition shadow flex items-center gap-2">
             <FaSignOutAlt /> Leave Team
           </button>
+          <button onClick={() => navigate(`/cricket-scoreboard/${eventId}`)}
+            className="bg-green-600 text-white rounded-lg px-4 py-2 hover:bg-green-700 transition shadow flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" /> Watch Live
+          </button>
         </div>
 
         {/* Error message */}

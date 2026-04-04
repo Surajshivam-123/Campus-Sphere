@@ -120,6 +120,11 @@ export default function CricketEventDetailsPageParticipant() {
             className="bg-blue-600 text-white rounded-lg px-5 py-2 hover:bg-blue-800 transition shadow font-medium">
             Join Team
           </button>
+          <button
+            onClick={() => navigate(`/cricket-scoreboard/${eventId}`)}
+            className="bg-green-600 text-white rounded-lg px-5 py-2 hover:bg-green-700 transition shadow font-medium flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" /> Watch Live
+          </button>
         </div>
       </div>
     </motion.div>

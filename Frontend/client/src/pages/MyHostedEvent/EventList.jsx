@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { MdEventNote } from "react-icons/md";
 import LoadingPage from "../LoadingPage";
-import getAllEvents from "../../components/getallEvent";
+import eventService from "../../services/event.service";
 import EventCard from "../../components/shared/EventCard";
 
 export default function EventList() {
@@ -12,7 +12,7 @@ export default function EventList() {
 
   useEffect(() => {
     const loadEvents = async () => {
-      const result = await getAllEvents();
+      const result = await eventService.getAllEvents();
       setallEvents(result?.data || null);
     };
     loadEvents();

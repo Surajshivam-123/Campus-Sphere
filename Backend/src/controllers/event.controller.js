@@ -227,4 +227,24 @@ const getallEvents = asyncHandler(async (req, res) => {
 
 
 
-export { createEvent, deleteEvent, updateEvent, getallEvents ,getsingleEvent};
+// Public — no auth, returns all events (for spectators)
+const getPublicEvents = asyncHandler(async (req, res) => {
+  try {
+    const cacheKey = "events:public";
+    const cached = await cacheGet(cacheKey);
+    if (cached) return res.status(200).json(new ApiResponse(200, cached, "Events fetched"));
+
+    const events = await Event.find({})
+      .select("eventName organization category sports startDate location poster festivalName")
+      .sort({ startDate: -1 })
+      .lean();
+
+    await cacheSet(cacheKey, events, EVENT_LIST_TTL);
+    res.status(200).json(new ApiResponse(200, events, "Events fetched"));
+  } catch (error) {
+    console.log("Error fetching public events", error);
+    res.status(500).json(new ApiResponse(500, null, "Error fetching events"));
+  }
+});
+
+export { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents };
