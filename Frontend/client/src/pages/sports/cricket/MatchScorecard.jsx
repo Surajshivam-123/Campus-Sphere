@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaArrowLeft, FaCircle, FaLock } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
-import API_URL from "../../config/api";
-import socket from "../../config/socket";
-import useEventAccess from "../../hooks/useEventAccess";
+import API_URL from "../../../config/api";
+import socket from "../../../config/socket";
+import useEventAccess from "../../../hooks/useEventAccess";
 
 function InningsTable({ innings, label }) {
   if (!innings?.battingTeam) return null;
@@ -135,7 +135,7 @@ export default function MatchScorecard() {
 
   // Initial fetch
   useEffect(() => {
-    fetch(`${API_URL}/api/v1/matches/${matchId}`, { credentials: "include" })
+    fetch(`${API_URL}/api/v1/sports/cricket/matches/${matchId}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
         if (d?.data) {

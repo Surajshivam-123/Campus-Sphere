@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaArrowLeft, FaPlay, FaPen, FaEye } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
-import API_URL from "../../config/api";
+import API_URL from "../../../config/api";
 
 const STATUS_BADGE = {
   upcoming: "bg-yellow-100 text-yellow-700",
@@ -22,7 +22,7 @@ export default function MatchManager() {
 
   const fetchMatches = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/matches/event/${eventId}`, { credentials: "include" });
+      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" });
       const data = await res.json();
       if (data?.data) setMatches(data.data);
     } catch (err) {
@@ -38,7 +38,7 @@ export default function MatchManager() {
     setInitialising(true);
     setMsg("");
     try {
-      const res = await fetch(`${API_URL}/api/v1/matches/event/${eventId}/init`, {
+      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, {
         method: "POST",
         credentials: "include",
       });
@@ -69,7 +69,7 @@ export default function MatchManager() {
             <h1 className="text-2xl font-extrabold text-gray-800">Match Manager</h1>
           </div>
           <button
-            onClick={() => navigate(`/cricket-scoreboard/${eventId}`)}
+            onClick={() => navigate(`/sports/cricket/scoreboard/${eventId}`)}
             className="flex items-center gap-2 text-sm bg-white border border-indigo-200 text-indigo-600 px-3 py-2 rounded-xl hover:bg-indigo-50 transition"
           >
             <FaEye /> Live Board

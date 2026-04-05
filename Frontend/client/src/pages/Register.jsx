@@ -3,6 +3,8 @@ import profile from "../assets/download.jpeg";
 import { useNavigate ,Link} from "react-router-dom";
 import API_URL from "../config/api";
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileImage, setProfileImage] = useState(profile);
@@ -90,6 +92,24 @@ export default function Register() {
         <h2 className="font-heading text-2xl font-semibold text-center text-[#1e3a5f] mb-6 tracking-tight">
           Create an account
         </h2>
+
+        <button
+          onClick={() => window.location.href = `${BACKEND_URL}/api/cpsh/users/auth/google`}
+          className="cursor-pointer flex items-center justify-center gap-3 border border-gray-200 rounded py-2.5 w-full hover:bg-[#faf9f6] transition-colors text-sm text-[#374151] mb-6"
+        >
+          <img
+            src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s48-fcrop64=1,00000000ffffffff-rw"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          <span className="font-medium">Continue with Google</span>
+        </button>
+
+        <div className="flex items-center mb-6">
+          <div className="flex-grow h-px bg-gray-200" />
+          <span className="px-3 text-gray-400 text-xs uppercase tracking-wider">or</span>
+          <div className="flex-grow h-px bg-gray-200" />
+        </div>
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 rounded-md bg-[#f0ede6] overflow-hidden border border-gray-200">
             <img src={profileImage} alt="Profile Preview" className="w-full h-full object-cover" />

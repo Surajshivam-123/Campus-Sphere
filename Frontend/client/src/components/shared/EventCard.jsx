@@ -1,7 +1,9 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import API_URL from "../../config/api";
+import { formatDateTime } from "../../utils/helpers";
+import useIsLive from "../../hooks/useIsLive";
 
 /**
  * Unified EventCard component that handles all event card display scenarios
@@ -13,6 +15,8 @@ import API_URL from "../../config/api";
 export default function EventCard({ event, variant = 'basic', additionalData = {}, index = 0, onLeave }) {
   const navigate = useNavigate();
   const [leaving, setLeaving] = useState(false);
+  const isCricketEvent = event.category === 'sports' && event.sports?.toLowerCase() === 'cricket';
+  const { isLive } = useIsLive(isCricketEvent ? event._id : null);
 
   const handleLeave = async (e) => {
     e.stopPropagation();
@@ -39,7 +43,7 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
     switch (variant) {
       case 'participant':
         if (event.category === 'sports' && event.sports === 'cricket') {
-          navigate(`/cricket-event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
+          navigate(`/sports/cricket/event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
         } else {
           navigate(`/event-details/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
         }
@@ -47,7 +51,7 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
 
       case 'team':
         if (event.category === 'sports' && event.sports === 'cricket') {
-          navigate(`/cricket-event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
+          navigate(`/sports/cricket/event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
         } else {
           navigate(`/event-details/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
         }
@@ -71,7 +75,6 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
   };
 
   if (variant === 'hosted') {
-    const isCricket = event.category === 'sports' && event.sports?.toLowerCase() === 'cricket';
     return (
       <motion.div
         className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#b8860b]/40 transition-colors"
@@ -86,15 +89,15 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
           )}
           <h2 className="font-heading text-lg font-semibold text-[#1e3a5f] mb-3">{event.eventName}</h2>
           <div className="w-8 h-px bg-[#b8860b]/40 mb-3" />
-          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Date:</span> {new Date(event.startDate).toDateString()}</p>
+          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Date:</span> {formatDateTime(event.startDate)}</p>
           <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Venue:</span> {event.location}</p>
           <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Category:</span> {event.category}</p>
           <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Organizer:</span> {event.organization}</p>
           <p className="text-[#374151] text-sm"><span className="font-medium text-[#1e3a5f]">Max participants:</span> {event.maxParticipants}</p>
         </div>
-        {isCricket && (
+        {isLive && (
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/cricket-scoreboard/${event._id}`); }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/sports/cricket/scoreboard/${event._id}`); }}
             className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
           >
             <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
@@ -106,8 +109,6 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
   }
 
   // participant / team / basic variant
-  const isCricket = event.category === 'sports' && event.sports?.toLowerCase() === 'cricket';
-
   return (
     <div className="bg-white shadow-md rounded-xl p-4 w-full max-w-md mx-auto hover:shadow-xl transition duration-300">
       <div className="cursor-pointer" onClick={handleClick}>
@@ -117,7 +118,7 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
         <h2 className="text-xl font-bold text-purple-700">{event.eventName}</h2>
         <p className="text-gray-600 mt-2">{event.description}</p>
         <div className="flex justify-between mt-4 text-sm text-gray-500">
-          <span>📅 {event.startDate}</span>
+          <span>📅 {formatDateTime(event.startDate)}</span>
           <span>📍 {event.location}</span>
         </div>
       </div>
@@ -130,9 +131,9 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
           {leaving ? "Leaving..." : "Leave Event"}
         </button>
       )}
-      {isCricket && (
+      {isLive && (
         <button
-          onClick={(e) => { e.stopPropagation(); navigate(`/cricket-scoreboard/${event._id}`); }}
+          onClick={(e) => { e.stopPropagation(); navigate(`/sports/cricket/scoreboard/${event._id}`); }}
           className="mt-2 w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
         >
           <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />

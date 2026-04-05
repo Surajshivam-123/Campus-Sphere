@@ -4,7 +4,7 @@ import { Event } from "../models/event.model.js";
 import { Member } from "../models/members.model.js";
 import { Participant } from "../models/participant.model.js";
 import { Team } from "../models/team.model.js";
-import { Cricket_Player } from "../models/cricketPlayer.model.js";
+import { Cricket_Player } from "../sports/cricket/models/player.model.js";
 import { Match } from "../models/match.model.js";
 
 /**
@@ -35,9 +35,12 @@ export const verifyEventAccess = asyncHandler(async (req, res, next) => {
     const userId = req.user._id;
 
     // 1. Organiser
-    const event = await Event.findById(eventId).select("organizer").lean();
+    const event = await Event.findById(eventId).select("organizer scorerUpdater").lean();
     if (!event) return res.status(404).json(new ApiResponse(404, null, "Event not found"));
     if (event.organizer.toString() === userId.toString()) return next();
+
+    // 2. Assigned scorer updater
+    if (event.scorerUpdater && event.scorerUpdater.toString() === userId.toString()) return next();
 
     // 2. Member
     const isMember = await Member.exists({ owner: userId, event: eventId });

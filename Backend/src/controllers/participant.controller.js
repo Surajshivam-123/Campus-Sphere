@@ -3,6 +3,8 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { Event } from "../models/event.model.js";
+import { Team } from "../models/team.model.js";
+import { Cricket_Player } from "../sports/cricket/models/player.model.js";
 import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
 
 const PARTICIPANT_TTL = 120;
@@ -106,12 +108,40 @@ const getAllParticipant = asyncHandler(async (req, res) => {
       return res.status(200).json(new ApiResponse(200, cached, "Participants found successfully"));
     }
 
-    const participants = await Participant.find({ event: eventId });
+    const participants = await Participant.find({ event: eventId }).populate("owner", "fullname username");
     if (!participants) {
       throw new ApiError(404, "Participants not found")
     }
-    await cacheSet(cacheKey, participants, PARTICIPANT_TTL);
-    res.status(200).json(new ApiResponse(200, participants, "Participants found successfully"))
+
+    // Get all teams for this event and all cricket players in those teams
+    const teams = await Team.find({ event: eventId }).select("_id name owner").lean();
+    const teamIds = teams.map(t => t._id);
+    const players = await Cricket_Player.find({ team: { $in: teamIds } }).select("owner team").lean();
+
+    // Build lookup maps
+    const captainMap = {}; // userId -> team name (captain = team owner)
+    teams.forEach(t => { captainMap[t.owner.toString()] = t.name; });
+
+    const playerMap = {}; // userId -> team name (via cricket player)
+    players.forEach(p => {
+      const team = teams.find(t => t._id.toString() === p.team.toString());
+      if (team) playerMap[p.owner.toString()] = team.name;
+    });
+
+    const enriched = participants.map(p => {
+      const uid = p.owner?._id?.toString();
+      const teamName = captainMap[uid] || playerMap[uid] || null;
+      return {
+        _id: p._id,
+        owner: p.owner,
+        identityNumber: p.identityNumber,
+        teamName,
+        isCaptain: !!captainMap[uid],
+      };
+    });
+
+    await cacheSet(cacheKey, enriched, PARTICIPANT_TTL);
+    res.status(200).json(new ApiResponse(200, enriched, "Participants found successfully"))
   } catch (error) {
     console.log("Error while getting all participants", error)
   }

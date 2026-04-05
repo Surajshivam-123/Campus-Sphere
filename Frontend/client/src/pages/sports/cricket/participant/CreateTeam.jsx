@@ -1,7 +1,7 @@
-import { useNavigate, useParams } from "react-router-dom";
+﻿import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import API_URL from "../../config/api";
+import API_URL from "../../../../config/api";
 
 export default function CreateTeamPage() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function CreateTeamPage() {
       });
       const result = await res.json();
       if (result?.success) {
-        navigate(`/cricket-team-creator/${eventId}`, { replace: true });
+        navigate(`/sports/cricket/team-creator/${eventId}`, { replace: true });
       } else {
         setError(result?.message || "Failed to create team.");
       }

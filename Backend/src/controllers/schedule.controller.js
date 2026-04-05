@@ -2,7 +2,7 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { Schedule } from "../models/schedule.model.js";
-import { CricketFormat } from "../models/cricketFormat.model.js";
+import { CricketFormat } from "../sports/cricket/models/format.model.js";
 import { Team } from "../models/team.model.js";
 import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
 

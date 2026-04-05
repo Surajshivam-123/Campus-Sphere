@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import { HTTP_STATUS } from "../constants/index.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { cacheSet, cacheGet, cacheDel } from "../utils/redis.js";
-import { sendOtpEmail } from "../utils/mailer.js";
+import { sendOtpEmail, sendWelcomeEmail } from "../utils/mailer.js";
 import crypto from "crypto";
 
 /**
@@ -183,6 +183,8 @@ class UserService {
       }
 
       user = await User.create({ fullname, username, email, googleId, avatar });
+      // Send welcome email to newly registered user (non-blocking)
+      sendWelcomeEmail(email, fullname).catch(() => {});
     }
 
     const { accessToken, refreshToken } = await this.generateTokens(user);

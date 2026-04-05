@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -12,8 +12,9 @@ import {
   FaChalkboardTeacher,
   FaTrophy,
 } from "react-icons/fa";
-import LoadingPage from "../LoadingPage";
-import API_URL from "../../config/api";
+import LoadingPage from "../../LoadingPage";
+import API_URL from "../../../config/api";
+import { formatDateTime } from "../../../utils/helpers";
 
 export default function CricketEventPage() {
   const navigate = useNavigate();
@@ -28,6 +29,13 @@ export default function CricketEventPage() {
   const [ownerName, setOwnerName] = useState("");
   const [teams, setTeams] = useState([]);
   const [cricketFormat, setCricketFormat] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+  const [initLoading, setInitLoading] = useState(false);
+  const [initDone, setInitDone] = useState(false);
+  const [participants, setParticipants] = useState([]);
+  const [scorerUpdater, setScorerUpdater] = useState(null);
+  const [scorerLoading, setScorerLoading] = useState(null); // userId being processed
+
   useEffect(() => {
     const loadEvent = async () => {
       const getsingleEvent = async () => {
@@ -80,13 +88,46 @@ export default function CricketEventPage() {
 
       // Fetch cricket format if exists
       try {
-        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
+        const fmtRes = await fetch(`${API_URL}/api/v1/sports/cricket/format/${eventId}`, {
           credentials: "include",
         });
         const fmtData = await fmtRes.json();
         setCricketFormat(fmtData?.data || null);
       } catch (error) {
         console.log("Error while getting cricket format", error);
+      }
+
+      // Fetch schedule if exists
+      try {
+        const schedRes = await fetch(`${API_URL}/api/cpsh/schedule/${eventId}`, {
+          credentials: "include",
+        });
+        const schedData = await schedRes.json();
+        setSchedule(schedData?.data || null);
+      } catch (error) {
+        console.log("Error while getting schedule", error);
+      }
+
+      // Fetch participants for scorer assignment
+      try {
+        const partRes = await fetch(`${API_URL}/api/cpsh/participants/get-all-participants/${eventId}`, {
+          credentials: "include",
+        });
+        const partData = await partRes.json();
+        setParticipants(partData?.data || []);
+      } catch (error) {
+        console.log("Error while getting participants", error);
+      }
+
+      // Fetch current scorer from event
+      try {
+        const evRes = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
+          credentials: "include",
+        });
+        const evData = await evRes.json();
+        setScorerUpdater(evData?.data?.scorerUpdater || null);
+      } catch (error) {
+        console.log("Error while getting scorer", error);
       }
     };
     loadEvent();
@@ -141,6 +182,61 @@ export default function CricketEventPage() {
     console.log("Server response");
     navigate("/events-hosted");
   };
+  const handleInitMatches = async () => {
+    setInitLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setInitDone(true);
+        navigate(`/sports/cricket/scoreboard/${eventId}`);
+      } else {
+        alert(data.message || "Failed to initialize matches");
+      }
+    } catch (err) {
+      console.log("Error initializing matches", err);
+    } finally {
+      setInitLoading(false);
+    }
+  };
+
+  const handleAssignScorer = async (userId) => {
+    setScorerLoading(userId);
+    try {
+      const res = await fetch(`${API_URL}/api/cpsh/events/${eventId}/assign-scorer`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (res.ok) setScorerUpdater(data?.data?.scorerUpdater);
+      else alert(data.message || "Failed to assign scorer");
+    } catch (err) {
+      console.log("Error assigning scorer", err);
+    } finally {
+      setScorerLoading(null);
+    }
+  };
+
+  const handleRevokeScorer = async () => {
+    setScorerLoading("revoke");
+    try {
+      const res = await fetch(`${API_URL}/api/cpsh/events/${eventId}/revoke-scorer`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) setScorerUpdater(null);
+    } catch (err) {
+      console.log("Error revoking scorer", err);
+    } finally {
+      setScorerLoading(null);
+    }
+  };
+
   const handleSaveRole = async (memberId) => {
     try {
       const role = editedRoles[memberId];
@@ -198,7 +294,7 @@ export default function CricketEventPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
             <p>
               <FaCalendarAlt className="inline-block mr-2 text-blue-500" />
-              <strong>Date:</strong> {startDate}
+              <strong>Date:</strong> {formatDateTime(startDate)}
             </p>
             <p>
               <FaMapMarkerAlt className="inline-block mr-2 text-red-500" />
@@ -330,9 +426,84 @@ export default function CricketEventPage() {
             </table>
           </div>
 
+          {/* Scorer Assignment */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-3">Scorecard Updater</h2>
+            {scorerUpdater && (
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-3">
+                <span className="text-sm text-green-800 font-medium">
+                  Current scorer: <span className="font-bold">
+                    {participants.find(p => p.owner?._id === scorerUpdater || p.owner?._id?.toString() === scorerUpdater?.toString())?.owner?.fullname
+                      || participants.find(p => p.owner?._id === scorerUpdater || p.owner?._id?.toString() === scorerUpdater?.toString())?.owner?.username
+                      || "Assigned"}
+                  </span>
+                </span>
+                <button
+                  onClick={handleRevokeScorer}
+                  disabled={scorerLoading === "revoke"}
+                  className="text-xs text-red-500 hover:underline disabled:opacity-50"
+                >
+                  {scorerLoading === "revoke" ? "Revoking..." : "Revoke"}
+                </button>
+              </div>
+            )}
+            {participants.length === 0 ? (
+              <p className="text-sm text-gray-400">No participants yet.</p>
+            ) : (
+              <table className="w-full text-left border border-gray-300 rounded-md overflow-hidden">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="py-2 px-4 border-b">Participant</th>
+                    <th className="py-2 px-4 border-b">Identity No.</th>
+                    <th className="py-2 px-4 border-b">Team</th>
+                    <th className="py-2 px-4 border-b">Role</th>
+                    <th className="py-2 px-4 border-b">Assign Scorer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {participants.map((p) => {
+                    const uid = p.owner?._id?.toString();
+                    const isCurrentScorer = scorerUpdater?.toString() === uid;
+                    return (
+                      <tr key={p._id} className="hover:bg-gray-50">
+                        <td className="py-2 px-4 border-b">{p.owner?.fullname || p.owner?.username || "—"}</td>
+                        <td className="py-2 px-4 border-b text-gray-500">{p.identityNumber}</td>
+                        <td className="py-2 px-4 border-b">
+                          {p.teamName
+                            ? <span className="text-indigo-700 font-medium">{p.teamName}</span>
+                            : <span className="text-gray-400 text-xs">No team</span>}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {p.teamName
+                            ? <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${p.isCaptain ? "bg-yellow-100 text-yellow-700" : "bg-blue-100 text-blue-700"}`}>
+                                {p.isCaptain ? "Captain" : "Player"}
+                              </span>
+                            : <span className="text-xs text-gray-400">Spectator</span>}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {isCurrentScorer ? (
+                            <span className="text-xs text-green-600 font-semibold">Assigned ✓</span>
+                          ) : (
+                            <button
+                              onClick={() => handleAssignScorer(uid)}
+                              disabled={scorerLoading === uid}
+                              className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                            >
+                              {scorerLoading === uid ? "Assigning..." : "Assign"}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+
           <div className="flex flex-wrap gap-4 justify-start mt-6">
             <button
-              onClick={() => navigate(`/cricket-format/${eventId}`)}
+              onClick={() => navigate(`/sports/cricket/format/${eventId}`)}
               className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
             >
               <FaFlag className="inline-block mr-2" />
@@ -340,7 +511,7 @@ export default function CricketEventPage() {
             </button>
             {cricketFormat && (
               <button
-                onClick={() => navigate(`/cricket-format/${eventId}/view`)}
+                onClick={() => navigate(`/sports/cricket/format/${eventId}/view`)}
                 className="cursor-pointer bg-gradient-to-r from-indigo-400 to-indigo-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
               >
                 <FaFlag className="inline-block mr-2" />
@@ -348,12 +519,31 @@ export default function CricketEventPage() {
               </button>
             )}
             <button
-              onClick={() => navigate(`/cricket-schedule/${eventId}`)}
+              onClick={() => navigate(`/sports/cricket/schedule/${eventId}`)}
               className="cursor-pointer bg-gradient-to-r from-blue-400 to-blue-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
             >
               <FaTrophy className="inline-block mr-2" />
-              Create Schedule
+              {schedule ? "Update Schedule" : "Create Schedule"}
             </button>
+            {schedule && (
+              <>
+                <button
+                  onClick={handleInitMatches}
+                  disabled={initLoading}
+                  className="cursor-pointer bg-gradient-to-r from-green-500 to-green-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105 disabled:opacity-60"
+                >
+                  <FaTrophy className="inline-block mr-2" />
+                  {initLoading ? "Starting..." : "Start Tournament"}
+                </button>
+                <button
+                  onClick={() => navigate(`/sports/cricket/scoreboard/${eventId}`)}
+                  className="cursor-pointer bg-gradient-to-r from-purple-500 to-purple-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+                >
+                  <FaTrophy className="inline-block mr-2" />
+                  View Scoreboard
+                </button>
+              </>
+            )}
             <button
               onClick={handleupdatebutton}
               className="cursor-pointer bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"

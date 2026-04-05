@@ -28,3 +28,22 @@ export const sendOtpEmail = async (email, otp) => {
     `,
   });
 };
+
+/**
+ * Send a welcome email after successful Google registration.
+ */
+export const sendWelcomeEmail = async (email, fullname) => {
+  await transporter.sendMail({
+    from: `"Campus Sphere" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Welcome to Campus Sphere!",
+    html: `
+      <div style="font-family:sans-serif;max-width:400px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:8px;">
+        <h2 style="color:#1e3a5f;margin-bottom:8px;">Welcome, ${fullname}!</h2>
+        <p style="color:#374151;font-size:14px;">Your Campus Sphere account has been successfully created via Google.</p>
+        <p style="color:#374151;font-size:14px;">You can now explore events, join teams, and stay connected with your campus.</p>
+        <p style="color:#9ca3af;font-size:12px;margin-top:24px;">If you didn't create this account, please contact us immediately.</p>
+      </div>
+    `,
+  });
+};

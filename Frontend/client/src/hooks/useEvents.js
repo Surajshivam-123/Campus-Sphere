@@ -72,6 +72,23 @@ export const useMyParticipatedEvents = () => {
 };
 
 /**
+ * Hook to fetch my member events
+ * @returns {Object} { events, loading, error, refetch }
+ */
+export const useMyMemberEvents = () => {
+  const { data, loading, error, refetch } = useFetch(
+    "/api/cpsh/members/get-all-events"
+  );
+
+  return {
+    events: data || [],
+    loading,
+    error,
+    refetch,
+  };
+};
+
+/**
  * Hook to fetch events by type
  * @param {string} eventType - Event type (cricket, cultural, workshop)
  * @returns {Object} { events, loading, error, refetch }

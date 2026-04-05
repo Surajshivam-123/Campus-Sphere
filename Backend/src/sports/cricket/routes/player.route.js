@@ -1,6 +1,6 @@
 import Router from "express";
-import { joinTeam ,getMyTeam,leaveTeam, removePlayer} from "../controllers/cricketPlayer.controller.js"
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { joinTeam ,getMyTeam,leaveTeam, removePlayer} from "../controllers/player.controller.js"
+import { verifyJWT } from "../../../middlewares/auth.middleware.js";
 const cricketPlayerRouter=Router();
 
 cricketPlayerRouter.route('/join-team/:teamCode/:eventId').post(verifyJWT,joinTeam);

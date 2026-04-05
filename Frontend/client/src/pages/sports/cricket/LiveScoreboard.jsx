@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCircle, FaMapMarkerAlt, FaCalendarAlt, FaArrowLeft, FaLock } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
-import API_URL from "../../config/api";
-import socket from "../../config/socket";
-import useEventAccess from "../../hooks/useEventAccess";
+import API_URL from "../../../config/api";
+import socket from "../../../config/socket";
+import useEventAccess from "../../../hooks/useEventAccess";
+import { formatDate } from "../../../utils/helpers";
 
 const STATUS_COLOR = {
   live: "text-green-500",
@@ -67,7 +68,7 @@ function MatchCard({ match, onClick }) {
 
       <div className="flex gap-4 mt-3 text-xs text-gray-400">
         {match.venue && <span className="flex items-center gap-1"><FaMapMarkerAlt />{match.venue}</span>}
-        {match.date && <span className="flex items-center gap-1"><FaCalendarAlt />{match.date}</span>}
+        {match.date && <span className="flex items-center gap-1"><FaCalendarAlt />{formatDate(match.date)}</span>}
       </div>
     </motion.div>
   );
@@ -85,7 +86,7 @@ export default function LiveScoreboard() {
   // Initial fetch — only if access granted
   useEffect(() => {
     if (!access) return;
-    fetch(`${API_URL}/api/v1/matches/event/${eventId}`, { credentials: "include" })
+    fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => { if (d?.data) setMatches(d.data); })
       .catch(console.log)

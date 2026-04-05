@@ -1,5 +1,5 @@
 import Router from "express";
-import { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents } from '../controllers/event.controller.js'
+import { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer } from '../controllers/event.controller.js'
 import {upload} from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
 
@@ -12,5 +12,7 @@ eventRouter.route('/update/:eventId').patch(verifyJWT,upload.single('poster'),up
 eventRouter.route('/get-all-events').get(verifyJWT,getallEvents);
 eventRouter.route('/get-single-event/:eventId').get(getsingleEvent);
 eventRouter.route('/public').get(getPublicEvents);
+eventRouter.route('/:eventId/assign-scorer').patch(verifyJWT, assignScorer);
+eventRouter.route('/:eventId/revoke-scorer').delete(verifyJWT, revokeScorer);
 
 export default eventRouter;

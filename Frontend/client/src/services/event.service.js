@@ -1,5 +1,4 @@
 import apiClient from "./api.service";
-import API_URL from "../config/api";
 
 /**
  * Event service for all event-related API calls
@@ -37,11 +36,12 @@ const eventService = {
    * Create new event
    */
   createEvent: async (eventData) => {
-    // Use fetch for FormData
-    const response = await fetch(`${API_URL}/api/cpsh/events/create`, {
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch("/api/cpsh/events/create", {
       method: "POST",
       credentials: "include",
-      body: eventData, // FormData object
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: eventData, // FormData — no Content-Type header, browser sets it with boundary
     });
     return response.json();
   },

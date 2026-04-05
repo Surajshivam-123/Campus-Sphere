@@ -1,6 +1,6 @@
 import Router from "express";
-import { saveFormat, getFormat } from "../controllers/cricketFormat.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { saveFormat, getFormat } from "../controllers/format.controller.js";
+import { verifyJWT } from "../../../middlewares/auth.middleware.js";
 
 const cricketFormatRouter = Router();
 

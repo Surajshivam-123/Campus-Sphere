@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaRobot, FaPenAlt, FaTrophy, FaCheckCircle, FaSpinner } from "react-icons/fa";
@@ -14,6 +14,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [initLoading, setInitLoading] = useState(false);
 
   // Manual schedule state: list of match objects
   const [manualMatches, setManualMatches] = useState([{ team1: "", team2: "", round: "", date: "", venue: "" }]);
@@ -86,6 +87,26 @@ export default function SchedulePage() {
   const addMatch = () => setManualMatches((prev) => [...prev, { team1: "", team2: "", round: "", date: "", venue: "" }]);
   const removeMatch = (i) => setManualMatches((prev) => prev.filter((_, idx) => idx !== i));
 
+  const handleInitMatches = async () => {
+    setInitLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        navigate(`/sports/cricket/scoreboard/${eventId}`);
+      } else {
+        setError(data.message || "Failed to initialize matches");
+      }
+    } catch (err) {
+      setError("Error initializing matches");
+    } finally {
+      setInitLoading(false);
+    }
+  };
+
   const teamNames = teams.map((t) => t.name);
 
   return (
@@ -144,6 +165,23 @@ export default function SchedulePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                onClick={handleInitMatches}
+                disabled={initLoading}
+                className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md transition disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {initLoading ? <><FaSpinner className="animate-spin" /> Starting...</> : <><FaTrophy /> Start Tournament</>}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                onClick={() => navigate(`/sports/cricket/scoreboard/${eventId}`)}
+                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md transition flex items-center justify-center gap-2"
+              >
+                <FaTrophy /> View Scoreboard
+              </motion.button>
             </div>
           </div>
         )}

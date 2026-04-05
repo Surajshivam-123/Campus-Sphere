@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import participantService from "../../services/participant.service";
+import { formatDateTime } from "../../utils/helpers";
 
 export default function EventDetailsPage() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function EventDetailsPage() {
           </p>
           <p>
             <span className="font-semibold text-blue-600">Date:</span>{" "}
-            {eventData.startDate}
+            {formatDateTime(eventData.startDate)}
           </p>
           <p>
             <span className="font-semibold text-blue-600">Location:</span>{" "}

@@ -1,12 +1,16 @@
-import { useNavigate, useParams } from "react-router-dom";
+﻿import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaChalkboardTeacher,
 } from "react-icons/fa";
-import LoadingPage from "../LoadingPage";
-import API_URL from "../../config/api";
-import fetchWithAuth from "../../config/fetchWithAuth";
+import { MdSportsCricket } from "react-icons/md";
+import LoadingPage from "../../../LoadingPage";
+import API_URL from "../../../../config/api";
+import fetchWithAuth from "../../../../config/fetchWithAuth";
+import { formatDateTime } from "../../../../utils/helpers";
+import useScorerRole from "../../../../hooks/useScorerRole";
+import useIsLive from "../../../../hooks/useIsLive";
 
 export default function CricketEventDetailsPageParticipant() {
   const navigate = useNavigate();
@@ -15,6 +19,8 @@ export default function CricketEventDetailsPageParticipant() {
   const [event, setEvent] = useState(null);
   // role: null=loading, "none", "creator", "member"
   const [role, setRole] = useState(null);
+  const { isScorer } = useScorerRole(eventId);
+  const { isLive } = useIsLive(eventId);
 
   useEffect(() => {
     const load = async () => {
@@ -41,7 +47,7 @@ export default function CricketEventDetailsPageParticipant() {
 
       // Check if user joined as a member
       try {
-        const memberRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/my-team/${eventId}`, {
+        const memberRes = await fetchWithAuth(`${API_URL}/api/v1/sports/cricket/players/my-team/${eventId}`, {
           method: "GET", headers: { "Content-Type": "application/json" },
         });
         const memberData = await memberRes.json();
@@ -58,8 +64,8 @@ export default function CricketEventDetailsPageParticipant() {
 
   // Once role is determined, redirect to the right page
   useEffect(() => {
-    if (role === "creator") navigate(`/cricket-team-creator/${eventId}`, { replace: true });
-    if (role === "member") navigate(`/cricket-team-member/${eventId}`, { replace: true });
+    if (role === "creator") navigate(`/sports/cricket/team-creator/${eventId}`, { replace: true });
+    if (role === "member") navigate(`/sports/cricket/team-member/${eventId}`, { replace: true });
   }, [role]);
 
   if (!event || role === null || role === "creator" || role === "member") {
@@ -87,7 +93,7 @@ export default function CricketEventDetailsPageParticipant() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
-            <p><FaCalendarAlt className="inline-block mr-2 text-blue-500" /><strong>Date:</strong> {startDate}</p>
+            <p><FaCalendarAlt className="inline-block mr-2 text-blue-500" /><strong>Date:</strong> {formatDateTime(startDate)}</p>
             <p><FaMapMarkerAlt className="inline-block mr-2 text-red-500" /><strong>Location:</strong> {location}</p>
             <p><FaChalkboardTeacher className="inline-block mr-2 text-green-600" /><strong>Organized By:</strong> {organization}</p>
             <p><strong>Mode:</strong> {mode}</p>
@@ -109,22 +115,42 @@ export default function CricketEventDetailsPageParticipant() {
           </div>
         </div>
 
+        {isScorer && (
+          <div className="mx-8 mb-4 flex items-center justify-between gap-3 bg-indigo-600 text-white rounded-2xl px-5 py-4 shadow-lg">
+            <div className="flex items-center gap-3">
+              <MdSportsCricket className="text-2xl flex-shrink-0" />
+              <div>
+                <p className="font-bold text-sm">You are the assigned scorer</p>
+                <p className="text-xs text-indigo-200">The host has given you access to update the scorecard.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate(`/sports/cricket/match-manager/${eventId}`)}
+              className="bg-white text-indigo-700 font-bold text-sm px-4 py-2 rounded-xl hover:bg-indigo-50 transition flex-shrink-0"
+            >
+              Update Scorecard
+            </button>
+          </div>
+        )}
+
         <div className="px-8 pb-8 flex gap-3">
           <button
-            onClick={() => navigate(`/cricket-create-team/${eventId}`)}
+            onClick={() => navigate(`/sports/cricket/create-team/${eventId}`)}
             className="bg-blue-600 text-white rounded-lg px-5 py-2 hover:bg-blue-800 transition shadow font-medium">
             Create Team
           </button>
           <button
-            onClick={() => navigate(`/join-team/${eventId}`)}
+            onClick={() => navigate(`/sports/cricket/join-team/${eventId}`)}
             className="bg-blue-600 text-white rounded-lg px-5 py-2 hover:bg-blue-800 transition shadow font-medium">
             Join Team
           </button>
-          <button
-            onClick={() => navigate(`/cricket-scoreboard/${eventId}`)}
-            className="bg-green-600 text-white rounded-lg px-5 py-2 hover:bg-green-700 transition shadow font-medium flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" /> Watch Live
-          </button>
+          {isLive && (
+            <button
+              onClick={() => navigate(`/sports/cricket/scoreboard/${eventId}`)}
+              className="bg-green-600 text-white rounded-lg px-5 py-2 hover:bg-green-700 transition shadow font-medium flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" /> Watch Live
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

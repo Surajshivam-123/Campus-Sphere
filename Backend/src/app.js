@@ -31,31 +31,36 @@ import eventRouter from "./routes/event.route.js";
 import participantRouter from "./routes/participant.route.js";
 import memberRouter from "./routes/member.route.js";
 import teamRouter from "./routes/team.route.js";
-import cricketPlayerRouter from "./routes/cricketPlayer.route.js";
-import cricketFormatRouter from "./routes/cricketFormat.route.js";
 import scheduleRouter from "./routes/schedule.route.js";
-import matchRouter from "./routes/match.route.js";
 
+// Sports — Cricket
+import cricketPlayerRouter from "./sports/cricket/routes/player.route.js";
+import cricketFormatRouter from "./sports/cricket/routes/format.route.js";
+import cricketMatchRouter from "./sports/cricket/routes/match.route.js";
+
+// Core routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/events", eventRouter);
 app.use("/api/v1/participants", participantRouter);
 app.use("/api/v1/members", memberRouter);
 app.use("/api/v1/teams", teamRouter);
-app.use("/api/v1/cricket-players", cricketPlayerRouter);
-app.use("/api/v1/cricket-format", cricketFormatRouter);
 app.use("/api/v1/schedule", scheduleRouter);
-app.use("/api/v1/matches", matchRouter);
 
-// Legacy routes (for backward compatibility - can be removed later)
+// Cricket routes — namespaced under /sports/cricket
+app.use("/api/v1/sports/cricket/players", cricketPlayerRouter);
+app.use("/api/v1/sports/cricket/format", cricketFormatRouter);
+app.use("/api/v1/sports/cricket/matches", cricketMatchRouter);
+
+// Legacy routes (backward compatibility)
 app.use("/api/cpsh/users", userRouter);
 app.use("/api/cpsh/events", eventRouter);
 app.use("/api/cpsh/participants", participantRouter);
 app.use("/api/cpsh/members", memberRouter);
 app.use("/api/cpsh/teams", teamRouter);
+app.use("/api/cpsh/schedule", scheduleRouter);
 app.use("/api/cpsh/cricket-players", cricketPlayerRouter);
 app.use("/api/cpsh/cricket-format", cricketFormatRouter);
-app.use("/api/cpsh/schedule", scheduleRouter);
-app.use("/api/cpsh/matches", matchRouter);
+app.use("/api/cpsh/matches", cricketMatchRouter);
 
 // Error handling
 app.use(notFound);

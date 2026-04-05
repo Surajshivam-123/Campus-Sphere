@@ -15,7 +15,6 @@ import AllEvents from "../pages/Home/AllEvents";
 // Event Creation & Management
 import CreateEvent from "../pages/EventCreation/CreateEvent";
 import WorkshopEventDetails from "../pages/EventCreation/WorkshopEventDetails";
-import CricketEventPage from "../pages/EventCreation/CricketEventPage";
 import UpdateEventPage from "../pages/EditEvent/UpdateEvent";
 
 // Hosted Events
@@ -31,28 +30,28 @@ import JoinMember from "../pages/JoinMember/JoinMember";
 import EventDetailsMemberPage from "../pages/JoinMember/EventDetailsMember";
 import MemberEvents from "../pages/MyParticipatedEvents/ParticipateateasMember";
 
-// Cricket/Sports Specific
-import CreateCricketFormat from "../pages/Cricket/Cricket";
-import CricketEventDetailsPageParticipant from "../pages/MyParticipatedEvents/CricketEventDetailsPageParticipant";
-import JoinTeam from "../pages/MyParticipatedEvents/JoinTeam";
-import TeamCreatorPage from "../pages/MyParticipatedEvents/TeamCreatorPage";
-import TeamMemberPage from "../pages/MyParticipatedEvents/TeamMemberPage";
-import CreateTeamPage from "../pages/MyParticipatedEvents/CreateTeamPage";
-
 // Schedule
 import SchedulePage from "../pages/Schedule/SchedulePage";
-
-// Live Score Pages
-import LiveScoreboard from "../pages/Cricket/LiveScoreboard";
-import MatchScorecard from "../pages/Cricket/MatchScorecard";
-import ScoreInput from "../pages/Cricket/ScoreInput";
-import MatchManager from "../pages/Cricket/MatchManager";
 
 // User Profile
 import Profile from "../pages/Profile";
 
 // Auth Callback (Google OAuth)
 import AuthCallback from "../pages/AuthCallback";
+
+// ── Cricket ──────────────────────────────────────────────────────────────────
+import CricketEventSetup from "../pages/sports/cricket/EventSetup";
+import CricketFormat from "../pages/sports/cricket/Format";
+import CricketLiveScoreboard from "../pages/sports/cricket/LiveScoreboard";
+import CricketMatchScorecard from "../pages/sports/cricket/MatchScorecard";
+import CricketScoreInput from "../pages/sports/cricket/ScoreInput";
+import CricketMatchManager from "../pages/sports/cricket/MatchManager";
+import CricketSquadSubmit from "../pages/sports/cricket/SquadSubmit";
+import CricketEventDetails from "../pages/sports/cricket/participant/EventDetails";
+import CricketJoinTeam from "../pages/sports/cricket/participant/JoinTeam";
+import CricketCreateTeam from "../pages/sports/cricket/participant/CreateTeam";
+import CricketTeamCreator from "../pages/sports/cricket/participant/TeamCreator";
+import CricketTeamMember from "../pages/sports/cricket/participant/TeamMember";
 
 export default function AppRoutes() {
   return (
@@ -62,53 +61,55 @@ export default function AppRoutes() {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-      {/* Home & Navigation Routes */}
+      {/* Home & Navigation */}
       <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/choice" element={<ProtectedRoute><IamChoice /></ProtectedRoute>} />
       <Route path="/all-events" element={<ProtectedRoute><AllEvents /></ProtectedRoute>} />
 
-      {/* Event Creation Routes */}
+      {/* Event Creation */}
       <Route path="/new-events-hosted" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
       <Route path="/event/:eventName/:eventId/workshop" element={<ProtectedRoute><WorkshopEventDetails /></ProtectedRoute>} />
-      <Route path="/event/:eventName/:eventId/sports/cricket" element={<ProtectedRoute><CricketEventPage /></ProtectedRoute>} />
-      <Route path="/cricket-format/:eventId" element={<ProtectedRoute><CreateCricketFormat /></ProtectedRoute>} />
-      <Route path="/cricket-format/:eventId/view" element={<ProtectedRoute><CreateCricketFormat viewOnly /></ProtectedRoute>} />
-
-      {/* Event Management Routes */}
       <Route path="/events-hosted" element={<ProtectedRoute><EventList /></ProtectedRoute>} />
       <Route path="/update-event/:eventId" element={<ProtectedRoute><UpdateEventPage /></ProtectedRoute>} />
 
-      {/* Participant Routes */}
+      {/* Participant */}
       <Route path="/join-event" element={<ProtectedRoute><JoinEvent /></ProtectedRoute>} />
       <Route path="/event-details/:identityNumber/:participantCode/:participantId" element={<ProtectedRoute><EventDetailsPage /></ProtectedRoute>} />
       <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
 
-      {/* Member Routes */}
+      {/* Member */}
       <Route path="/joinMember" element={<ProtectedRoute><JoinMember /></ProtectedRoute>} />
       <Route path="/get-event/:memberCode" element={<ProtectedRoute><EventDetailsMemberPage /></ProtectedRoute>} />
       <Route path="/my-events-member" element={<ProtectedRoute><MemberEvents /></ProtectedRoute>} />
 
-      {/* Cricket/Sports Routes */}
-      <Route path="/cricket-event-details/:eventId/:identityNumber/:participantCode/:participantId" element={<ProtectedRoute><CricketEventDetailsPageParticipant /></ProtectedRoute>} />
-      <Route path="/join-team/:eventId" element={<ProtectedRoute><JoinTeam /></ProtectedRoute>} />
-      <Route path="/cricket-create-team/:eventId" element={<ProtectedRoute><CreateTeamPage /></ProtectedRoute>} />
-      <Route path="/cricket-team-creator/:eventId" element={<ProtectedRoute><TeamCreatorPage /></ProtectedRoute>} />
-      <Route path="/cricket-team-member/:eventId" element={<ProtectedRoute><TeamMemberPage /></ProtectedRoute>} />
+      {/* Schedule */}
+      <Route path="/sports/cricket/schedule/:eventId" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
 
-      {/* User Profile Route */}
+      {/* User Profile */}
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
       {/* Google OAuth Callback */}
       <Route path="/auth/callback" element={<AuthCallback />} />
 
-      {/* Schedule Route */}
-      <Route path="/cricket-schedule/:eventId" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
+      {/* ── Cricket Routes ──────────────────────────────────────────────────── */}
+      {/* Event setup (organizer) */}
+      <Route path="/event/:eventName/:eventId/sports/cricket" element={<ProtectedRoute><CricketEventSetup /></ProtectedRoute>} />
+      <Route path="/sports/cricket/format/:eventId" element={<ProtectedRoute><CricketFormat /></ProtectedRoute>} />
+      <Route path="/sports/cricket/format/:eventId/view" element={<ProtectedRoute><CricketFormat viewOnly /></ProtectedRoute>} />
 
-      {/* Live Score Routes — login required, access checked inside component */}
-      <Route path="/cricket-scoreboard/:eventId" element={<ProtectedRoute><LiveScoreboard /></ProtectedRoute>} />
-      <Route path="/match/:matchId/scorecard" element={<ProtectedRoute><MatchScorecard /></ProtectedRoute>} />
-      <Route path="/match/:matchId/score-input" element={<ProtectedRoute><ScoreInput /></ProtectedRoute>} />
-      <Route path="/cricket-match-manager/:eventId" element={<ProtectedRoute><MatchManager /></ProtectedRoute>} />
+      {/* Participant flow */}
+      <Route path="/sports/cricket/event-details/:eventId/:identityNumber/:participantCode/:participantId" element={<ProtectedRoute><CricketEventDetails /></ProtectedRoute>} />
+      <Route path="/sports/cricket/join-team/:eventId" element={<ProtectedRoute><CricketJoinTeam /></ProtectedRoute>} />
+      <Route path="/sports/cricket/create-team/:eventId" element={<ProtectedRoute><CricketCreateTeam /></ProtectedRoute>} />
+      <Route path="/sports/cricket/team-creator/:eventId" element={<ProtectedRoute><CricketTeamCreator /></ProtectedRoute>} />
+      <Route path="/sports/cricket/team-member/:eventId" element={<ProtectedRoute><CricketTeamMember /></ProtectedRoute>} />
+
+      {/* Live scoring */}
+      <Route path="/sports/cricket/scoreboard/:eventId" element={<ProtectedRoute><CricketLiveScoreboard /></ProtectedRoute>} />
+      <Route path="/sports/cricket/match/:matchId/scorecard" element={<ProtectedRoute><CricketMatchScorecard /></ProtectedRoute>} />
+      <Route path="/sports/cricket/match/:matchId/score-input" element={<ProtectedRoute><CricketScoreInput /></ProtectedRoute>} />
+      <Route path="/sports/cricket/match-manager/:eventId" element={<ProtectedRoute><CricketMatchManager /></ProtectedRoute>} />
+      <Route path="/sports/cricket/match/:matchId/squad-submit" element={<ProtectedRoute><CricketSquadSubmit /></ProtectedRoute>} />
     </Routes>
   );
 }

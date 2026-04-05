@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import API_URL from "../config/api";
 import fetchWithAuth from "../config/fetchWithAuth";
+import { formatDate } from "../utils/helpers";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -68,7 +69,7 @@ const Profile = () => {
               <p>
                 <span className="text-gray-500">Joined</span>{" "}
                 <span className="font-medium text-[#1e3a5f]">
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {formatDate(user.createdAt)}
                 </span>
               </p>
             </div>

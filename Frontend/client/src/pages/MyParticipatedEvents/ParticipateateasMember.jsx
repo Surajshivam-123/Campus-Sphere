@@ -1,45 +1,22 @@
-// src/pages/MyEvents.jsx
-import { useEffect } from "react";
-import EventCard from "./EventCard";
-import { useState } from "react";
+import EventCard from "../../components/shared/EventCard";
 import LoadingPage from "../LoadingPage";
-import API_URL from "../../config/api";
+import { useMyMemberEvents } from "../../hooks/useEvents";
 
 export default function MemberEvents() {
-  const [events, setEvents] = useState(null);
-  const [message,setmessage]=useState("");
-  useEffect(() => {
-    const getEvent = async () => {
-      const response = await fetch(
-        `${API_URL}/api/cpsh/members/get-all-events`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-      const result = await response.json();
-      console.log("Server Response:",result);
-      if(result?.statusCode===200){
-        setmessage("");
-      setEvents(result?.data);
-    }
-    else{
-      setmessage(result?.message);
-    }
-    };
-    getEvent();
-  }, []);
-  if(message!=="")return(
-    <div>
-      <p>{message}</p>
-    </div>
-  )
-  if(!events)return(
-    <div><LoadingPage/></div>
-  )
+  const { events, loading, error } = useMyMemberEvents();
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 px-4">
+        <div className="text-center text-red-600">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) return <LoadingPage />;
+
   return (
     <div className="min-h-screen bg-gray-100 pt-20 px-4">
       <h1 className="text-3xl font-bold text-center text-purple-800 mb-8">
@@ -47,7 +24,7 @@ export default function MemberEvents() {
       </h1>
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
-          <EventCard key={event._id} event={event} />
+          <EventCard key={event._id} event={event} variant="basic" />
         ))}
       </div>
     </div>

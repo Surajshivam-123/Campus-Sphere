@@ -1,9 +1,9 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
-import API_URL from "../../config/api";
-import fetchWithAuth from "../../config/fetchWithAuth";
+import API_URL from "../../../../config/api";
+import fetchWithAuth from "../../../../config/fetchWithAuth";
 
 export default function JoinTeam() {
   const [teamCode, setteamCode] = useState("");
@@ -24,7 +24,7 @@ export default function JoinTeam() {
     } else {
       try {
         const response = await fetchWithAuth(
-          `${API_URL}/api/cpsh/cricket-players/join-team/${teamCode}/${eventId}`,
+          `${API_URL}/api/v1/sports/cricket/players/join-team/${teamCode}/${eventId}`,
           { method: "POST" }
         );
         const result = await response.json();
@@ -34,7 +34,7 @@ export default function JoinTeam() {
           setSuccess("");
         } else {
           // Navigate back to event details — role check will redirect to TeamMemberPage
-          navigate(`/cricket-team-member/${eventId}`, { replace: true });
+          navigate(`/sports/cricket/team-member/${eventId}`, { replace: true });
         }
       } catch (error) {
         console.log("Error while submitting", error);

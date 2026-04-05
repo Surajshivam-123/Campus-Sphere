@@ -77,6 +77,11 @@ const eventSchema = new Schema(
       required: true,
       unique: true,
     },
+    scorerUpdater: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   {
     timestamps: true,

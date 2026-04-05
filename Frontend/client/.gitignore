@@ -36,3 +36,4 @@ psd
 thumb
 sketch
 .env.production
+.env

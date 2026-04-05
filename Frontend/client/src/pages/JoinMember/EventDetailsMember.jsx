@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingPage from "../LoadingPage";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Info, Star } from "lucide-react";
 import eventService from "../../services/event.service";
+import { formatDateTime } from "../../utils/helpers";
+import useIsLive from "../../hooks/useIsLive";
 
 export default function EventDetailsMemberPage() {
   const { memberCode } = useParams();
@@ -22,9 +24,10 @@ export default function EventDetailsMemberPage() {
     loadEvent();
   }, [memberCode]);
 
-  if (!eventData) return <div><LoadingPage /></div>;
+  // Hook must be called unconditionally — pass null until eventData is loaded
+  const { isLive } = useIsLive(eventData?._id ?? null);
 
-  const isCricket = eventData.category === 'sports' && eventData.sports?.toLowerCase() === 'cricket';
+  if (!eventData) return <div><LoadingPage /></div>;
 
   return (
     <div className="bg-purple-600 min-h-screen flex justify-center items-center">
@@ -46,7 +49,7 @@ export default function EventDetailsMemberPage() {
         </div>
         <div className="flex items-center gap-2">
           <CalendarDays className="text-green-500" />
-          <p><strong className="text-gray-900">Date:</strong> {eventData.startDate}</p>
+          <p><strong className="text-gray-900">Date:</strong> {formatDateTime(eventData.startDate)}</p>
         </div>
         <div className="flex items-center gap-2">
           <MapPin className="text-red-500" />
@@ -58,9 +61,9 @@ export default function EventDetailsMemberPage() {
         </div>
       </div>
 
-      {isCricket && (
+      {isLive && (
         <button
-          onClick={() => navigate(`/cricket-scoreboard/${eventData._id}`)}
+          onClick={() => navigate(`/sports/cricket/scoreboard/${eventData._id}`)}
           className="mt-6 w-full flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition"
         >
           <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />

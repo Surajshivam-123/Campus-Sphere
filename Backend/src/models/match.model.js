@@ -5,8 +5,12 @@ const inningsSchema = new Schema({
   runs: { type: Number, default: 0 },
   wickets: { type: Number, default: 0 },
   overs: { type: Number, default: 0 },
-  balls: { type: Number, default: 0 }, // balls in current over (0-5)
+  balls: { type: Number, default: 0 },
   extras: { type: Number, default: 0 },
+  // Current players on field — persisted so scorer can resume after refresh
+  currentStriker:    { type: String, default: "" },
+  currentNonStriker: { type: String, default: "" },
+  currentBowler:     { type: String, default: "" },
   batsmen: [
     {
       playerId: { type: Schema.Types.ObjectId, ref: "Cricket_Player" },
@@ -35,6 +39,8 @@ const inningsSchema = new Schema({
       over: Number,
       ball: Number,
       runs: Number,
+      batsmanName: { type: String, default: "" },
+      bowlerName:  { type: String, default: "" },
       isWicket: { type: Boolean, default: false },
       isWide: { type: Boolean, default: false },
       isNoBall: { type: Boolean, default: false },
@@ -58,12 +64,18 @@ const matchSchema = new Schema(
     overs: { type: Number, default: 20 },
     status: {
       type: String,
-      enum: ["upcoming", "live", "completed", "abandoned"],
+      enum: ["upcoming", "toss_done", "squads_ready", "live", "completed", "abandoned"],
       default: "upcoming",
     },
     tossWinner: { type: String, default: "" },
     tossDecision: { type: String, enum: ["bat", "bowl", ""], default: "" },
-    currentInnings: { type: Number, default: 1 }, // 1 or 2
+    currentInnings: { type: Number, default: 1 },
+    // Squad submitted by each captain (player names from their team)
+    team1Squad: [{ name: { type: String }, playerId: { type: Schema.Types.ObjectId, ref: "Cricket_Player" } }],
+    team2Squad: [{ name: { type: String }, playerId: { type: Schema.Types.ObjectId, ref: "Cricket_Player" } }],
+    // Playing XI confirmed by scorer after seeing who's on the ground
+    team1PlayingXI: [{ name: { type: String }, playerId: { type: Schema.Types.ObjectId, ref: "Cricket_Player" } }],
+    team2PlayingXI: [{ name: { type: String }, playerId: { type: Schema.Types.ObjectId, ref: "Cricket_Player" } }],
     innings1: { type: inningsSchema, default: () => ({}) },
     innings2: { type: inningsSchema, default: () => ({}) },
     result: { type: String, default: "" },

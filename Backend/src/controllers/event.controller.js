@@ -20,76 +20,71 @@ const generateUniqueCode = () => {
 };
 
 const createEvent = asyncHandler(async (req, res) => {
-  try {
-    const {
-      festivalName,
-      eventName,
-      startDate,
-      location,
-      organization,
-      description,
-      mode,
-      category,
-      sports,
-      others,
-      cultural,
-      maxParticipants,
-      rules,
-    } = req.body;
-    if (
-      !eventName.trim() ||
-      !startDate.trim() ||
-      !organization.trim() ||
-      !description.trim() ||
-      !mode.trim() ||
-      !category.trim() ||
-      !maxParticipants
-    ) {
-      throw new ApiError(400, "All fields are required");
-    }
-    const posterLocalPath = req.file?.path;
-    if (!posterLocalPath) {
-      throw new ApiError(400, "Poster is required");
-    }
-    const poster=await uploadOnCloudinary(posterLocalPath)
-    let memberCode = generateUniqueCode();
-    let participantCode = generateUniqueCode();
-    while (await Event.findOne({ memberCode })) {
-      memberCode = generateUniqueCode();
-    }
-    while (await Event.findOne({ participantCode })) {
-      participantCode = generateUniqueCode();
-    }
-    const event = await Event.create({
-      festivalName,
-      eventName,
-      startDate,
-      location,
-      organization,
-      organizer: req.user._id,
-      description,
-      mode,
-      category,
-      sports,
-      cultural,
-      others,
-      maxParticipants,
-      rules,
-      poster:poster.url,
-      memberCode,
-      participantCode,
-    });
-    if (!event) {
-      throw new ApiError(400, "Error while creating event");
-    }
-    // Invalidate organizer's event list cache
-    await cacheDel(`events:organizer:${req.user._id}`);
-    res
-      .status(201)
-      .json(new ApiResponse(201, event, "Event created successfully"));
-  } catch (error) {
-    console.log("Error while creating event", error);
+  const {
+    festivalName,
+    eventName,
+    startDate,
+    location,
+    organization,
+    description,
+    mode,
+    category,
+    sports,
+    others,
+    cultural,
+    maxParticipants,
+    rules,
+  } = req.body;
+
+  if (
+    !eventName?.trim() ||
+    !startDate?.trim() ||
+    !organization?.trim() ||
+    !description?.trim() ||
+    !mode?.trim() ||
+    !category?.trim() ||
+    !maxParticipants
+  ) {
+    throw new ApiError(400, "All fields are required");
   }
+
+  const posterLocalPath = req.file?.path;
+  if (!posterLocalPath) {
+    throw new ApiError(400, "Poster is required");
+  }
+
+  const poster = await uploadOnCloudinary(posterLocalPath);
+  if (!poster?.url) {
+    throw new ApiError(500, "Failed to upload poster");
+  }
+
+  let memberCode = generateUniqueCode();
+  let participantCode = generateUniqueCode();
+  while (await Event.findOne({ memberCode })) memberCode = generateUniqueCode();
+  while (await Event.findOne({ participantCode })) participantCode = generateUniqueCode();
+
+  const event = await Event.create({
+    festivalName,
+    eventName,
+    startDate,
+    location,
+    organization,
+    organizer: req.user._id,
+    description,
+    mode,
+    category,
+    sports,
+    cultural,
+    others,
+    maxParticipants,
+    rules,
+    poster: poster.url,
+    memberCode,
+    participantCode,
+  });
+
+  await cacheDel(`events:organizer:${req.user._id}`);
+  res.status(201).json(new ApiResponse(201, event, "Event created successfully"));
 });
 
 const deleteEvent = asyncHandler(async (req, res) => {
@@ -247,4 +242,45 @@ const getPublicEvents = asyncHandler(async (req, res) => {
   }
 });
 
-export { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents };
+// Assign a scorer updater — organizer only
+const assignScorer = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { userId } = req.body;
+    if (!userId) throw new ApiError(400, "userId is required");
+
+    const event = await Event.findById(eventId);
+    if (!event) throw new ApiError(404, "Event not found");
+    if (event.organizer.toString() !== req.user._id.toString())
+      throw new ApiError(403, "Only the organizer can assign a scorer");
+
+    event.scorerUpdater = userId;
+    await event.save();
+    await cacheDel(`event:${eventId}`);
+    res.status(200).json(new ApiResponse(200, { scorerUpdater: event.scorerUpdater }, "Scorer assigned"));
+  } catch (error) {
+    console.log("Error assigning scorer", error);
+    throw error;
+  }
+});
+
+// Revoke scorer — organizer only
+const revokeScorer = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const event = await Event.findById(eventId);
+    if (!event) throw new ApiError(404, "Event not found");
+    if (event.organizer.toString() !== req.user._id.toString())
+      throw new ApiError(403, "Only the organizer can revoke a scorer");
+
+    event.scorerUpdater = null;
+    await event.save();
+    await cacheDel(`event:${eventId}`);
+    res.status(200).json(new ApiResponse(200, null, "Scorer revoked"));
+  } catch (error) {
+    console.log("Error revoking scorer", error);
+    throw error;
+  }
+});
+
+export { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer };

@@ -1,12 +1,12 @@
-import asyncHandler from "../utils/AsyncHandler.js";
-import ApiResponse from "../utils/ApiResponse.js";
-import ApiError from "../utils/ApiError.js";
-import { Match } from "../models/match.model.js";
-import { Team } from "../models/team.model.js";
-import { Schedule } from "../models/schedule.model.js";
-import { CricketFormat } from "../models/cricketFormat.model.js";
-import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
-import { emitMatchUpdate } from "../socket.js";
+import asyncHandler from "../../../utils/AsyncHandler.js";
+import ApiResponse from "../../../utils/ApiResponse.js";
+import ApiError from "../../../utils/ApiError.js";
+import { Match } from "../../../models/match.model.js";
+import { Team } from "../../../models/team.model.js";
+import { Schedule } from "../../../models/schedule.model.js";
+import { CricketFormat } from "../models/format.model.js";
+import { cacheGet, cacheSet, cacheDel } from "../../../utils/redis.js";
+import { emitMatchUpdate } from "../../../socket.js";
 
 const MATCH_TTL = 10; // short TTL for live scores
 
@@ -99,13 +99,12 @@ const startMatch = asyncHandler(async (req, res) => {
     const match = await Match.findById(matchId);
     if (!match) throw new ApiError(404, "Match not found");
 
-    // Determine batting/bowling order
     const battingFirst =
       tossDecision === "bat" ? tossWinner : (tossWinner === match.team1 ? match.team2 : match.team1);
 
     match.tossWinner = tossWinner;
     match.tossDecision = tossDecision;
-    match.status = "live";
+    match.status = "toss_done"; // wait for squad selection
     match.currentInnings = 1;
     match.innings1.battingTeam = battingFirst;
     match.innings2.battingTeam = battingFirst === match.team1 ? match.team2 : match.team1;
@@ -113,10 +112,69 @@ const startMatch = asyncHandler(async (req, res) => {
     await match.save();
     await cacheDel(`match:${matchId}`, `matches:event:${match.event}`);
     emitMatchUpdate(match.toObject());
-    res.status(200).json(new ApiResponse(200, match, "Match started"));
+    res.status(200).json(new ApiResponse(200, match, "Toss recorded — awaiting squad selection"));
   } catch (error) {
     console.log("Error starting match", error);
     res.status(500).json(new ApiResponse(500, null, error.message || "Error starting match"));
+  }
+});
+
+// ── Captain submits their squad ───────────────────────────────────────────────
+const submitSquad = asyncHandler(async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { teamName, players } = req.body;
+    // players: [{ name, playerId }]
+
+    const match = await Match.findById(matchId);
+    if (!match) throw new ApiError(404, "Match not found");
+    if (match.status !== "toss_done") throw new ApiError(400, "Toss must be done before squad submission");
+
+    if (match.team1 === teamName) {
+      match.team1Squad = players;
+    } else if (match.team2 === teamName) {
+      match.team2Squad = players;
+    } else {
+      throw new ApiError(400, "Team not part of this match");
+    }
+
+    // If both squads submitted, move to squads_ready
+    if (match.team1Squad.length > 0 && match.team2Squad.length > 0) {
+      match.status = "squads_ready";
+    }
+
+    await match.save();
+    await cacheDel(`match:${matchId}`, `matches:event:${match.event}`);
+    emitMatchUpdate(match.toObject());
+    res.status(200).json(new ApiResponse(200, match, "Squad submitted"));
+  } catch (error) {
+    console.log("Error submitting squad", error);
+    res.status(500).json(new ApiResponse(500, null, error.message || "Error submitting squad"));
+  }
+});
+
+// ── Scorer confirms playing XI from both squads ───────────────────────────────
+const confirmPlayingXI = asyncHandler(async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { team1PlayingXI, team2PlayingXI } = req.body;
+    // each: [{ name, playerId }]
+
+    const match = await Match.findById(matchId);
+    if (!match) throw new ApiError(404, "Match not found");
+    if (match.status !== "squads_ready") throw new ApiError(400, "Squads must be ready before confirming XI");
+
+    match.team1PlayingXI = team1PlayingXI;
+    match.team2PlayingXI = team2PlayingXI;
+    match.status = "live";
+
+    await match.save();
+    await cacheDel(`match:${matchId}`, `matches:event:${match.event}`);
+    emitMatchUpdate(match.toObject());
+    res.status(200).json(new ApiResponse(200, match, "Playing XI confirmed — match is live"));
+  } catch (error) {
+    console.log("Error confirming playing XI", error);
+    res.status(500).json(new ApiResponse(500, null, error.message || "Error confirming playing XI"));
   }
 });
 
@@ -134,6 +192,9 @@ const addDelivery = asyncHandler(async (req, res) => {
       batsmanName = "",
       bowlerName = "",
       commentary = "",
+      // Current on-field players sent from frontend
+      striker = "",
+      nonStriker = "",
     } = req.body;
 
     const match = await Match.findById(matchId);
@@ -143,34 +204,44 @@ const addDelivery = asyncHandler(async (req, res) => {
     const inningsKey = match.currentInnings === 1 ? "innings1" : "innings2";
     const innings = match[inningsKey];
 
-    // ── Update bowler ──────────────────────────────────────────────────────
+    const isLegal = !isWide && !isNoBall;
+
+    // ── Persist current on-field players ──────────────────────────────────
+    innings.currentStriker    = striker    || batsmanName;
+    innings.currentNonStriker = nonStriker || "";
+    innings.currentBowler     = bowlerName;
+
+    // ── Update bowler stats ────────────────────────────────────────────────
     let bowler = innings.bowlers.find((b) => b.name === bowlerName);
     if (!bowler && bowlerName) {
       innings.bowlers.push({ name: bowlerName, overs: 0, balls: 0, runs: 0, wickets: 0 });
       bowler = innings.bowlers[innings.bowlers.length - 1];
     }
 
-    // ── Update batsman ─────────────────────────────────────────────────────
+    // ── Update batsman stats ───────────────────────────────────────────────
     let batsman = innings.batsmen.find((b) => b.name === batsmanName && !b.isOut);
     if (!batsman && batsmanName) {
       innings.batsmen.push({ name: batsmanName, runs: 0, balls: 0, fours: 0, sixes: 0, isOnStrike: true });
       batsman = innings.batsmen[innings.batsmen.length - 1];
     }
 
-    const isLegal = !isWide && !isNoBall;
+    // Mark isOnStrike correctly
+    innings.batsmen.forEach((b) => { b.isOnStrike = b.name === batsmanName && !b.isOut; });
 
     // ── Runs ───────────────────────────────────────────────────────────────
     if (!isBye && !isLegBye) {
       innings.runs += runs;
       if (batsman) {
         batsman.runs += runs;
-        if (!isWide) batsman.balls += 1;
+        if (isLegal) batsman.balls += 1;   // wides don't count as balls faced
         if (runs === 4) batsman.fours += 1;
         if (runs === 6) batsman.sixes += 1;
       }
     } else {
-      innings.runs += runs;
+      // Byes/leg-byes: count to team total and extras, not batsman
+      innings.runs   += runs;
       innings.extras += runs;
+      if (batsman && isLegal) batsman.balls += 1;
     }
 
     if (isWide || isNoBall) innings.extras += 1;
@@ -179,47 +250,61 @@ const addDelivery = asyncHandler(async (req, res) => {
     if (isWicket) {
       innings.wickets += 1;
       if (batsman) batsman.isOut = true;
-      if (bowler) bowler.wickets += 1;
+      if (bowler)  bowler.wickets += 1;
     }
 
-    // ── Ball count ─────────────────────────────────────────────────────────
+    // ── Ball / over count (legal deliveries only) ──────────────────────────
     if (isLegal) {
       innings.balls += 1;
       if (bowler) bowler.balls += 1;
-      if (innings.balls % 6 === 0) {
+
+      if (innings.balls >= 6) {
         innings.overs += 1;
-        innings.balls = 0;
+        innings.balls  = 0;
         if (bowler) { bowler.overs += 1; bowler.balls = 0; }
+
+        // End of over: swap striker/non-striker
+        const tmp = innings.currentStriker;
+        innings.currentStriker    = innings.currentNonStriker;
+        innings.currentNonStriker = tmp;
+        // Bowler will be set by next delivery
+        innings.currentBowler = "";
+      } else if (!isWicket && runs % 2 !== 0) {
+        // Odd runs on a legal ball: swap strike
+        const tmp = innings.currentStriker;
+        innings.currentStriker    = innings.currentNonStriker;
+        innings.currentNonStriker = tmp;
       }
     }
 
     // ── Ball-by-ball log ───────────────────────────────────────────────────
     innings.ballByBall.push({
-      over: innings.overs,
-      ball: innings.balls,
+      over:  innings.overs,
+      ball:  innings.balls,
       runs,
+      batsmanName,
+      bowlerName,
       isWicket,
       isWide,
       isNoBall,
       isBye,
       isLegBye,
-      commentary: commentary || `${bowlerName} to ${batsmanName}: ${runs} run(s)${isWicket ? " WICKET!" : ""}`,
+      commentary: commentary ||
+        `${bowlerName} to ${batsmanName}: ${
+          isWicket ? "WICKET! " : ""
+        }${isWide ? "Wide " : ""}${isNoBall ? "No Ball " : ""}${runs} run(s)`,
     });
 
-    // ── Check innings/match end ────────────────────────────────────────────
-    const maxOvers = match.overs;
-    const inningsOver =
-      innings.wickets >= 10 || innings.overs >= maxOvers;
+    // ── Check innings / match end ──────────────────────────────────────────
+    const inningsOver = innings.wickets >= 10 || innings.overs >= match.overs;
 
     if (inningsOver && match.currentInnings === 1) {
       match.currentInnings = 2;
     } else if (inningsOver && match.currentInnings === 2) {
       match.status = "completed";
-      const i1 = match.innings1;
-      const i2 = match.innings2;
+      const i1 = match.innings1, i2 = match.innings2;
       if (i2.runs > i1.runs) {
-        const wktsLeft = 10 - i2.wickets;
-        match.result = `${i2.battingTeam} won by ${wktsLeft} wicket(s)`;
+        match.result = `${i2.battingTeam} won by ${10 - i2.wickets} wicket(s)`;
       } else if (i1.runs > i2.runs) {
         match.result = `${i1.battingTeam} won by ${i1.runs - i2.runs} run(s)`;
       } else {
@@ -227,20 +312,24 @@ const addDelivery = asyncHandler(async (req, res) => {
       }
     }
 
-    // ── Check target in 2nd innings ────────────────────────────────────────
+    // ── Chase complete in 2nd innings ──────────────────────────────────────
     if (match.currentInnings === 2 && match.status === "live") {
       const target = match.innings1.runs + 1;
       if (match.innings2.runs >= target) {
         match.status = "completed";
-        const wktsLeft = 10 - match.innings2.wickets;
-        match.result = `${match.innings2.battingTeam} won by ${wktsLeft} wicket(s)`;
+        match.result = `${match.innings2.battingTeam} won by ${10 - match.innings2.wickets} wicket(s)`;
       }
     }
 
-    await match.save();
-    await cacheDel(`match:${matchId}`, `matches:event:${match.event}`);
-    emitMatchUpdate(match.toObject());
-    res.status(200).json(new ApiResponse(200, match, "Delivery recorded"));
+    // ── Emit & respond immediately — no waiting for DB ────────────────────
+    const matchObj = match.toObject();
+    emitMatchUpdate(matchObj);
+    res.status(200).json(new ApiResponse(200, matchObj, "Delivery recorded"));
+
+    // ── Persist to DB and invalidate cache in background ──────────────────
+    match.save()
+      .then(() => cacheDel(`match:${matchId}`, `matches:event:${match.event}`))
+      .catch((err) => console.log("Background save error", err));
   } catch (error) {
     console.log("Error adding delivery", error);
     res.status(500).json(new ApiResponse(500, null, error.message || "Error adding delivery"));
@@ -271,4 +360,11 @@ const updateMatch = asyncHandler(async (req, res) => {
   }
 });
 
-export { initMatchesFromSchedule, getEventMatches, getMatch, startMatch, addDelivery, updateMatch };
+// ── Public: check if any match in an event is currently live ─────────────────
+const getEventLiveStatus = asyncHandler(async (req, res) => {
+  const { eventId } = req.params;
+  const liveMatch = await Match.findOne({ event: eventId, status: "live" }).select("_id").lean();
+  res.status(200).json(new ApiResponse(200, { isLive: !!liveMatch }, "Live status fetched"));
+});
+
+export { initMatchesFromSchedule, getEventMatches, getMatch, startMatch, addDelivery, updateMatch, submitSquad, confirmPlayingXI, getEventLiveStatus };
