@@ -7,19 +7,14 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function Login() {
   const navigate = useNavigate();
-
-  // password login state
-  const [usermail, setusermail] = useState("");
-  const [password, setpassword] = useState("");
-
-  // OTP flow state
+  const [usermail, setUsermail] = useState("");
+  const [password, setPassword] = useState("");
   const [otpMode, setOtpMode] = useState(false);
   const [otpEmail, setOtpEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const [message, setmessage] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleGoogleLogin = () => {
     window.location.href = `${BACKEND_URL}/api/cpsh/users/auth/google`;
@@ -27,7 +22,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setmessage("");
+    setMessage("");
     try {
       const response = await fetch(`${API_URL}/api/cpsh/users/login`, {
         method: "POST",
@@ -37,12 +32,10 @@ export default function Login() {
       });
       const result = await response.json();
       if (result?.statusCode === 200) {
-        if (result?.data?.accessToken) {
-          localStorage.setItem("accessToken", result.data.accessToken);
-        }
+        if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
         navigate("/home");
       } else {
-        setmessage(result?.message);
+        setMessage(result?.message);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -51,8 +44,8 @@ export default function Login() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    setmessage("");
-    if (!otpEmail.trim()) return setmessage("Please enter your email");
+    setMessage("");
+    if (!otpEmail.trim()) return setMessage("Please enter your email");
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/cpsh/users/send-otp`, {
@@ -61,23 +54,16 @@ export default function Login() {
         body: JSON.stringify({ email: otpEmail }),
       });
       const result = await res.json();
-      if (result?.statusCode === 200) {
-        setOtpSent(true);
-        setmessage("");
-      } else {
-        setmessage(result?.message);
-      }
-    } catch {
-      setmessage("Failed to send OTP. Try again.");
-    } finally {
-      setLoading(false);
-    }
+      if (result?.statusCode === 200) { setOtpSent(true); setMessage(""); }
+      else setMessage(result?.message);
+    } catch { setMessage("Failed to send OTP. Try again."); }
+    finally { setLoading(false); }
   };
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    setmessage("");
-    if (!otp.trim()) return setmessage("Please enter the OTP");
+    setMessage("");
+    if (!otp.trim()) return setMessage("Please enter the OTP");
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/cpsh/users/verify-otp`, {
@@ -88,148 +74,163 @@ export default function Login() {
       });
       const result = await res.json();
       if (result?.statusCode === 200) {
-        if (result?.data?.accessToken) {
-          localStorage.setItem("accessToken", result.data.accessToken);
-        }
+        if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
         navigate("/home");
-      } else {
-        setmessage(result?.message);
-      }
-    } catch {
-      setmessage("Verification failed. Try again.");
-    } finally {
-      setLoading(false);
-    }
+      } else setMessage(result?.message);
+    } catch { setMessage("Verification failed. Try again."); }
+    finally { setLoading(false); }
   };
 
-  const inputCls = "w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm";
-  const btnPrimary = "cursor-pointer w-full bg-[#1e3a5f] text-white py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm font-medium disabled:opacity-60";
-
   return (
-    <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center px-4">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ backgroundColor: "var(--color-bg)" }}
+    >
+      <div
+        className="rounded-lg shadow-sm overflow-hidden w-full max-w-5xl flex flex-col md:flex-row border"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
         {/* Left: Branding */}
-        <div className="w-full md:w-1/2 bg-[#1e3a5f] text-white p-10 flex flex-col justify-center items-center text-center">
-          <img src={logo} alt="Campus Sphere Logo" className="rounded-md w-24 h-24 object-cover border border-[#c9a227]/30" />
-          <p className="mt-4 text-[#e8e6e1] text-sm leading-relaxed max-w-xs">
+        <div
+          className="w-full md:w-1/2 p-10 flex flex-col justify-center items-center text-center"
+          style={{ backgroundColor: "var(--color-navy)" }}
+        >
+          <img
+            src={logo}
+            alt="Campus Sphere Logo"
+            className="rounded-md w-24 h-24 object-cover border"
+            style={{ borderColor: "color-mix(in srgb, var(--color-gold) 30%, transparent)" }}
+          />
+          <p className="mt-4 text-sm leading-relaxed max-w-xs" style={{ color: "#e8e6e1" }}>
             Organize, participate, and celebrate campus events seamlessly.
           </p>
-          <div className="mt-6 w-12 h-px bg-[#c9a227]/50" />
+          <div className="mt-6 w-12 h-px" style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 50%, transparent)" }} />
         </div>
 
-        {/* Right: Login Form */}
-        <div className="w-full md:w-1/2 bg-white p-10 flex flex-col justify-center">
-          <h2 className="font-heading text-2xl font-semibold text-[#1e3a5f] mb-6 tracking-tight">
+        {/* Right: Form */}
+        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
+          <h2
+            className="font-heading text-2xl font-semibold mb-6 tracking-tight"
+            style={{ color: "var(--color-navy)" }}
+          >
             Sign in to your account
           </h2>
 
+          {/* Google */}
           <button
             onClick={handleGoogleLogin}
-            className="cursor-pointer flex items-center justify-center gap-3 border border-gray-200 rounded py-2.5 w-full hover:bg-[#faf9f6] transition-colors text-sm text-[#374151]"
+            className="flex items-center justify-center gap-3 rounded py-2.5 w-full text-sm font-medium transition-colors border"
+            style={{
+              borderColor: "var(--color-border)",
+              color: "var(--color-text-secondary)",
+              backgroundColor: "var(--color-surface)",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--color-surface-2)"}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--color-surface)"}
           >
             <img
               src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s48-fcrop64=1,00000000ffffffff-rw"
               alt="Google"
               className="w-5 h-5"
             />
-            <span className="font-medium">Continue with Google</span>
+            Continue with Google
           </button>
 
           <div className="flex items-center my-6">
-            <div className="flex-grow h-px bg-gray-200" />
-            <span className="px-3 text-gray-400 text-xs uppercase tracking-wider">or</span>
-            <div className="flex-grow h-px bg-gray-200" />
+            <div className="flex-grow h-px" style={{ backgroundColor: "var(--color-border)" }} />
+            <span className="px-3 text-xs uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>or</span>
+            <div className="flex-grow h-px" style={{ backgroundColor: "var(--color-border)" }} />
           </div>
 
           {/* OTP Mode */}
           {otpMode ? (
             <form className="space-y-4" onSubmit={otpSent ? handleVerifyOtp : handleSendOtp}>
               <input
-                id="otpEmail"
-                name="otpEmail"
-                type="email"
+                id="otpEmail" name="otpEmail" type="email"
                 placeholder="Enter your email"
                 value={otpEmail}
                 onChange={(e) => setOtpEmail(e.target.value)}
                 disabled={otpSent}
-                className={inputCls}
+                className="input-base"
               />
               {otpSent && (
                 <div className="space-y-1">
                   <input
-                    id="otp"
-                    name="otp"
-                    type="text"
+                    id="otp" name="otp" type="text"
                     placeholder="Enter 6-digit OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     maxLength={6}
-                    className={inputCls}
+                    className="input-base"
                   />
-                  <p className="text-xs text-gray-400">Check your inbox. OTP expires in 10 minutes.</p>
+                  <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                    Check your inbox. OTP expires in 10 minutes.
+                  </p>
                 </div>
               )}
-              {message && <p className="text-red-600 text-sm text-center">{message}</p>}
-              <button type="submit" disabled={loading} className={btnPrimary}>
-                {loading ? "Please wait..." : otpSent ? "Verify OTP" : "Send OTP"}
+              {message && (
+                <p className="text-sm text-center" style={{ color: "var(--color-error)" }}>{message}</p>
+              )}
+              <button type="submit" disabled={loading} className="btn-primary w-full">
+                {loading ? "Please wait…" : otpSent ? "Verify OTP" : "Send OTP"}
               </button>
               {otpSent && (
                 <button
                   type="button"
-                  onClick={() => { setOtpSent(false); setOtp(""); setmessage(""); }}
-                  className="w-full text-sm text-[#b8860b] hover:underline text-center"
+                  onClick={() => { setOtpSent(false); setOtp(""); setMessage(""); }}
+                  className="w-full text-sm hover:underline text-center"
+                  style={{ color: "var(--color-gold)" }}
                 >
                   Resend OTP
                 </button>
               )}
               <button
                 type="button"
-                onClick={() => { setOtpMode(false); setOtpSent(false); setOtp(""); setOtpEmail(""); setmessage(""); }}
-                className="w-full text-sm text-gray-400 hover:underline text-center"
+                onClick={() => { setOtpMode(false); setOtpSent(false); setOtp(""); setOtpEmail(""); setMessage(""); }}
+                className="w-full text-sm hover:underline text-center"
+                style={{ color: "var(--color-text-muted)" }}
               >
                 Back to password login
               </button>
             </form>
           ) : (
-            /* Password Mode */
             <form className="space-y-4" onSubmit={handleSubmit}>
               <input
-                id="usermail"
-                name="usermail"
-                type="text"
+                id="usermail" name="usermail" type="text"
                 placeholder="Email or username"
                 value={usermail}
-                onChange={(e) => setusermail(e.target.value)}
-                className={inputCls}
+                onChange={(e) => setUsermail(e.target.value)}
+                className="input-base"
               />
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() => { setOtpMode(true); setmessage(""); }}
-                  className="text-sm cursor-pointer text-[#b8860b] hover:underline focus:outline-none"
+                  onClick={() => { setOtpMode(true); setMessage(""); }}
+                  className="text-sm hover:underline focus:outline-none"
+                  style={{ color: "var(--color-gold)" }}
                 >
                   Login via OTP
                 </button>
               </div>
               <input
-                id="password"
-                name="password"
-                type="password"
+                id="password" name="password" type="password"
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setpassword(e.target.value)}
-                className={inputCls}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-base"
               />
-              {message && <p className="text-red-600 text-sm text-center">{message}</p>}
-              <button type="submit" className={btnPrimary}>
-                Sign in
-              </button>
+              {message && (
+                <p className="text-sm text-center" style={{ color: "var(--color-error)" }}>{message}</p>
+              )}
+              <button type="submit" className="btn-primary w-full">Sign in</button>
             </form>
           )}
 
-          <p className="mt-4 text-sm text-gray-500 text-center">
+          <p className="mt-4 text-sm text-center" style={{ color: "var(--color-text-muted)" }}>
             Don't have an account?{" "}
-            <Link to="/register" className="text-[#b8860b] hover:underline font-medium">Sign up</Link>
+            <Link to="/register" className="font-medium hover:underline" style={{ color: "var(--color-gold)" }}>
+              Sign up
+            </Link>
           </p>
         </div>
       </div>

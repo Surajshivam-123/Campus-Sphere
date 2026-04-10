@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
@@ -14,45 +14,31 @@ export default function JoinEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!invitationCode.trim()) return setError("Invitation code is required.");
+    if (!identityNumber.trim()) return setError("Identity number is required.");
+    if (invitationCode.length !== 5) return setError("Invalid invitation code. Please try again.");
 
-    if (!invitationCode.trim()) {
-      setError("Invitation code is required.");
-      setSuccess("");
-    } else if (!identityNumber.trim()) {
-      setError("Identity number is required.");
-      setSuccess("");
-    } else if (invitationCode.length !== 5) {
-      setError("Invalid invitation code. Please try again.");
-      setSuccess("");
-    } else {
-      try {
-        const response = await fetchWithAuth(
-          `${API_URL}/api/cpsh/participants/participate/${invitationCode}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              invitationCode,
-              identityNumber,
-            }),
-          }
-        );
-        const result = await response.json();
-        if (!result?.success) {
-          setError(result?.message);
-          setSuccess("");
-        } else {
-          setError("");
-          setSuccess("Event joined successfully!");
-          setTimeout(() => {
-            navigate(`/event-details/${identityNumber}/${encodeURIComponent(invitationCode)}/${result.data._id}`);
-          }, 1200);
+    setError(""); setSuccess("");
+    try {
+      const response = await fetchWithAuth(
+        `${API_URL}/api/cpsh/participants/participate/${invitationCode}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invitationCode, identityNumber }),
         }
-      } catch (error) {
-        console.log("Error while submitting", error);
+      );
+      const result = await response.json();
+      if (!result?.success) {
+        setError(result?.message);
+      } else {
+        setSuccess("Event joined successfully!");
+        setTimeout(() => {
+          navigate(`/event-details/${identityNumber}/${encodeURIComponent(invitationCode)}/${result.data._id}`);
+        }, 1200);
       }
+    } catch (err) {
+      console.error("Error joining event:", err);
     }
   };
 
@@ -60,70 +46,80 @@ export default function JoinEvent() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen bg-[#faf9f6] flex justify-center items-center p-6"
+      className="min-h-screen flex justify-center items-center p-6"
+      style={{ backgroundColor: "var(--color-bg)" }}
     >
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="bg-white border border-gray-200 rounded-lg shadow-sm p-10 w-full max-w-lg"
+        transition={{ duration: 0.4 }}
+        className="rounded-lg shadow-sm p-10 w-full max-w-lg border"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
-        <h1 className="font-heading text-2xl font-semibold text-center text-[#1e3a5f] mb-6 tracking-tight">
+        <h1
+          className="font-heading text-2xl font-semibold text-center mb-6 tracking-tight"
+          style={{ color: "var(--color-navy)" }}
+        >
           Join event
         </h1>
-        <div className="w-12 h-px bg-[#b8860b]/40 mx-auto mb-6" />
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">
-              Invitation code
-            </label>
-            <input
-              type="text"
-              value={invitationCode}
-              onChange={(e) => setInvitationCode(e.target.value)}
-              placeholder="Enter your invitation code"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
+        <div
+          className="w-12 h-px mx-auto mb-6"
+          style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }}
+        />
 
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">
-              Identity number
-            </label>
-            <input
-              type="text"
-              value={identityNumber}
-              onChange={(e) => setIdentityNumber(e.target.value)}
-              placeholder="Enter your identity number"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {[
+            { label: "Invitation code", value: invitationCode, onChange: setInvitationCode, placeholder: "Enter your invitation code" },
+            { label: "Identity number", value: identityNumber, onChange: setIdentityNumber, placeholder: "Enter your identity number" },
+          ].map(({ label, value, onChange, placeholder }) => (
+            <div key={label}>
+              <label
+                className="block text-xs font-medium mb-2 uppercase tracking-wider"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                {label}
+              </label>
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="input-base"
+              />
+            </div>
+          ))}
 
           {error && (
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-red-600 text-sm font-medium bg-red-50 border border-red-100 px-4 py-2 rounded flex items-center gap-2"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="text-sm font-medium flex items-center gap-2 px-4 py-2 rounded border"
+              style={{
+                color: "var(--color-error)",
+                backgroundColor: "color-mix(in srgb, var(--color-error) 8%, transparent)",
+                borderColor: "color-mix(in srgb, var(--color-error) 25%, transparent)",
+              }}
             >
               <FiAlertCircle className="shrink-0" /> {error}
             </motion.p>
           )}
           {success && (
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-green-700 text-sm font-medium bg-green-50 border border-green-100 px-4 py-2 rounded flex items-center gap-2"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="text-sm font-medium flex items-center gap-2 px-4 py-2 rounded border"
+              style={{
+                color: "var(--color-success)",
+                backgroundColor: "color-mix(in srgb, var(--color-success) 8%, transparent)",
+                borderColor: "color-mix(in srgb, var(--color-success) 25%, transparent)",
+              }}
             >
               <FiCheckCircle className="shrink-0" /> {success}
             </motion.p>
           )}
 
           <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
             type="submit"
-            className="w-full bg-[#1e3a5f] text-white font-medium py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm"
+            className="btn-primary w-full"
           >
             Join event
           </motion.button>

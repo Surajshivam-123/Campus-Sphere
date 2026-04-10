@@ -20,8 +20,8 @@ class UserService {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
       }
 
-      const accessToken = await user.generateAccessToken();
-      const refreshToken = await user.generateRefreshToken();
+      const accessToken = user.generateAccessToken();
+      const refreshToken = user.generateRefreshToken();
 
       user.refreshToken = refreshToken;
       await user.save({ validateBeforeSave: false });
@@ -91,6 +91,11 @@ class UserService {
 
     if (!user) {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid credentials");
+    }
+
+    // Google-only accounts have no password
+    if (!user.password) {
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "This account uses Google sign-in. Please login with Google.");
     }
 
     // Verify password

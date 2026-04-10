@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import profile from "../assets/download.jpeg";
-import { useNavigate ,Link} from "react-router-dom";
 import API_URL from "../config/api";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -9,182 +9,170 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileImage, setProfileImage] = useState(profile);
   const [avatarFile, setAvatarFile] = useState(null);
-  const [fullname, setfullname] = useState("");
-  const [username, setusername] = useState("");
-  const [email, setemail] = useState("");
-  const [password, setpassword] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfileImage(URL.createObjectURL(file)); // preview
+      setProfileImage(URL.createObjectURL(file));
       setAvatarFile(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    let fn = true,
-      un = true,
-      em = true,
-      pw = true,
-      cp = true;
-    if (!fullname) {
-      setErrorMessage("fullname is required");
-      fn = false;
-    }
-    formData.append("fullname", fullname);
-    if (!username) {
-      setErrorMessage("username is required");
-      un = false;
-    }
-    formData.append("username", username);
-    if (!email) {
-      setErrorMessage("email is required");
-      em = false;
-    }
-    formData.append("email", email);
-    if (!password) {
-      setErrorMessage("password is required");
-      pw = false;
-    }
-    formData.append("password", password);
-    if (avatarFile) {
-      formData.append("avatar", avatarFile);
-    }
-    if (confirmPassword !== password) {
-      setErrorMessage("Passwords do not match");
-      cp = false;
-    }
-    if (fn && un && em && pw && cp) {
-      try {
-        const response = await fetch(
-          `${API_URL}/api/cpsh/users/register`,
-          {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-          }
-        );
+    if (!fullname) return setErrorMessage("Full name is required");
+    if (!username) return setErrorMessage("Username is required");
+    if (!email) return setErrorMessage("Email is required");
+    if (!password) return setErrorMessage("Password is required");
+    if (confirmPassword !== password) return setErrorMessage("Passwords do not match");
 
-        const result = await response.json();
-        console.log("Server Response:", result);
-        if (result?.statusCode === 201 || result?.success) {
-          // Store token in localStorage as fallback (cookie is also set by backend)
-          if (result?.data?.accessToken) {
-            localStorage.setItem("accessToken", result.data.accessToken);
-          }
-          navigate("/home");
-        } else {
-          setErrorMessage(result?.message || "Registration failed. Please try again.");
-        }
-      } catch (err) {
-        console.error("Error sending data:", err);
-        setErrorMessage("Something went wrong. Please try again.");
+    const formData = new FormData();
+    formData.append("fullname", fullname);
+    formData.append("username", username);
+    formData.append("email", email);
+    formData.append("password", password);
+    if (avatarFile) formData.append("avatar", avatarFile);
+
+    try {
+      const response = await fetch(`${API_URL}/api/cpsh/users/register`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const result = await response.json();
+      if (result?.statusCode === 201 || result?.success) {
+        if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
+        navigate("/home");
+      } else {
+        setErrorMessage(result?.message || "Registration failed. Please try again.");
       }
+    } catch (err) {
+      console.error("Registration error:", err);
+      setErrorMessage("Something went wrong. Please try again.");
     }
   };
+
+  const fields = [
+    { label: "Full name", type: "text", placeholder: "John Doe", value: fullname, onChange: setFullname },
+    { label: "Username", type: "text", placeholder: "john123", value: username, onChange: setUsername },
+    { label: "Email", type: "email", placeholder: "you@example.com", value: email, onChange: setEmail },
+    { label: "Password", type: "password", placeholder: "••••••••", value: password, onChange: setPassword },
+    { label: "Confirm password", type: "password", placeholder: "••••••••", value: confirmPassword, onChange: setConfirmPassword },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center py-10 px-4">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 w-full max-w-md">
-        <h2 className="font-heading text-2xl font-semibold text-center text-[#1e3a5f] mb-6 tracking-tight">
+    <div
+      className="min-h-screen flex items-center justify-center py-10 px-4"
+      style={{ backgroundColor: "var(--color-bg)" }}
+    >
+      <div
+        className="rounded-lg shadow-sm p-8 w-full max-w-md border"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <h2
+          className="font-heading text-2xl font-semibold text-center mb-6 tracking-tight"
+          style={{ color: "var(--color-navy)" }}
+        >
           Create an account
         </h2>
 
+        {/* Google */}
         <button
           onClick={() => window.location.href = `${BACKEND_URL}/api/cpsh/users/auth/google`}
-          className="cursor-pointer flex items-center justify-center gap-3 border border-gray-200 rounded py-2.5 w-full hover:bg-[#faf9f6] transition-colors text-sm text-[#374151] mb-6"
+          className="flex items-center justify-center gap-3 rounded py-2.5 w-full text-sm font-medium transition-colors border mb-6"
+          style={{
+            borderColor: "var(--color-border)",
+            color: "var(--color-text-secondary)",
+            backgroundColor: "var(--color-surface)",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--color-surface-2)"}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--color-surface)"}
         >
           <img
             src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s48-fcrop64=1,00000000ffffffff-rw"
             alt="Google"
             className="w-5 h-5"
           />
-          <span className="font-medium">Continue with Google</span>
+          Continue with Google
         </button>
 
         <div className="flex items-center mb-6">
-          <div className="flex-grow h-px bg-gray-200" />
-          <span className="px-3 text-gray-400 text-xs uppercase tracking-wider">or</span>
-          <div className="flex-grow h-px bg-gray-200" />
+          <div className="flex-grow h-px" style={{ backgroundColor: "var(--color-border)" }} />
+          <span className="px-3 text-xs uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>or</span>
+          <div className="flex-grow h-px" style={{ backgroundColor: "var(--color-border)" }} />
         </div>
+
+        {/* Avatar preview */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-md bg-[#f0ede6] overflow-hidden border border-gray-200">
+          <div
+            className="w-20 h-20 rounded-md overflow-hidden border"
+            style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface-2)" }}
+          >
             <img src={profileImage} alt="Profile Preview" className="w-full h-full object-cover" />
           </div>
         </div>
-        <form className="space-y-4">
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* File input */}
           <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">
+            <label
+              className="block text-xs font-medium mb-1 uppercase tracking-wider"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               Profile image
             </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:border-gray-200 file:text-sm file:font-medium file:bg-[#faf9f6] file:text-[#1e3a5f] hover:file:bg-[#f0ede6]"
+              className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border file:text-sm file:font-medium transition-colors"
+              style={{
+                color: "var(--color-text-muted)",
+                "--file-bg": "var(--color-surface-2)",
+                "--file-color": "var(--color-navy)",
+                "--file-border": "var(--color-border)",
+              }}
             />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Full name</label>
-            <input
-              type="text"
-              placeholder="John Doe"
-              onChange={(e) => setfullname(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Username</label>
-            <input
-              type="text"
-              placeholder="John123"
-              onChange={(e) => setusername(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Email</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              onChange={(e) => setemail(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              onChange={(e) => setpassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#374151] mb-1 uppercase tracking-wider">Confirm password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
-            />
-          </div>
-          {errorMessage && <p className="text-red-600 text-sm text-center">{errorMessage}</p>}
-          <button
-            type="submit"
-            className="w-full bg-[#1e3a5f] text-white py-2.5 rounded border border-[#1e3a5f] hover:bg-[#2d4a6f] transition-colors text-sm font-medium"
-            onClick={handleSubmit}
-          >
+
+          {fields.map(({ label, type, placeholder, value, onChange }) => (
+            <div key={label}>
+              <label
+                className="block text-xs font-medium mb-1 uppercase tracking-wider"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                {label}
+              </label>
+              <input
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="input-base"
+              />
+            </div>
+          ))}
+
+          {errorMessage && (
+            <p className="text-sm text-center" style={{ color: "var(--color-error)" }}>{errorMessage}</p>
+          )}
+
+          <button type="submit" className="btn-primary w-full">
             Create account
           </button>
         </form>
-        <p className="mt-6 text-sm text-center text-gray-500">
+
+        <p className="mt-6 text-sm text-center" style={{ color: "var(--color-text-muted)" }}>
           Already have an account?{" "}
-          <Link to="/login" className="text-[#b8860b] hover:underline font-medium">Sign in</Link>
+          <Link to="/login" className="font-medium hover:underline" style={{ color: "var(--color-gold)" }}>
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

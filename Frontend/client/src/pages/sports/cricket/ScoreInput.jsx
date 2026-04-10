@@ -140,7 +140,7 @@ function PlayingXIConfirm({ match, onConfirm }) {
 }
 
 // ── Ball Input Panel ──────────────────────────────────────────────────────────
-function DeliveryPanel({ match, onDelivery }) {
+function DeliveryPanel({ match, onDelivery, onAbandon }) {
   const innings = match.currentInnings === 1 ? match.innings1 : match.innings2;
 
   const battingTeamName = innings.battingTeam;
@@ -169,6 +169,7 @@ function DeliveryPanel({ match, onDelivery }) {
   const [isWicket,   setIsWicket]   = useState(false);
   const [commentary, setCommentary] = useState("");
   const [loading,    setLoading]    = useState(false);
+  const [confirmAbandon, setConfirmAbandon] = useState(false);
 
   // Last 6 balls of current over
   const lastBalls = (() => {
@@ -500,6 +501,35 @@ function DeliveryPanel({ match, onDelivery }) {
         className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-lg rounded-2xl shadow-lg transition disabled:opacity-60">
         {loading ? "Saving..." : "Record Delivery"}
       </motion.button>
+
+      {/* Abandon */}
+      {!confirmAbandon ? (
+        <button
+          onClick={() => setConfirmAbandon(true)}
+          className="w-full py-3 text-sm font-semibold text-red-500 border border-red-200 rounded-2xl hover:bg-red-50 transition"
+        >
+          Abandon Match
+        </button>
+      ) : (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-red-700 text-center">Are you sure you want to abandon this match?</p>
+          <p className="text-xs text-red-400 text-center">The match can be resumed later from Match Manager.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setConfirmAbandon(false)}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onAbandon}
+              className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition"
+            >
+              Yes, Abandon
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -599,18 +629,46 @@ export default function ScoreInput() {
     return null;
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>;
+  const handleResumeMatch = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "live" }),
+      });
+      const data = await res.json();
+      if (data?.data) setMatch(data.data);
+      else setError(data?.message || "Failed to resume match");
+    } catch (err) { setError("Failed to resume match"); }
+  };
+
+  const handleAbandonMatch = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "abandoned" }),
+      });
+      const data = await res.json();
+      if (data?.data) setMatch(data.data);
+      else setError(data?.message || "Failed to abandon match");
+    } catch (err) { setError("Failed to abandon match"); }
+  };
+
+
   if (!match) return <div className="min-h-screen flex items-center justify-center text-gray-400">Match not found</div>;
 
   if (authorized === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-sm w-full text-center">
-          <MdSportsCricket className="text-5xl text-indigo-300 mx-auto mb-4" />
-          <h2 className="text-xl font-extrabold text-gray-800 mb-2">Not Authorized</h2>
+      <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center px-4">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-10 max-w-sm w-full text-center">
+          <MdSportsCricket className="text-4xl text-gray-300 mx-auto mb-4" />
+          <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">Not Authorized</h2>
           <p className="text-sm text-gray-500 mb-6">Only the host or the assigned scorer can update the scorecard.</p>
           <button onClick={() => navigate(-1)}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition">
+            className="w-full py-2.5 bg-[#1e3a5f] hover:bg-[#2d4a6f] text-white font-medium rounded border border-[#1e3a5f] text-sm transition">
             Go Back
           </button>
         </div>
@@ -619,25 +677,46 @@ export default function ScoreInput() {
   }
 
   const renderStep = () => {
-    if (match.status === "completed" || match.status === "abandoned") {
+    if (match.status === "completed") {
       return (
         <div className="bg-white rounded-2xl shadow-md p-6 text-center">
-          <p className="text-lg font-bold text-gray-700 mb-2">Match {match.status}</p>
+          <p className="text-lg font-bold text-gray-700 mb-2">Match completed</p>
           {match.result && <p className="text-indigo-600 font-semibold">{match.result}</p>}
+        </div>
+      );
+    }
+    if (match.status === "abandoned") {
+      return (
+        <div className="bg-white rounded-2xl shadow-md p-6 text-center space-y-4">
+          <div className="text-4xl">🚫</div>
+          <p className="text-lg font-bold text-gray-700">Match Abandoned</p>
+          <p className="text-sm text-gray-500">
+            This match was stopped. Resume it to continue scoring from where it left off.
+          </p>
+          {match.result && (
+            <p className="text-sm text-gray-400 italic">{match.result}</p>
+          )}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleResumeMatch}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition"
+          >
+            Resume Match
+          </motion.button>
         </div>
       );
     }
     if (match.status === "upcoming") return <TossSetup match={match} onStart={handleStartMatch} />;
     if (match.status === "toss_done") return <WaitingForSquads match={match} />;
     if (match.status === "squads_ready") return <PlayingXIConfirm match={match} onConfirm={handleConfirmXI} />;
-    return <DeliveryPanel match={match} onDelivery={handleDelivery} />;
+    return <DeliveryPanel match={match} onDelivery={handleDelivery} onAbandon={handleAbandonMatch} />;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
+    <div className="min-h-screen bg-[#faf9f6] py-8 px-4">
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-5">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-[#1e3a5f] hover:text-[#2d4a6f] font-medium text-sm">
             <FaArrowLeft /> Back
           </button>
           <span className={`flex items-center gap-1 text-xs font-bold uppercase ${match.status === "live" ? "text-green-500" : "text-gray-400"}`}>
@@ -646,11 +725,11 @@ export default function ScoreInput() {
           </span>
         </div>
 
-        <h1 className="text-xl font-extrabold text-gray-800 mb-1">{match.team1} vs {match.team2}</h1>
+        <h1 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-1">{match.team1} vs {match.team2}</h1>
         <p className="text-sm text-gray-500 mb-5">{match.round} · {match.overs} overs</p>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 mb-4 text-sm">{error}</div>
+          <div className="bg-red-50 border border-red-200 text-red-600 rounded px-4 py-3 mb-4 text-sm">{error}</div>
         )}
 
         {renderStep()}

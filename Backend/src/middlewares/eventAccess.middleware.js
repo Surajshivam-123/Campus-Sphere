@@ -6,6 +6,7 @@ import { Participant } from "../models/participant.model.js";
 import { Team } from "../models/team.model.js";
 import { Cricket_Player } from "../sports/cricket/models/player.model.js";
 import { Match } from "../models/match.model.js";
+import { Submission } from "../sports/coding/models/submission.model.js";
 
 /**
  * Resolves eventId from either:
@@ -54,6 +55,10 @@ export const verifyEventAccess = asyncHandler(async (req, res, next) => {
     const teamIds = await Team.find({ event: eventId }).distinct("_id");
     const isPlayer = await Cricket_Player.exists({ owner: userId, team: { $in: teamIds } });
     if (isPlayer) return next();
+
+    // 5. Coding participant (has a submission in this event)
+    const isCodingParticipant = await Submission.exists({ event: eventId, participant: userId });
+    if (isCodingParticipant) return next();
 
     return res.status(403).json(new ApiResponse(403, null, "Access denied. You are not part of this event."));
   } catch (error) {

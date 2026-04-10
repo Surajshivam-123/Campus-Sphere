@@ -130,7 +130,7 @@ export default function SquadSubmit() {
   const otherSquadDone = myTeam?.isTeam1 ? match?.team2Squad?.length > 0 : match?.team1Squad?.length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-100 py-8 px-4">
+    <div className="min-h-screen bg-[#faf9f6] py-8 px-4">
       <div className="max-w-lg mx-auto">
 
         {/* Header */}
@@ -204,7 +204,7 @@ export default function SquadSubmit() {
               </div>
 
               {match?.status === "live" && (
-                <button onClick={() => navigate(`/match/${matchId}/scorecard`)}
+                <button onClick={() => navigate(`/sports/cricket/match/${matchId}/scorecard`)}
                   className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> Watch Live
                 </button>

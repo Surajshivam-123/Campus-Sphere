@@ -16,8 +16,11 @@ export default function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-[#1e3a5f]">
-      Signing you in...
+    <div
+      className="min-h-screen flex items-center justify-center text-sm"
+      style={{ backgroundColor: "var(--color-bg)", color: "var(--color-text-muted)" }}
+    >
+      Signing you in…
     </div>
   );
 }

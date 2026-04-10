@@ -1,79 +1,98 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { CalendarDays, MapPin, Info, Hash } from "lucide-react";
 import participantService from "../../services/participant.service";
 import { formatDateTime } from "../../utils/helpers";
+import LoadingPage from "../LoadingPage";
 
 export default function EventDetailsPage() {
   const navigate = useNavigate();
   const { identityNumber, participantCode, participantId } = useParams();
   const [eventData, setEventData] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
-    const loadEvent = async () => {
+    const load = async () => {
       try {
         const result = await participantService.getEventByParticipantCode(participantCode);
-        if (result) {
-          setEventData(result?.data);
-        }
-        console.log("Server Response", result);
+        if (result) setEventData(result?.data);
       } catch (error) {
         console.error("Error loading event:", error);
       }
     };
-    loadEvent();
+    load();
   }, [participantCode, identityNumber]);
 
-
   const handleDelete = async (e) => {
+    e.preventDefault();
+    if (!window.confirm("Are you sure you want to unregister from this event?")) return;
+    setDeleting(true);
     try {
-      e.preventDefault();
-      const result = await participantService.deleteParticipant(participantId);
-      console.log("Response: ", result);
+      await participantService.deleteParticipant(participantId);
       navigate("/my-events");
     } catch (error) {
-      console.log("Error while deleting Participant: ", error);
+      console.error("Error unregistering:", error);
+    } finally {
+      setDeleting(false);
     }
-  }
-  if (!eventData)
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <p className="text-lg font-medium text-gray-600 animate-pulse">Loading...</p>
-      </div>
-    );
+  };
+
+  if (!eventData) return <LoadingPage />;
+
+  const details = [
+    { icon: <Hash size={15} />, label: "Identity number", value: identityNumber },
+    { icon: <Info size={15} />, label: "Event name", value: eventData.eventName },
+    { icon: <CalendarDays size={15} />, label: "Date", value: formatDateTime(eventData.startDate) },
+    { icon: <MapPin size={15} />, label: "Location", value: eventData.location },
+    ...(eventData.description ? [{ icon: <Info size={15} />, label: "Description", value: eventData.description }] : []),
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white py-10 px-4">
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-2xl border border-gray-200">
-        <h1 className="text-3xl font-extrabold text-blue-700 mb-6 text-center">
+    <div
+      className="min-h-screen py-12 px-4"
+      style={{ backgroundColor: "var(--color-bg)" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="max-w-2xl mx-auto rounded-lg shadow-sm p-8 border"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <h1
+          className="font-heading text-2xl font-semibold mb-1"
+          style={{ color: "var(--color-navy)" }}
+        >
           Event Details
         </h1>
-        <div className="space-y-4 text-gray-700 text-lg">
-          <p>
-            <span className="font-semibold text-blue-600">Identity Number:</span>{" "}
-            {identityNumber}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-600">Event Name:</span>{" "}
-            {eventData.eventName}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-600">Date:</span>{" "}
-            {formatDateTime(eventData.startDate)}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-600">Location:</span>{" "}
-            {eventData.location}
-          </p>
-          <p>
-            <span className="font-semibold text-blue-600">Description:</span>{" "}
-            {eventData.description}
-          </p>
+        <div
+          className="w-8 h-px mb-6"
+          style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }}
+        />
+
+        <div className="space-y-4 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+          {details.map(({ icon, label, value }) => (
+            <div key={label} className="flex items-start gap-3">
+              <span className="mt-0.5 shrink-0" style={{ color: "var(--color-navy)" }}>{icon}</span>
+              <span>
+                <span className="font-medium" style={{ color: "var(--color-navy)" }}>{label}: </span>
+                {value}
+              </span>
+            </div>
+          ))}
         </div>
-        <div class="flex justify-end pr-4">
-          <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded" onClick={handleDelete}>
-            Unregister
+
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="btn-danger"
+          >
+            {deleting ? "Unregistering…" : "Unregister"}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

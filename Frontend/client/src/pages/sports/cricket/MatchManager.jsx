@@ -57,7 +57,7 @@ export default function MatchManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
+    <div className="min-h-screen bg-[#faf9f6] py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium mb-5">
           <FaArrowLeft /> Back
@@ -124,17 +124,21 @@ export default function MatchManager() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => navigate(`/match/${m._id}/scorecard`)}
+                    onClick={() => navigate(`/sports/cricket/match/${m._id}/scorecard`)}
                     className="p-2 rounded-xl bg-gray-100 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 transition"
                     title="View scorecard"
                   >
                     <FaEye />
                   </button>
-                  {m.status !== "completed" && m.status !== "abandoned" && (
+                  {m.status !== "completed" && (
                     <button
-                      onClick={() => navigate(`/match/${m._id}/score-input`)}
-                      className="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition"
-                      title="Enter scores"
+                      onClick={() => navigate(`/sports/cricket/match/${m._id}/score-input`)}
+                      className={`p-2 rounded-xl text-white transition ${
+                        m.status === "abandoned"
+                          ? "bg-red-500 hover:bg-red-600"
+                          : "bg-indigo-600 hover:bg-indigo-700"
+                      }`}
+                      title={m.status === "abandoned" ? "Re-open & update scores" : "Enter scores"}
                     >
                       {m.status === "upcoming" ? <FaPlay /> : <FaPen />}
                     </button>

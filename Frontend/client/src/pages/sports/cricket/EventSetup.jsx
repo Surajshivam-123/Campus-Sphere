@@ -11,10 +11,12 @@ import {
   FaTrash,
   FaChalkboardTeacher,
   FaTrophy,
+  FaUserClock,
 } from "react-icons/fa";
 import LoadingPage from "../../LoadingPage";
 import API_URL from "../../../config/api";
 import { formatDateTime } from "../../../utils/helpers";
+import MemberRequests from "../../MyHostedEvent/MemberRequests";
 
 export default function CricketEventPage() {
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ export default function CricketEventPage() {
   const [schedule, setSchedule] = useState(null);
   const [initLoading, setInitLoading] = useState(false);
   const [initDone, setInitDone] = useState(false);
+  const [matchesExist, setMatchesExist] = useState(false);
   const [participants, setParticipants] = useState([]);
   const [scorerUpdater, setScorerUpdater] = useState(null);
   const [scorerLoading, setScorerLoading] = useState(null); // userId being processed
@@ -106,6 +109,17 @@ export default function CricketEventPage() {
         setSchedule(schedData?.data || null);
       } catch (error) {
         console.log("Error while getting schedule", error);
+      }
+
+      // Check if matches already exist (tournament started)
+      try {
+        const matchRes = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, {
+          credentials: "include",
+        });
+        const matchData = await matchRes.json();
+        setMatchesExist(matchData?.data?.length > 0);
+      } catch (error) {
+        console.log("Error while checking matches", error);
       }
 
       // Fetch participants for scorer assignment
@@ -192,6 +206,7 @@ export default function CricketEventPage() {
       const data = await res.json();
       if (res.ok) {
         setInitDone(true);
+        setMatchesExist(true);
         navigate(`/sports/cricket/scoreboard/${eventId}`);
       } else {
         alert(data.message || "Failed to initialize matches");
@@ -269,12 +284,12 @@ export default function CricketEventPage() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-6"
-      initial={{ opacity: 0, y: 50 }}
+      className="min-h-screen bg-[#faf9f6] py-10 px-4"
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.4 }}
     >
-      <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-200">
+      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         {poster && (
           <img
             src={poster}
@@ -283,46 +298,37 @@ export default function CricketEventPage() {
           />
         )}
 
-        <div className="p-8 space-y-6">
+          <div className="p-8 space-y-6">
           <div className="flex flex-col gap-1">
-            <h1 className="text-4xl font-extrabold text-blue-800">
+            <h1 className="font-heading text-3xl font-semibold text-[#1e3a5f]">
               {eventName}
             </h1>
-            <p className="text-md font-medium text-blue-600">{festivalName}</p>
+            {festivalName && <p className="text-sm text-gray-400">{festivalName}</p>}
+            <div className="w-8 h-px bg-[#b8860b]/40 mt-1" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-[#374151]">
             <p>
-              <FaCalendarAlt className="inline-block mr-2 text-blue-500" />
+              <FaCalendarAlt className="inline-block mr-2 text-[#1e3a5f]" />
               <strong>Date:</strong> {formatDateTime(startDate)}
             </p>
             <p>
-              <FaMapMarkerAlt className="inline-block mr-2 text-red-500" />
+              <FaMapMarkerAlt className="inline-block mr-2 text-[#1e3a5f]" />
               <strong>Location:</strong> {location}
             </p>
             <p>
-              <FaChalkboardTeacher className="inline-block mr-2 text-green-600" />
+              <FaChalkboardTeacher className="inline-block mr-2 text-[#1e3a5f]" />
               <strong>Organized By:</strong> {organization}
             </p>
+            <p><strong>Mode:</strong> {mode}</p>
+            <p><strong>Category:</strong> {category}</p>
+            <p><strong>Sport:</strong> {sports}</p>
             <p>
-              <strong>Mode:</strong> {mode}
-            </p>
-            <p>
-              <strong>Category:</strong> {category}
-            </p>
-            <p>
-              <strong>Sport:</strong> {sports}
-            </p>
-            <p>
-              <FaUsers className="inline-block mr-2 text-purple-600" />
+              <FaUsers className="inline-block mr-2 text-[#1e3a5f]" />
               <strong>Max Participants:</strong> {maxParticipants}
             </p>
-            <p>
-              <strong>Participant Code:</strong> {participantCode}
-            </p>
-            <p>
-              <strong>Member Code:</strong> {memberCode}
-            </p>
+            <p><strong>Participant Code:</strong> {participantCode}</p>
+            <p><strong>Member Code:</strong> {memberCode}</p>
           </div>
 
           <div>
@@ -340,6 +346,15 @@ export default function CricketEventPage() {
           </div>
 
           <div>
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <FaUserClock className="text-blue-500" /> Join Requests
+            </h2>
+            <div className="mt-4">
+              <MemberRequests eventId={eventId} />
+            </div>
+          </div>
+
+          <div>
             <h2 className="text-xl font-semibold text-gray-800">Members</h2>
             <table className="w-full mt-4 text-left border border-gray-300 rounded-md overflow-hidden">
               <thead className="bg-gray-100">
@@ -350,24 +365,18 @@ export default function CricketEventPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border-b">{ownerName} (You)</td>
-                  <td className="py-2 px-4 border-b">Organizer</td>
-                  <td className="py-2 px-4 border-b">N/A</td>
-                </tr>
                 {members.map((member, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">{member.name}</td>
                     <td className="py-2 px-4 border-b">
-                      {editableMemberId === member._id ? (
+                      {member.name}{member.isOrganizer ? " (You)" : ""}
+                    </td>
+                    <td className="py-2 px-4 border-b">
+                      {editableMemberId === member._id && !member.isOrganizer ? (
                         <input
                           type="text"
                           value={editedRoles[member._id] || member.role}
                           onChange={(e) =>
-                            setEditedRoles({
-                              ...editedRoles,
-                              [member._id]: e.target.value,
-                            })
+                            setEditedRoles({ ...editedRoles, [member._id]: e.target.value })
                           }
                           className="border-b border-gray-300 focus:outline-none px-2 py-1 rounded"
                         />
@@ -376,20 +385,12 @@ export default function CricketEventPage() {
                       )}
                     </td>
                     <td className="py-2 px-4 border-b">
-                      {editableMemberId === member._id ? (
-                        <button
-                          onClick={() => handleSaveRole(member._id)}
-                          className="cursor-pointer text-green-600 font-semibold"
-                        >
-                          Save
-                        </button>
+                      {member.isOrganizer ? (
+                        "N/A"
+                      ) : editableMemberId === member._id ? (
+                        <button onClick={() => handleSaveRole(member._id)} className="cursor-pointer text-green-600 font-semibold">Save</button>
                       ) : (
-                        <button
-                          onClick={() => setEditableMemberId(member._id)}
-                          className="cursor-pointer text-blue-600 font-semibold"
-                        >
-                          Edit
-                        </button>
+                        <button onClick={() => setEditableMemberId(member._id)} className="cursor-pointer text-blue-600 font-semibold">Edit</button>
                       )}
                     </td>
                   </tr>
@@ -501,10 +502,10 @@ export default function CricketEventPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-4 justify-start mt-6">
+          <div className="flex flex-wrap gap-3 justify-start mt-6">
             <button
               onClick={() => navigate(`/sports/cricket/format/${eventId}`)}
-              className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+              className="cursor-pointer bg-[#1e3a5f] text-white px-5 py-2 rounded border border-[#1e3a5f] font-medium text-sm hover:bg-[#2d4a6f] transition"
             >
               <FaFlag className="inline-block mr-2" />
               {cricketFormat ? "Update Format" : "Create Format"}
@@ -512,7 +513,7 @@ export default function CricketEventPage() {
             {cricketFormat && (
               <button
                 onClick={() => navigate(`/sports/cricket/format/${eventId}/view`)}
-                className="cursor-pointer bg-gradient-to-r from-indigo-400 to-indigo-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+                className="cursor-pointer bg-white text-[#1e3a5f] px-5 py-2 rounded border border-[#1e3a5f] font-medium text-sm hover:bg-[#f0ede6] transition"
               >
                 <FaFlag className="inline-block mr-2" />
                 View Format
@@ -520,7 +521,7 @@ export default function CricketEventPage() {
             )}
             <button
               onClick={() => navigate(`/sports/cricket/schedule/${eventId}`)}
-              className="cursor-pointer bg-gradient-to-r from-blue-400 to-blue-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+              className="cursor-pointer bg-[#b8860b] text-white px-5 py-2 rounded border border-[#b8860b] font-medium text-sm hover:bg-[#a67a0a] transition"
             >
               <FaTrophy className="inline-block mr-2" />
               {schedule ? "Update Schedule" : "Create Schedule"}
@@ -528,16 +529,16 @@ export default function CricketEventPage() {
             {schedule && (
               <>
                 <button
-                  onClick={handleInitMatches}
+                  onClick={matchesExist ? () => navigate(`/sports/cricket/scoreboard/${eventId}`) : handleInitMatches}
                   disabled={initLoading}
-                  className="cursor-pointer bg-gradient-to-r from-green-500 to-green-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105 disabled:opacity-60"
+                  className="cursor-pointer bg-green-600 text-white px-5 py-2 rounded border border-green-600 font-medium text-sm hover:bg-green-700 transition disabled:opacity-60"
                 >
                   <FaTrophy className="inline-block mr-2" />
-                  {initLoading ? "Starting..." : "Start Tournament"}
+                  {initLoading ? "Starting..." : matchesExist ? "Resume Tournament" : "Start Tournament"}
                 </button>
                 <button
                   onClick={() => navigate(`/sports/cricket/scoreboard/${eventId}`)}
-                  className="cursor-pointer bg-gradient-to-r from-purple-500 to-purple-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+                  className="cursor-pointer bg-white text-[#1e3a5f] px-5 py-2 rounded border border-[#1e3a5f] font-medium text-sm hover:bg-[#f0ede6] transition"
                 >
                   <FaTrophy className="inline-block mr-2" />
                   View Scoreboard
@@ -546,14 +547,14 @@ export default function CricketEventPage() {
             )}
             <button
               onClick={handleupdatebutton}
-              className="cursor-pointer bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+              className="cursor-pointer bg-white text-[#374151] px-5 py-2 rounded border border-gray-200 font-medium text-sm hover:border-[#b8860b]/50 transition"
             >
               <FaPenAlt className="inline-block mr-2" />
               Update Event
             </button>
             <button
               onClick={handeldelete}
-              className="cursor-pointer bg-gradient-to-r from-red-500 to-red-700 text-white px-5 py-2 rounded-xl font-semibold shadow hover:shadow-lg transition-transform hover:scale-105"
+              className="cursor-pointer border border-red-200 text-red-600 px-5 py-2 rounded font-medium text-sm hover:bg-red-50 transition"
             >
               <FaTrash className="inline-block mr-2" />
               Delete Event

@@ -19,6 +19,7 @@ import UpdateEventPage from "../pages/EditEvent/UpdateEvent";
 
 // Hosted Events
 import EventList from "../pages/MyHostedEvent/EventList";
+import HostedEventDetail from "../pages/MyHostedEvent/HostedEventDetail";
 
 // Participant - Join & View Events
 import JoinEvent from "../pages/ParticipateEvent/JoinEvent";
@@ -53,6 +54,11 @@ import CricketCreateTeam from "../pages/sports/cricket/participant/CreateTeam";
 import CricketTeamCreator from "../pages/sports/cricket/participant/TeamCreator";
 import CricketTeamMember from "../pages/sports/cricket/participant/TeamMember";
 
+// ── Coding ────────────────────────────────────────────────────────────────────
+import ProblemEditor from "../pages/coding/organizer/ProblemEditor";
+import ContestArena from "../pages/coding/participant/ContestArena";
+import Leaderboard from "../pages/coding/Leaderboard";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -71,6 +77,7 @@ export default function AppRoutes() {
       <Route path="/event/:eventName/:eventId/workshop" element={<ProtectedRoute><WorkshopEventDetails /></ProtectedRoute>} />
       <Route path="/events-hosted" element={<ProtectedRoute><EventList /></ProtectedRoute>} />
       <Route path="/update-event/:eventId" element={<ProtectedRoute><UpdateEventPage /></ProtectedRoute>} />
+      <Route path="/hosted-event/:eventId" element={<ProtectedRoute><HostedEventDetail /></ProtectedRoute>} />
 
       {/* Participant */}
       <Route path="/join-event" element={<ProtectedRoute><JoinEvent /></ProtectedRoute>} />
@@ -110,6 +117,17 @@ export default function AppRoutes() {
       <Route path="/sports/cricket/match/:matchId/score-input" element={<ProtectedRoute><CricketScoreInput /></ProtectedRoute>} />
       <Route path="/sports/cricket/match-manager/:eventId" element={<ProtectedRoute><CricketMatchManager /></ProtectedRoute>} />
       <Route path="/sports/cricket/match/:matchId/squad-submit" element={<ProtectedRoute><CricketSquadSubmit /></ProtectedRoute>} />
+
+      {/* ── Coding Routes ────────────────────────────────────────────────────── */}
+      {/* Organizer — problem editor only; contest setup is inside HostedEventDetail */}
+      <Route path="/coding/problem/new/:eventId"     element={<ProtectedRoute><ProblemEditor /></ProtectedRoute>} />
+      <Route path="/coding/problem/edit/:problemId"  element={<ProtectedRoute><ProblemEditor /></ProtectedRoute>} />
+
+      {/* Participant */}
+      <Route path="/coding/contest/:eventId"         element={<ProtectedRoute><ContestArena /></ProtectedRoute>} />
+
+      {/* Shared */}
+      <Route path="/coding/leaderboard/:eventId"     element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
     </Routes>
   );
 }

@@ -11,21 +11,41 @@ function InningsTable({ innings, label }) {
   if (!innings?.battingTeam) return null;
   const ovDisp = `${innings.overs}.${innings.balls}`;
 
-  return (
-    <div className="mb-6">
-      <h3 className="font-bold text-indigo-700 text-base mb-2">
-        {label} — {innings.battingTeam}:{" "}
-        <span className="text-gray-900 text-xl">{innings.runs}/{innings.wickets}</span>
-        <span className="text-sm text-gray-500 ml-2">({ovDisp} ov)</span>
-        {innings.extras > 0 && <span className="text-xs text-gray-400 ml-2">Extras: {innings.extras}</span>}
-      </h3>
+  // Economy: runs per over using total balls bowled
+  const economy = (b) => {
+    const totalBalls = b.overs * 6 + b.balls;
+    if (totalBalls === 0) return "-";
+    return ((b.runs / totalBalls) * 6).toFixed(2);
+  };
 
-      {innings.batsmen?.length > 0 && (
-        <div className="overflow-x-auto mb-3">
+  // Strike rate
+  const strikeRate = (b) =>
+    b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(1) : "0.0";
+
+  const batted = innings.batsmen?.filter((b) => b.balls > 0 || b.isOut) || [];
+  const didNotBat = innings.batsmen?.filter((b) => b.balls === 0 && !b.isOut) || [];
+
+  return (
+    <div className="mb-8">
+      {/* Innings header */}
+      <div className="flex items-center justify-between bg-indigo-50 rounded-xl px-4 py-3 mb-3">
+        <div>
+          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">{label}</span>
+          <h3 className="font-extrabold text-indigo-800 text-lg leading-tight">{innings.battingTeam}</h3>
+        </div>
+        <div className="text-right">
+          <span className="text-3xl font-black text-gray-900">{innings.runs}/{innings.wickets}</span>
+          <p className="text-xs text-gray-500">({ovDisp} ov){innings.extras > 0 ? ` · Extras: ${innings.extras}` : ""}</p>
+        </div>
+      </div>
+
+      {/* Batting table */}
+      {batted.length > 0 && (
+        <div className="overflow-x-auto mb-1">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="bg-indigo-50 text-indigo-700">
-                <th className="px-3 py-2 rounded-tl-lg">Batsman</th>
+              <tr className="bg-indigo-50 text-indigo-700 text-xs uppercase tracking-wide">
+                <th className="px-3 py-2 rounded-tl-lg w-1/3">Batsman</th>
                 <th className="px-3 py-2 text-center">R</th>
                 <th className="px-3 py-2 text-center">B</th>
                 <th className="px-3 py-2 text-center">4s</th>
@@ -34,19 +54,30 @@ function InningsTable({ innings, label }) {
               </tr>
             </thead>
             <tbody>
-              {innings.batsmen.map((b, i) => (
-                <tr key={i} className={`border-b border-gray-100 ${b.isOnStrike && !b.isOut ? "bg-yellow-50" : ""}`}>
-                  <td className="px-3 py-2 font-medium text-gray-800">
-                    {b.name}
-                    {b.isOut ? <span className="text-xs text-red-400 ml-1">(out)</span>
-                      : b.isOnStrike ? <span className="text-xs text-green-600 ml-1">*</span> : ""}
+              {batted.map((b, i) => (
+                <tr
+                  key={i}
+                  className={`border-b border-gray-100 transition-colors ${
+                    b.isOnStrike && !b.isOut ? "bg-yellow-50" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <td className="px-3 py-2 font-semibold text-gray-800">
+                    <span>{b.name}</span>
+                    {b.isOut
+                      ? <span className="ml-1 text-xs font-normal text-red-400 bg-red-50 px-1.5 py-0.5 rounded-full">out</span>
+                      : b.isOnStrike
+                      ? <span className="ml-1 text-xs font-bold text-green-600">*</span>
+                      : <span className="ml-1 text-xs font-normal text-blue-400">not out</span>}
                   </td>
-                  <td className="px-3 py-2 text-center font-bold">{b.runs}</td>
+                  <td className="px-3 py-2 text-center font-extrabold text-gray-900">{b.runs}</td>
                   <td className="px-3 py-2 text-center text-gray-500">{b.balls}</td>
                   <td className="px-3 py-2 text-center text-gray-500">{b.fours}</td>
                   <td className="px-3 py-2 text-center text-gray-500">{b.sixes}</td>
-                  <td className="px-3 py-2 text-center text-gray-500">
-                    {b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(1) : "0.0"}
+                  <td className={`px-3 py-2 text-center font-semibold ${
+                    parseFloat(strikeRate(b)) >= 150 ? "text-green-600" :
+                    parseFloat(strikeRate(b)) >= 100 ? "text-blue-600" : "text-gray-500"
+                  }`}>
+                    {strikeRate(b)}
                   </td>
                 </tr>
               ))}
@@ -55,13 +86,22 @@ function InningsTable({ innings, label }) {
         </div>
       )}
 
+      {/* Did not bat */}
+      {didNotBat.length > 0 && (
+        <p className="text-xs text-gray-400 px-3 mb-3">
+          Did not bat: {didNotBat.map((b) => b.name).join(", ")}
+        </p>
+      )}
+
+      {/* Bowling table */}
       {innings.bowlers?.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto mt-3">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="bg-purple-50 text-purple-700">
-                <th className="px-3 py-2 rounded-tl-lg">Bowler</th>
+              <tr className="bg-purple-50 text-purple-700 text-xs uppercase tracking-wide">
+                <th className="px-3 py-2 rounded-tl-lg w-1/3">Bowler</th>
                 <th className="px-3 py-2 text-center">O</th>
+                <th className="px-3 py-2 text-center">M</th>
                 <th className="px-3 py-2 text-center">R</th>
                 <th className="px-3 py-2 text-center">W</th>
                 <th className="px-3 py-2 text-center rounded-tr-lg">Econ</th>
@@ -69,13 +109,19 @@ function InningsTable({ innings, label }) {
             </thead>
             <tbody>
               {innings.bowlers.map((b, i) => (
-                <tr key={i} className="border-b border-gray-100">
-                  <td className="px-3 py-2 font-medium text-gray-800">{b.name}</td>
+                <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <td className="px-3 py-2 font-semibold text-gray-800">{b.name}</td>
                   <td className="px-3 py-2 text-center text-gray-500">{b.overs}.{b.balls}</td>
+                  <td className="px-3 py-2 text-center text-gray-500">{b.maidens ?? 0}</td>
                   <td className="px-3 py-2 text-center text-gray-500">{b.runs}</td>
-                  <td className="px-3 py-2 text-center font-bold">{b.wickets}</td>
-                  <td className="px-3 py-2 text-center text-gray-500">
-                    {b.overs > 0 ? (b.runs / b.overs).toFixed(2) : "-"}
+                  <td className={`px-3 py-2 text-center font-extrabold ${b.wickets > 0 ? "text-red-600" : "text-gray-700"}`}>
+                    {b.wickets}
+                  </td>
+                  <td className={`px-3 py-2 text-center font-semibold ${
+                    parseFloat(economy(b)) <= 6 ? "text-green-600" :
+                    parseFloat(economy(b)) <= 9 ? "text-yellow-600" : "text-red-500"
+                  }`}>
+                    {economy(b)}
                   </td>
                 </tr>
               ))}
@@ -173,20 +219,20 @@ export default function MatchScorecard() {
 
   if (!access) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-xl p-10 max-w-sm w-full text-center"
+          className="bg-white border border-gray-200 rounded-lg shadow-sm p-10 max-w-sm w-full text-center"
         >
-          <FaLock className="text-5xl text-indigo-300 mx-auto mb-4" />
-          <h2 className="text-xl font-extrabold text-gray-800 mb-2">Access Restricted</h2>
+          <FaLock className="text-4xl text-gray-300 mx-auto mb-4" />
+          <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">Access Restricted</h2>
           <p className="text-sm text-gray-500 mb-6">
             Only participants, members, players, and the organiser of this event can view live scores.
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition"
+            className="w-full py-2.5 bg-[#1e3a5f] hover:bg-[#2d4a6f] text-white font-medium rounded border border-[#1e3a5f] text-sm transition"
           >
             Go Back
           </button>
@@ -209,7 +255,7 @@ export default function MatchScorecard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
+    <div className="min-h-screen bg-[#faf9f6] py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-5">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium">
@@ -289,6 +335,54 @@ export default function MatchScorecard() {
           {tab === "scorecard" ? (
             <>
               {isLive && <BallDots balls={currentInn?.ballByBall} />}
+
+              {/* Live: current batsmen & bowler at a glance */}
+              {isLive && currentInn?.batsmen?.length > 0 && (
+                <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {currentInn.batsmen
+                    .filter((b) => !b.isOut && (b.isOnStrike || currentInn.currentNonStriker === b.name))
+                    .map((b, i) => (
+                      <div key={i} className={`rounded-xl px-4 py-3 border ${b.isOnStrike ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-gray-50"}`}>
+                        <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
+                          {b.isOnStrike ? "On Strike 🏏" : "Non-Striker"}
+                        </p>
+                        <p className="font-extrabold text-gray-800 text-base">{b.name}</p>
+                        <p className="text-sm text-gray-600 mt-0.5">
+                          <span className="font-bold text-gray-900">{b.runs}</span>
+                          <span className="text-gray-400"> ({b.balls}b)</span>
+                          <span className="ml-2 text-xs text-gray-400">
+                            SR: <span className="font-semibold text-blue-600">
+                              {b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(1) : "0.0"}
+                            </span>
+                          </span>
+                          {b.fours > 0 && <span className="ml-2 text-xs text-green-600">{b.fours}×4</span>}
+                          {b.sixes > 0 && <span className="ml-1 text-xs text-indigo-600">{b.sixes}×6</span>}
+                        </p>
+                      </div>
+                    ))}
+                  {currentInn.bowlers?.filter((b) => b.name === currentInn.currentBowler).map((b, i) => {
+                    const totalBalls = b.overs * 6 + b.balls;
+                    return (
+                      <div key={i} className="rounded-xl px-4 py-3 border border-purple-200 bg-purple-50">
+                        <p className="text-xs font-semibold text-purple-400 uppercase mb-1">Current Bowler 🎳</p>
+                        <p className="font-extrabold text-gray-800 text-base">{b.name}</p>
+                        <p className="text-sm text-gray-600 mt-0.5">
+                          <span className="font-bold text-red-600">{b.wickets}W</span>
+                          <span className="text-gray-400"> / </span>
+                          <span className="font-bold text-gray-900">{b.runs}R</span>
+                          <span className="text-gray-400"> ({b.overs}.{b.balls} ov)</span>
+                          <span className="ml-2 text-xs text-gray-400">
+                            Econ: <span className="font-semibold text-purple-600">
+                              {totalBalls > 0 ? ((b.runs / totalBalls) * 6).toFixed(2) : "-"}
+                            </span>
+                          </span>
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <InningsTable innings={match.innings1} label="1st Innings" />
               {match.innings2?.battingTeam && <InningsTable innings={match.innings2} label="2nd Innings" />}
             </>

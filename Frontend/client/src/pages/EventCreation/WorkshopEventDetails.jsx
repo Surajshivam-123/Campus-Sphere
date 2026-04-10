@@ -1,330 +1,121 @@
 import CopyToClipboard from "../../components/shared/CopyToClipboard";
-import { useLocation} from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
-const WorkshopEventDetails = () => {
-  const location = useLocation(); // eventData passed here
-  const eventData=location.state;
+export default function WorkshopEventDetails() {
+  const location = useLocation();
+  const eventData = location.state;
+
   if (!eventData) {
-    return <div className="text-center mt-10 text-red-500">No Event Data Found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--color-bg)" }}>
+        <div className="alert-error">No event data found.</div>
+      </div>
+    );
   }
-  const registrationPercentage = Math.round(
-    (eventData.registeredParticipants / eventData.totalParticipants) * 100
+
+  const registrationPct = Math.round((eventData.registeredParticipants / eventData.totalParticipants) * 100);
+  const checkinPct = Math.round((eventData.checkedInParticipants / eventData.registeredParticipants) * 100);
+
+  const ProgressBar = ({ value, color }) => (
+    <div className="w-full rounded-full h-2" style={{ backgroundColor: "var(--color-border)" }}>
+      <div className="h-2 rounded-full transition-all" style={{ width: `${value}%`, backgroundColor: color }} />
+    </div>
   );
-  const checkinPercentage = Math.round(
-    (eventData.checkedInParticipants / eventData.registeredParticipants) * 100
-  );
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="bg-purple-600 text-white p-6">
-        <div className="container mx-auto">
-          <h1 className="text-3xl font-bold">{eventData.eventName}</h1>
-          <p className="text-indigo-100">
-            {eventData.eventDate} • {eventData.eventLocation}
-          </p>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg)" }}>
+      {/* Header */}
+      <header className="px-6 py-8" style={{ backgroundColor: "var(--color-navy)" }}>
+        <div className="max-w-5xl mx-auto">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-white">{eventData.eventName}</h1>
+          <p className="text-sm mt-1" style={{ color: "#e8e6e1" }}>{eventData.eventDate} · {eventData.eventLocation}</p>
         </div>
       </header>
 
-      <main className="container mx-auto p-6">
-        <section className="mb-10 bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="p-6">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-2xl font-semibold mb-2">Event Summary</h2>
-                <p className="text-gray-600">
-                  Organized by {eventData.organizer}
-                </p>
-              </div>
-              <div className="bg-indigo-50 border-2 border-indigo-100 p-4 rounded-lg">
-                <p className="text-sm text-indigo-500 font-medium mb-1">
-                  INVITATION CODE FOR MEMBERS
-                </p>
-                <div className="flex gap-4">
-                  <h3 className="text-3xl font-medium text-indigo-700">
-                    {eventData.invitationCode.members}
-                  </h3>
-                  <CopyToClipboard
-                    textToCopy={eventData.invitationCode.members}
-                  />
-                </div>
-              </div>
-              <div className="bg-indigo-50 border-2 border-indigo-100 p-4 rounded-lg">
-                <p className="text-sm text-indigo-500 font-medium mb-1">
-                  INVITATION CODE FOR PARTICIPANTS
-                </p>
-                <div className="flex gap-4">
-                  <h3 className="text-3xl font-medium text-indigo-700">
-                    {eventData.invitationCode.candidates}
-                  </h3>
-                  <CopyToClipboard
-                    textToCopy={eventData.invitationCode.candidates}
-                  />
-                </div>
-              </div>
+      <main className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+        {/* Summary */}
+        <section className="rounded-lg p-6 border" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <div className="flex flex-wrap justify-between items-start gap-6 mb-6">
+            <div>
+              <h2 className="font-heading text-lg font-semibold mb-1" style={{ color: "var(--color-navy)" }}>Event Summary</h2>
+              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Organized by {eventData.organizer}</p>
             </div>
+            <div className="flex flex-wrap gap-4">
+              {[
+                { label: "Member code", code: eventData.invitationCode.members },
+                { label: "Participant code", code: eventData.invitationCode.candidates },
+              ].map(({ label, code }) => (
+                <div
+                  key={label}
+                  className="rounded-lg px-4 py-3 border"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, var(--color-navy) 6%, transparent)",
+                    borderColor: "color-mix(in srgb, var(--color-navy) 20%, transparent)",
+                  }}
+                >
+                  <p className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: "var(--color-navy)" }}>{label}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono font-semibold text-lg" style={{ color: "var(--color-navy)" }}>{code}</span>
+                    <CopyToClipboard textToCopy={code} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <p className="text-sm font-medium mb-2">
-                  Registration Progress ({eventData.registeredParticipants}/
-                  {eventData.totalParticipants})
-                </p>
-                <div className="w-full bg-gray-200 rounded-full h-4">
-                  <div
-                    className="bg-indigo-600 h-4 rounded-full transition-all duration-500"
-                    style={{ width: `${registrationPercentage}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  {registrationPercentage}% of capacity
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-2">
-                  Check-in Completion ({eventData.checkedInParticipants}/
-                  {eventData.registeredParticipants})
-                </p>
-                <div className="w-full bg-gray-200 rounded-full h-4">
-                  <div
-                    className="bg-green-500 h-4 rounded-full transition-all duration-500"
-                    style={{ width: `${checkinPercentage}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  {checkinPercentage}% of registered attendees
-                </p>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm font-medium mb-2" style={{ color: "var(--color-text-secondary)" }}>
+                Registration ({eventData.registeredParticipants}/{eventData.totalParticipants})
+              </p>
+              <ProgressBar value={registrationPct} color="var(--color-navy)" />
+              <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>{registrationPct}% of capacity</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-2" style={{ color: "var(--color-text-secondary)" }}>
+                Check-in ({eventData.checkedInParticipants}/{eventData.registeredParticipants})
+              </p>
+              <ProgressBar value={checkinPct} color="var(--color-success)" />
+              <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>{checkinPct}% of registered attendees</p>
             </div>
           </div>
         </section>
 
-        <section className="mb-10">
-          <h2 className="text-2xl font-semibold mb-6">Event Statistics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Registration Sources
-                </h3>
-                <div className="space-y-3">
-                  {Object.entries(eventData.registrationSources).map(
-                    ([source, count]) => (
-                      <div key={source}>
-                        <div className="flex justify-between mb-1">
-                          <span className="capitalize font-medium">
-                            {source}
-                          </span>
-                          <span>
-                            {count} (
-                            {Math.round(
-                              (count / eventData.registeredParticipants) * 100
-                            )}
-                            %)
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-500 h-2 rounded-full"
-                            style={{
-                              width: `${
-                                (count / eventData.registeredParticipants) * 100
-                              }%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Attendee Categories
-                </h3>
-                <div className="h-64">
-                  <div className="relative w-32 h-32 mx-auto mb-4">
-                    <div className="absolute w-full h-full rounded-full border-4 border-gray-200"></div>
-                    <div
-                      className="absolute w-full h-full rounded-full border-4 border-transparent"
-                      style={{
-                        background: `conic-gradient(
-                          #8b5cf6 ${
-                            (eventData.attendeeCategories.speakers /
-                              eventData.registeredParticipants) *
-                            360
-                          }deg,
-                          #3b82f6 ${
-                            (eventData.attendeeCategories.speakers /
-                              eventData.registeredParticipants) *
-                            360
-                          }deg ${
-                          ((eventData.attendeeCategories.speakers +
-                            eventData.attendeeCategories.sponsors) /
-                            eventData.registeredParticipants) *
-                          360
-                        }deg,
-                          #10b981 ${
-                            ((eventData.attendeeCategories.speakers +
-                              eventData.attendeeCategories.sponsors) /
-                              eventData.registeredParticipants) *
-                            360
-                          }deg ${
-                          ((eventData.attendeeCategories.speakers +
-                            eventData.attendeeCategories.sponsors +
-                            eventData.attendeeCategories.general) /
-                            eventData.registeredParticipants) *
-                          360
-                        }deg,
-                          #f59e0b ${
-                            ((eventData.attendeeCategories.speakers +
-                              eventData.attendeeCategories.sponsors +
-                              eventData.attendeeCategories.general) /
-                              eventData.registeredParticipants) *
-                            360
-                          }deg
-                        )`,
-                      }}
-                    ></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-violet-500 rounded-full mr-2"></div>
-                      <span>
-                        Speakers: {eventData.attendeeCategories.speakers}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                      <span>
-                        Sponsors: {eventData.attendeeCategories.sponsors}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span>
-                        General: {eventData.attendeeCategories.general}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                      <span>Press: {eventData.attendeeCategories.press}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Participation Rate
-                </h3>
-                <div className="flex flex-col items-center justify-center h-64">
-                  <div className="relative w-40 h-40 mb-4">
-                    <svg className="w-full h-full" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="#e5e7eb"
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="#8b5cf6"
-                        strokeWidth="8"
-                        strokeDasharray={`${
-                          eventData.participationRate * 2.83
-                        } 283`}
-                        strokeLinecap="round"
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-3xl font-bold">
-                        {eventData.participationRate}%
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-center">
-                    Active participation rate based on session attendance
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* People tables */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <section>
-            <h2 className="text-2xl font-semibold mb-6">Members</h2>
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
+          {[
+            { title: "Members", rows: eventData.eventPeople.members, cols: ["Name", "Role"], render: (m) => [m.name, <span className="badge-info">{m.role}</span>] },
+            { title: "Participants", rows: eventData.eventPeople.participants, cols: ["Name", "ID"], render: (p) => [p.name, <span className="badge-info font-mono">{p.identityNumber}</span>] },
+          ].map(({ title, rows, cols, render }) => (
+            <section key={title} className="rounded-lg overflow-hidden border" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+              <div className="px-5 py-4" style={{ borderBottom: `1px solid var(--color-border)` }}>
+                <h2 className="font-heading text-base font-semibold" style={{ color: "var(--color-navy)" }}>{title}</h2>
+              </div>
+              <table className="w-full text-sm">
+                <thead style={{ backgroundColor: "var(--color-surface-2)" }}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
+                    {cols.map((c) => (
+                      <th key={c} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>{c}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {eventData.eventPeople.members.map((member, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4">
-                        <div className="font-medium">{member.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full text-xs">
-                          {member.role}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                <tbody>
+                  {rows.map((row, i) => {
+                    const cells = render(row);
+                    return (
+                      <tr key={i} style={{ borderTop: `1px solid var(--color-border-soft)` }}>
+                        {cells.map((cell, j) => (
+                          <td key={j} className="px-5 py-3" style={{ color: j === 0 ? "var(--color-text-secondary)" : undefined }}>{cell}</td>
+                        ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
-            </div>
-          </section>
-          <section>
-            <h2 className="text-2xl font-semibold mb-6">Participants</h2>
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Identity Number
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {eventData.eventPeople.participants.map((member, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4">
-                        <div className="font-medium">{member.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full text-xs">
-                          {member.identityNumber}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+            </section>
+          ))}
         </div>
       </main>
     </div>
   );
-};
-
-export default WorkshopEventDetails;
+}

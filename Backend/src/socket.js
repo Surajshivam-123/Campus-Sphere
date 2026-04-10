@@ -29,6 +29,36 @@ export const initSocket = (httpServer) => {
     socket.on("leave:event", (eventId) => {
       socket.leave(`event:${eventId}`);
     });
+
+    // Personal rooms for join request notifications
+    socket.on("join:user", (userId) => {
+      socket.join(`user:${userId}`);
+    });
+
+    socket.on("join:captain", (userId) => {
+      socket.join(`captain:${userId}`);
+    });
+
+    // Organizer room for member join request notifications
+    socket.on("join:organizer", (userId) => {
+      socket.join(`organizer:${userId}`);
+    });
+
+    // Coding contest rooms
+    socket.on("join:contest", (eventId) => {
+      socket.join(`event:${eventId}`);
+    });
+    socket.on("leave:contest", (eventId) => {
+      socket.leave(`event:${eventId}`);
+    });
+
+    // Coding contest rooms
+    socket.on("join:contest", (eventId) => {
+      socket.join(`event:${eventId}`);
+    });
+    socket.on("leave:contest", (eventId) => {
+      socket.leave(`event:${eventId}`);
+    });
   });
 
   return io;

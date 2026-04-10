@@ -38,6 +38,11 @@ import cricketPlayerRouter from "./sports/cricket/routes/player.route.js";
 import cricketFormatRouter from "./sports/cricket/routes/format.route.js";
 import cricketMatchRouter from "./sports/cricket/routes/match.route.js";
 
+// Coding Platform
+import codingContestRouter from "./sports/coding/routes/contest.route.js";
+import codingProblemRouter from "./sports/coding/routes/problem.route.js";
+import codingSubmissionRouter from "./sports/coding/routes/submission.route.js";
+
 // Core routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/events", eventRouter);
@@ -50,6 +55,11 @@ app.use("/api/v1/schedule", scheduleRouter);
 app.use("/api/v1/sports/cricket/players", cricketPlayerRouter);
 app.use("/api/v1/sports/cricket/format", cricketFormatRouter);
 app.use("/api/v1/sports/cricket/matches", cricketMatchRouter);
+
+// Coding routes — namespaced under /api/v1/coding
+app.use("/api/v1/coding/contest",     codingContestRouter);
+app.use("/api/v1/coding/problems",    codingProblemRouter);
+app.use("/api/v1/coding/submissions", codingSubmissionRouter);
 
 // Legacy routes (backward compatibility)
 app.use("/api/cpsh/users", userRouter);

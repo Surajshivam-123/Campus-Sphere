@@ -75,11 +75,11 @@ export default function CreateCricketFormat({ viewOnly = false }) {
     teams.length === 0 ? (
       <p className="text-gray-400 text-sm">No teams have joined yet.</p>
     ) : (
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         {teams.map((t, i) => (
           <div
             key={t._id || i}
-            className="bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-2 text-indigo-800 font-medium text-sm"
+            className="bg-[#f0f4ff] border border-[#c7d4f0] rounded px-3 py-2 text-[#1e3a5f] font-medium text-sm"
           >
             {t.name}
           </div>
@@ -89,61 +89,59 @@ export default function CreateCricketFormat({ viewOnly = false }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 py-10 px-6"
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-[#faf9f6] py-12 px-4"
     >
-      <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <div className="flex items-center gap-3 mb-8">
-          <FaTrophy className="text-purple-600 text-3xl" />
-          <h2 className="text-3xl font-bold text-gray-800">
+      <div className="max-w-2xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <FaTrophy className="text-[#b8860b] text-2xl" />
+          <h2 className="font-heading text-2xl font-semibold text-[#1e3a5f] tracking-tight">
             {viewOnly ? "Tournament Format" : existing ? "Update Format" : "Create Format"}
           </h2>
         </div>
 
         {saved && (
-          <div className="flex items-center gap-2 bg-green-50 border border-green-300 text-green-700 rounded-xl px-4 py-3 mb-6">
+          <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded px-4 py-3 mb-6 text-sm">
             <FaCheckCircle />
             <span>Format {existing ? "updated" : "saved"} successfully.</span>
           </div>
         )}
 
         {viewOnly ? (
-          <div className="space-y-5">
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-              <p className="text-sm text-gray-500 mb-1">Tournament Type</p>
-              <p className="text-lg font-semibold text-indigo-800">{existing?.tournamentType ?? "—"}</p>
-            </div>
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-              <p className="text-sm text-gray-500 mb-1">Overs per Innings</p>
-              <p className="text-lg font-semibold text-indigo-800">{existing?.overs ?? "—"}</p>
-            </div>
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-              <p className="text-sm text-gray-500 mb-1">Players per Team</p>
-              <p className="text-lg font-semibold text-indigo-800">{existing?.playersPerTeam ?? "—"}</p>
-            </div>
+          <div className="space-y-4">
+            {[
+              { label: "Tournament Type", value: existing?.tournamentType },
+              { label: "Overs per Innings", value: existing?.overs },
+              { label: "Players per Team", value: existing?.playersPerTeam },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-[#f0f4ff] border border-[#c7d4f0] rounded-lg px-4 py-3">
+                <p className="text-xs text-gray-500 mb-0.5">{label}</p>
+                <p className="font-semibold text-[#1e3a5f]">{value ?? "—"}</p>
+              </div>
+            ))}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">
+              <p className="text-sm font-medium text-[#374151] mb-2">
                 Participating Teams ({teams.length})
               </p>
               <TeamGrid />
             </div>
             <button
               onClick={() => navigate(-1)}
-              className="w-full py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition"
+              className="w-full py-2.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition text-sm font-medium"
             >
               Back
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Tournament Type</label>
+              <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">Tournament Type</label>
               <select
                 value={tournamentType}
                 onChange={(e) => setTournamentType(e.target.value)}
-                className="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm bg-white"
               >
                 {TOURNAMENT_TYPES.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -152,7 +150,7 @@ export default function CreateCricketFormat({ viewOnly = false }) {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Overs per Innings</label>
+              <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">Overs per Innings</label>
               <input
                 type="number"
                 min="1"
@@ -160,12 +158,12 @@ export default function CreateCricketFormat({ viewOnly = false }) {
                 onChange={(e) => setOvers(e.target.value)}
                 placeholder="e.g. 20"
                 required
-                className="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Players per Team</label>
+              <label className="block text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">Players per Team</label>
               <input
                 type="number"
                 min="1"
@@ -173,31 +171,31 @@ export default function CreateCricketFormat({ viewOnly = false }) {
                 onChange={(e) => setPlayersPerTeam(e.target.value)}
                 placeholder="e.g. 11"
                 required
-                className="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <p className="text-xs font-medium text-[#374151] mb-2 uppercase tracking-wider">
                 Participating Teams ({teams.length})
-              </label>
+              </p>
               <TeamGrid />
             </div>
 
-            <div className="flex gap-4 pt-2">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition"
+                className="flex-1 py-2.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition text-sm font-medium"
               >
                 Back
               </button>
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow-md transition disabled:opacity-60"
+                className="flex-1 py-2.5 rounded bg-[#1e3a5f] hover:bg-[#2d4a6f] text-white font-medium text-sm transition disabled:opacity-60"
               >
                 {loading ? "Saving..." : existing ? "Update Format" : "Save Format"}
               </motion.button>

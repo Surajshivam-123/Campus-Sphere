@@ -1,21 +1,14 @@
-﻿import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import API_URL from "../../config/api";
 import { formatDateTime } from "../../utils/helpers";
 import useIsLive from "../../hooks/useIsLive";
 
-/**
- * Unified EventCard component that handles all event card display scenarios
- * @param {Object} event - Event data
- * @param {string} variant - Card variant: 'basic' | 'participant' | 'team' | 'hosted'
- * @param {Object} additionalData - Additional data like participant info
- * @param {number} index - Index for animation delay
- */
-export default function EventCard({ event, variant = 'basic', additionalData = {}, index = 0, onLeave }) {
+export default function EventCard({ event, variant = "basic", additionalData = {}, index = 0, onLeave }) {
   const navigate = useNavigate();
   const [leaving, setLeaving] = useState(false);
-  const isCricketEvent = event.category === 'sports' && event.sports?.toLowerCase() === 'cricket';
+  const isCricketEvent = event.category === "sports" && event.sports?.toLowerCase() === "cricket";
   const { isLive } = useIsLive(isCricketEvent ? event._id : null);
 
   const handleLeave = async (e) => {
@@ -27,9 +20,7 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
         `${API_URL}/api/cpsh/participants/delete-participant/${additionalData.participantId}`,
         { method: "DELETE", credentials: "include" }
       );
-      if (res.ok) {
-        onLeave?.();
-      }
+      if (res.ok) onLeave?.();
     } catch (err) {
       console.error("Failed to leave event:", err);
     } finally {
@@ -39,107 +30,132 @@ export default function EventCard({ event, variant = 'basic', additionalData = {
 
   const handleClick = () => {
     const { identityNumber, participantCode, participantId } = additionalData;
-
     switch (variant) {
-      case 'participant':
-        if (event.category === 'sports' && event.sports === 'cricket') {
+      case "participant":
+      case "team":
+        if (event.category === "sports" && event.sports === "cricket") {
           navigate(`/sports/cricket/event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
+        } else if (event.category === "coding") {
+          navigate(`/coding/contest/${event._id}`);
         } else {
           navigate(`/event-details/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
         }
         break;
-
-      case 'team':
-        if (event.category === 'sports' && event.sports === 'cricket') {
-          navigate(`/sports/cricket/event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
+      case "hosted":
+        if (event.category === "sports" && event.sports?.toLowerCase() === "cricket") {
+          navigate(`/event/${event.eventName}/${event._id}/sports/cricket`);
         } else {
-          navigate(`/event-details/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
+          navigate(`/hosted-event/${event._id}`);
         }
         break;
-
-      case 'hosted':
-        if (event.category === 'sports') {
-          navigate(`/event/${event.eventName}/${event._id}/${event.category}/${event.sports}`);
-        } else if (event.category === 'workshop') {
-          navigate(`/event/${event.eventName}/${event._id}/workshop`);
-        } else {
-          navigate(`/event/${event.eventName}/${event._id}/others`);
-        }
-        break;
-
-      case 'basic':
       default:
         navigate(`/get-event/${encodeURIComponent(event.memberCode)}`);
-        break;
     }
   };
 
-  if (variant === 'hosted') {
-    return (
-      <motion.div
-        className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#b8860b]/40 transition-colors"
-        whileHover={{ scale: 1.01 }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05, duration: 0.4 }}
-      >
-        <div className="cursor-pointer" onClick={handleClick}>
-          {event.festivalName && event.festivalName !== "" && (
-            <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">{event.festivalName}</h2>
-          )}
-          <h2 className="font-heading text-lg font-semibold text-[#1e3a5f] mb-3">{event.eventName}</h2>
-          <div className="w-8 h-px bg-[#b8860b]/40 mb-3" />
-          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Date:</span> {formatDateTime(event.startDate)}</p>
-          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Venue:</span> {event.location}</p>
-          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Category:</span> {event.category}</p>
-          <p className="text-[#374151] text-sm mb-1"><span className="font-medium text-[#1e3a5f]">Organizer:</span> {event.organization}</p>
-          <p className="text-[#374151] text-sm"><span className="font-medium text-[#1e3a5f]">Max participants:</span> {event.maxParticipants}</p>
-        </div>
-        {isLive && (
-          <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/sports/cricket/scoreboard/${event._id}`); }}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
-          >
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
-            Watch Live
-          </button>
-        )}
-      </motion.div>
-    );
-  }
+  const cardStyle = {
+    backgroundColor: "var(--color-surface)",
+    borderColor: "var(--color-border)",
+  };
 
-  // participant / team / basic variant
+  const liveButton = isLive && (
+    <button
+      onClick={(e) => { e.stopPropagation(); navigate(`/sports/cricket/scoreboard/${event._id}`); }}
+      className="mt-2 w-full flex items-center justify-center gap-2 py-2 text-white text-sm font-medium rounded transition"
+      style={{ backgroundColor: "#16a34a" }}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#15803d"}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#16a34a"}
+    >
+      <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
+      Watch Live
+    </button>
+  );
+
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 w-full max-w-md mx-auto hover:shadow-xl transition duration-300">
-      <div className="cursor-pointer" onClick={handleClick}>
-        {event.festivalName && event.festivalName !== '' && (
-          <div className="text-purple-700 font-bold flex items-center mb-2">{event.festivalName}</div>
+    <motion.div
+      className="rounded-lg border transition-colors"
+      style={cardStyle}
+      whileHover={{ scale: 1.01 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
+      onMouseEnter={(e) => e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 40%, transparent)"}
+      onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--color-border)"}
+    >
+      <div className="p-6 cursor-pointer" onClick={handleClick}>
+        {event.festivalName && event.festivalName !== "" && (
+          <p
+            className="text-xs font-medium uppercase tracking-wider mb-1"
+            style={{ color: "var(--color-gold)" }}
+          >
+            {event.festivalName}
+          </p>
         )}
-        <h2 className="text-xl font-bold text-purple-700">{event.eventName}</h2>
-        <p className="text-gray-600 mt-2">{event.description}</p>
-        <div className="flex justify-between mt-4 text-sm text-gray-500">
-          <span>📅 {formatDateTime(event.startDate)}</span>
-          <span>📍 {event.location}</span>
+        <h2
+          className="font-heading text-lg font-semibold mb-3"
+          style={{ color: "var(--color-navy)" }}
+        >
+          {event.eventName}
+        </h2>
+        <div
+          className="w-8 h-px mb-3"
+          style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }}
+        />
+
+        {variant !== "hosted" && event.description && (
+          <p
+            className="text-sm mb-3 leading-relaxed line-clamp-2"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
+            {event.description}
+          </p>
+        )}
+
+        <div className="space-y-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+          <p>
+            <span className="font-medium" style={{ color: "var(--color-navy)" }}>Date: </span>
+            {formatDateTime(event.startDate)}
+          </p>
+          <p>
+            <span className="font-medium" style={{ color: "var(--color-navy)" }}>Venue: </span>
+            {event.location}
+          </p>
+          {variant === "hosted" && (
+            <>
+              <p>
+                <span className="font-medium" style={{ color: "var(--color-navy)" }}>Category: </span>
+                {event.category}
+              </p>
+              <p>
+                <span className="font-medium" style={{ color: "var(--color-navy)" }}>Organizer: </span>
+                {event.organization}
+              </p>
+              <p>
+                <span className="font-medium" style={{ color: "var(--color-navy)" }}>Max participants: </span>
+                {event.maxParticipants}
+              </p>
+            </>
+          )}
         </div>
       </div>
-      {(variant === 'participant' || variant === 'team') && (
-        <button
-          onClick={handleLeave}
-          disabled={leaving}
-          className="mt-4 w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50"
-        >
-          {leaving ? "Leaving..." : "Leave Event"}
-        </button>
+
+      {(variant === "participant" || variant === "team") && (
+        <div className="px-6 pb-4">
+          <button
+            onClick={handleLeave}
+            disabled={leaving}
+            className="btn-danger w-full"
+          >
+            {leaving ? "Leaving…" : "Leave event"}
+          </button>
+        </div>
       )}
+
       {isLive && (
-        <button
-          onClick={(e) => { e.stopPropagation(); navigate(`/sports/cricket/scoreboard/${event._id}`); }}
-          className="mt-2 w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
-        >
-          <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
-          Watch Live
-        </button>
+        <div className="px-6 pb-4">
+          {liveButton}
+        </div>
       )}
-    </div>
+    </motion.div>
   );
 }

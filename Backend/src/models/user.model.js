@@ -53,6 +53,7 @@ userSchema.pre('save',async function(next){
 })
 
 userSchema.methods.isPasswordCorrect=async function(password){
+    if(!this.password) return false; // Google OAuth users have no password
     return await bcrypt.compare(password,this.password);
 }
 

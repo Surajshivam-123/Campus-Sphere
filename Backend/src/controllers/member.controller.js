@@ -1,43 +1,99 @@
-import { User } from "../models/user.model.js";
 import { Member } from "../models/members.model.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import { Event } from "../models/event.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+import { submitJoinRequest, respondToRequest, getPendingRequests } from "../services/joinRequest.service.js";
 
 const MEMBER_TTL = 120;
 const EVENT_TTL = 300;
 
+// POST /members/participate/:memberCode
+// User submits a join request using the member code
 const participateEvent = asyncHandler(async (req, res) => {
   try {
-    const { invitationCode } = req.body;
-    const event = await Event.findOne({ memberCode: invitationCode });
+    const { memberCode } = req.params;
+
+    const event = await Event.findOne({ memberCode });
     if (!event) {
-      res.status(404).json({ message: "Invalid Member Code" });
+      return res.status(404).json(new ApiResponse(404, null, "Invalid Member Code"));
     }
-    const memberExists = await Member.findOne({
-      owner: req.user?._id,
-      event: event._id,
-    });
+
+    if (event.organizer.toString() === req.user._id.toString()) {
+      return res.status(400).json(new ApiResponse(400, null, "You are the organizer of this event"));
+    }
+
+    const memberExists = await Member.findOne({ owner: req.user._id, event: event._id });
     if (memberExists) {
-      res.status(400).json(new ApiResponse(400, {}, "Member already exists"));
+      return res.status(400).json(new ApiResponse(400, null, "You are already a member of this event"));
     }
-    const member = await Member.create({
-      owner: req.user?._id,
-      name: req.user?.fullname,
-      event: event._id,
-      role: "",
+
+    const result = await submitJoinRequest("member", {
+      eventId: event._id,
+      requesterId: req.user._id,
+      requesterName: req.user.fullname || req.user.username,
+      organizerId: event.organizer,
+      eventName: event.eventName,
     });
-    await cacheDel(
-      `members:event:${event._id}`,
-      `member:events:${req.user?._id}`
-    );
-    res
-      .status(200)
-      .json(new ApiResponse(200, member, "Event Joined successfully"));
+
+    if (result.conflict) {
+      return res.status(400).json(new ApiResponse(400, { status: result.status }, `Request already ${result.status}`));
+    }
+
+    return res.status(201).json(new ApiResponse(201, { status: "pending" }, "Join request sent. Waiting for organizer approval."));
   } catch (error) {
-    console.log("Error while joining event", error);
+    if (error.code === 11000) {
+      return res.status(400).json(new ApiResponse(400, null, "You have already sent a request for this event."));
+    }
+    console.log("Error while sending join request", error);
+    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
+  }
+});
+
+// GET /members/join-requests/:eventId
+// Organizer fetches all pending join requests for their event
+const getJoinRequests = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await Event.findById(eventId).select("organizer");
+    if (!event) {
+      return res.status(404).json(new ApiResponse(404, null, "Event not found"));
+    }
+    if (event.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json(new ApiResponse(403, null, "Only the organizer can view join requests"));
+    }
+
+    const requests = await getPendingRequests("member", { eventId });
+    return res.status(200).json(new ApiResponse(200, requests, "Join requests fetched successfully"));
+  } catch (error) {
+    console.log("Error fetching join requests", error);
+    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
+  }
+});
+
+// PATCH /members/join-requests/handle/:requestId
+// Organizer approves or rejects a join request
+const handleJoinRequest = asyncHandler(async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { action } = req.body;
+
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json(new ApiResponse(400, null, "Action must be 'approve' or 'reject'"));
+    }
+
+    const result = await respondToRequest(requestId, action, req.user._id);
+
+    if (result.notFound)      return res.status(404).json(new ApiResponse(404, null, "Join request not found"));
+    if (result.forbidden)     return res.status(403).json(new ApiResponse(403, null, "Only the organizer can handle join requests"));
+    if (result.alreadyHandled) return res.status(400).json(new ApiResponse(400, null, `Request already ${result.status}`));
+
+    return res.status(200).json(new ApiResponse(200, { status: result.status, member: result.created }, `Request ${result.status} successfully`));
+  } catch (error) {
+    console.log("Error handling join request", error);
+    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
   }
 });
 
@@ -53,61 +109,51 @@ const getEvent = asyncHandler(async (req, res, next) => {
 
     const event = await Event.findOne({ memberCode });
     if (!event) {
-      return next(new ApiError(404, "Event not found while getting event"));
+      return next(new ApiError(404, "Event not found"));
     }
     await cacheSet(cacheKey, event, EVENT_TTL);
-    res
-      .status(200)
-      .json(new ApiResponse(200, event, "Event fetch successfully"));
+    return res.status(200).json(new ApiResponse(200, event, "Event fetch successfully"));
   } catch (error) {
-    console.log("Error while joining event as member", error);
+    console.log("Error while getting event by member code", error);
     return next(new ApiError(500, "Internal Server Error"));
   }
 });
 
 const getAllEvents = asyncHandler(async (req, res) => {
   try {
-    const cacheKey = `member:events:${req.user?._id}`;
+    const cacheKey = `member:events:${req.user._id}`;
 
     const cached = await cacheGet(cacheKey);
     if (cached) {
       return res.status(200).json(new ApiResponse(200, cached, "All Events fetched successfully"));
     }
 
-    const events = await Member.find({ owner: req.user?._id });
-    if (!events) {
-      throw new ApiError(404, "Events Not found");
-    }
-    // Use $in to avoid N+1 — fetch all events in one query
-    const eventIds = events.map((e) => e.event);
+    const memberships = await Member.find({ owner: req.user._id });
+    const eventIds = memberships.map((m) => m.event);
     const allEvents = await Event.find({ _id: { $in: eventIds } });
 
     await cacheSet(cacheKey, allEvents, MEMBER_TTL);
-    res
-      .status(200)
-      .json(new ApiResponse(200, allEvents, "All Events fetched successfully"));
+    return res.status(200).json(new ApiResponse(200, allEvents, "All Events fetched successfully"));
   } catch (error) {
     console.log("Error while getting all events", error);
+    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
   }
 });
 
 const editRole = asyncHandler(async (req, res) => {
   try {
     const { memberId } = req.params;
-    if(!memberId){
-      throw new ApiError(400,"Member id is required")
-    }
+    if (!memberId) throw new ApiError(400, "Member id is required");
+
     const { role } = req.body;
     const member = await Member.findByIdAndUpdate(memberId, { role }, { new: true });
-    if (!member) {
-      throw new ApiError(404, "Member not found");
-    }
+    if (!member) throw new ApiError(404, "Member not found");
+
     await cacheDel(`members:event:${member.event}`);
-    res
-      .status(200)
-      .json(new ApiResponse(200, member, "Role updated successfully"));
+    return res.status(200).json(new ApiResponse(200, member, "Role updated successfully"));
   } catch (error) {
     console.log("Error while editing role", error);
+    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
   }
 });
 
@@ -118,54 +164,43 @@ const getMember = asyncHandler(async (req, res) => {
 
     const cached = await cacheGet(cacheKey);
     if (cached) {
-      return res.status(200).json(new ApiResponse(200, cached, "All Member fetched successfully"));
+      return res.status(200).json(new ApiResponse(200, cached, "All Members fetched successfully"));
     }
 
     const [members, event] = await Promise.all([
-      Member.find({ event: eventId }),
-      Event.findById(eventId).populate("organizer", "fullname username"),
+      Member.find({ event: eventId }).populate("owner", "fullname username avatar"),
+      Event.findById(eventId).populate("organizer", "fullname username avatar"),
     ]);
 
-    if (!members) {
-      throw new ApiError(404, "Member not found");
-    }
+    if (!members) throw new ApiError(404, "Members not found");
 
-    const ownerName = event?.organizer?.fullname || event?.organizer?.username || req?.user?.fullname;
-
-    // Include organizer as a member entry if not already in the list
     const organizerId = event?.organizer?._id?.toString();
-    const alreadyInList = members.some((m) => m.owner?.toString() === organizerId);
+    const ownerName = event?.organizer?.fullname || event?.organizer?.username;
 
-    let allMembers = [...members];
-    if (!alreadyInList && organizerId) {
-      allMembers = [
-        {
-          _id: event.organizer._id,
-          name: ownerName,
-          role: "Organizer",
-          owner: event.organizer._id,
-          isOrganizer: true,
-        },
-        ...allMembers,
-      ];
-    }
+    // Normalize members — use populated owner name, fallback to stored name
+    const normalizedMembers = members.map((m) => ({
+      _id: m._id,
+      owner: m.owner,
+      name: m.owner?.fullname || m.owner?.username || m.name || "Unknown",
+      role: m.role,
+    }));
+
+    // Prepend organizer only if not already in the list as a member
+    const alreadyInList = normalizedMembers.some((m) => m.owner?._id?.toString() === organizerId);
+    const allMembers = alreadyInList
+      ? normalizedMembers
+      : [
+          { _id: event.organizer._id, owner: event.organizer, name: ownerName, role: "Organizer", isOrganizer: true },
+          ...normalizedMembers,
+        ];
 
     const result = { members: allMembers, ownerName };
     await cacheSet(cacheKey, result, MEMBER_TTL);
-    res
-      .status(200)
-      .json(new ApiResponse(200, result, "All Member fetched successfully"));
+    return res.status(200).json(new ApiResponse(200, result, "All Members fetched successfully"));
   } catch (error) {
     console.log("Error while getting all members", error);
+    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
   }
 });
 
-
-
-export {
-  participateEvent,
-  getEvent,
-  getAllEvents,
-  editRole,
-  getMember,
-};
+export { participateEvent, getEvent, getAllEvents, editRole, getMember, getJoinRequests, handleJoinRequest };

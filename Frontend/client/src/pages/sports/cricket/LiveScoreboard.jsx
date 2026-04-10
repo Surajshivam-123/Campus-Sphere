@@ -126,20 +126,20 @@ export default function LiveScoreboard() {
   // Access denied
   if (!access) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-xl p-10 max-w-sm w-full text-center"
+          className="bg-white border border-gray-200 rounded-lg shadow-sm p-10 max-w-sm w-full text-center"
         >
-          <FaLock className="text-5xl text-indigo-300 mx-auto mb-4" />
-          <h2 className="text-xl font-extrabold text-gray-800 mb-2">Access Restricted</h2>
+          <FaLock className="text-4xl text-gray-300 mx-auto mb-4" />
+          <h2 className="font-heading text-xl font-semibold text-[#1e3a5f] mb-2">Access Restricted</h2>
           <p className="text-sm text-gray-500 mb-6">
             Only participants, members, players, and the organiser of this event can view live scores.
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition"
+            className="w-full py-2.5 bg-[#1e3a5f] hover:bg-[#2d4a6f] text-white font-medium rounded border border-[#1e3a5f] text-sm transition"
           >
             Go Back
           </button>
@@ -152,7 +152,7 @@ export default function LiveScoreboard() {
   const liveCount = matches.filter((m) => m.status === "live").length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
+    <div className="min-h-screen bg-[#faf9f6] py-8 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-6">
@@ -209,7 +209,7 @@ export default function LiveScoreboard() {
           <AnimatePresence>
             <div className="space-y-4">
               {filtered.map((match) => (
-                <MatchCard key={match._id} match={match} onClick={(id) => navigate(`/match/${id}/scorecard`)} />
+                <MatchCard key={match._id} match={match} onClick={(id) => navigate(`/sports/cricket/match/${id}/scorecard`)} />
               ))}
             </div>
           </AnimatePresence>
