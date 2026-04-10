@@ -117,14 +117,13 @@ const googleAuthCallback = asyncHandler(async (req, res) => {
   // req.user is set by passport after successful Google auth
   const { user, accessToken, refreshToken } = await userService.googleLogin(req.user);
 
-  const frontendUrl = process.env.FRONTEND_ORIGIN_WITH_PATH || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-  const basePath = process.env.FRONTEND_BASE_PATH || "";
+  const frontendUrl = (process.env.FRONTEND_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 
   res
     .status(HTTP_STATUS.OK)
     .cookie("accessToken", accessToken, COOKIE_OPTIONS)
     .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-    .redirect(`${frontendUrl}${basePath}/auth/callback?token=${accessToken}`);
+    .redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
 });
 
 export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp };
