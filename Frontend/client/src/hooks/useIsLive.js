@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import API_URL from "../config/api";
 
 /**
  * Polls the backend to check if any match in the event is currently live.
@@ -13,7 +14,7 @@ export default function useIsLive(eventId) {
     if (!eventId) { setLoading(false); return; }
 
     const check = () =>
-      fetch(`/api/v1/sports/cricket/matches/event/${eventId}/is-live`, { credentials: "include" })
+      fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/is-live`, { credentials: "include" })
         .then((r) => r.json())
         .then((res) => setIsLive(!!res?.data?.isLive))
         .catch(() => setIsLive(false))
