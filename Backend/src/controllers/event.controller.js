@@ -88,22 +88,18 @@ const createEvent = asyncHandler(async (req, res) => {
 });
 
 const deleteEvent = asyncHandler(async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const event = await Event.findByIdAndDelete(eventId);
-    if (!event) {
-      throw new ApiError(404, "Event not found");
-    }
-    await cacheDel(
-      `event:${eventId}`,
-      `events:organizer:${event.organizer}`
-    );
-    res
-      .status(200)
-      .json(new ApiResponse(200, event, "Event deleted successfully"));
-  } catch (error) {
-    console.log("Error while deleting event", error);
+  const { eventId } = req.params;
+  const event = await Event.findByIdAndDelete(eventId);
+  if (!event) {
+    throw new ApiError(404, "Event not found");
   }
+  await cacheDel(
+    `event:${eventId}`,
+    `events:organizer:${event.organizer}`
+  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, event, "Event deleted successfully"));
 });
 
 const updateEvent = asyncHandler(async (req, res) => {

@@ -686,12 +686,17 @@ export default function HostedEventDetail() {
     if (!window.confirm("Delete this event? This cannot be undone.")) return;
     setDeleting(true);
     try {
-      await fetch(`${API_URL}/api/cpsh/events/delete/${eventId}`, {
-        method: "DELETE", credentials: "include",
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/events/delete/${eventId}`, {
+        method: "DELETE",
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || `Delete failed (${res.status})`);
+      }
       navigate("/events-hosted");
     } catch (e) {
       console.error("Error deleting event", e);
+      alert(`Could not delete event: ${e.message}`);
       setDeleting(false);
     }
   };
