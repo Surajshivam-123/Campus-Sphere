@@ -182,18 +182,24 @@ export default function CricketEventPage() {
     navigate(`/update-event/${eventId}`);
   };
   const handeldelete = async () => {
+    if (!window.confirm("Delete this event? This cannot be undone.")) return;
+    const token = localStorage.getItem("accessToken");
     const response = await fetch(
       `${API_URL}/api/cpsh/events/delete/${eventId}`,
       {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
       }
     );
-    const result = await response.json();
-    console.log("Server response");
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      alert(`Could not delete event: ${result?.message || response.status}`);
+      return;
+    }
     navigate("/events-hosted");
   };
   const handleInitMatches = async () => {
