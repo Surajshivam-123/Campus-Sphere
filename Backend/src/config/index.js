@@ -52,6 +52,7 @@ export const config = {
     origins: [
       process.env.FRONTEND_ORIGIN,
       process.env.FRONTEND_ORIGIN_WITH_PATH,
+      "http://localhost",
       "http://localhost:5173",
       "http://localhost:4173", // Vite preview
     ].filter(Boolean),

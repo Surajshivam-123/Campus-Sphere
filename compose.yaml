@@ -1,0 +1,59 @@
+services:
+  backend:
+    image: surajdocker01/campussphere-backend:latest
+    build:
+      context: ./Backend
+    env_file:
+      - ./Backend/.env
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongo:27017/campussphere
+      REDIS_URL: redis://redis:6379
+      PORT: 4000
+      FRONTEND_ORIGIN: http://localhost
+      FRONTEND_ORIGIN_WITH_PATH: http://localhost
+      GOOGLE_CALLBACK_URL: http://localhost/api/cpsh/users/auth/google/callback
+      COOKIE_SECURE: "false"
+    ports:
+      - "4000:4000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Frontend/client
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  redis_data:

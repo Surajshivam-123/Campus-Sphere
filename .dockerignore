@@ -1,0 +1,13 @@
+**/.git
+**/.gitignore
+**/.env
+**/.vscode
+**/node_modules
+**/npm-debug.log
+**/dist
+**/build
+**/.cache
+**/compose.y*ml
+**/Dockerfile*
+README.md
+LICENSE

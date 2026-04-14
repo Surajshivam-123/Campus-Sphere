@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import profile from "../assets/download.jpeg";
 import API_URL from "../config/api";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");

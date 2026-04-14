@@ -4,6 +4,7 @@ import { config } from "./index.js";
 
 // Only register the Google strategy if credentials are configured
 if (config.google.clientId && config.google.clientSecret) {
+  console.log("🔑 Google OAuth callback URL:", config.google.callbackUrl);
   passport.use(
     new GoogleStrategy(
       {

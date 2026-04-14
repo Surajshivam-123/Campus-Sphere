@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import API_URL from "../config/api.js";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function Login() {
   const navigate = useNavigate();
