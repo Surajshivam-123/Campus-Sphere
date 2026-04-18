@@ -1,6 +1,6 @@
 import { config } from "./config/index.js";
-import dns from "dns";
-dns.setServers(["8.8.8.8", "8.8.4.4"]); // Google DNS
+// import dns from "dns";
+// dns.setServers(["8.8.8.8", "8.8.4.4"]); // Google DNS
 
 import http from "http";
 import { app } from "./app.js";

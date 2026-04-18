@@ -1,848 +1,575 @@
 # Campus Sphere
 
-> Full-stack campus event management platform with cricket tournament support, real-time live scoring, and multi-sport architecture.
+A full-stack campus event management platform. Organizers can create and manage events, participants can join via invite codes, and the platform supports live cricket scoring, coding contests with real-time leaderboards, team management, and a full observability stack.
 
 ---
 
 ## Table of Contents
 
-1. [Project Overview](#1-project-overview)
-2. [Tech Stack](#2-tech-stack)
-3. [System Architecture](#3-system-architecture)
-4. [Database Design](#4-database-design)
-5. [Backend — Project Structure](#5-backend--project-structure)
-6. [Backend — API Reference](#6-backend--api-reference)
-7. [Authentication Flow](#7-authentication-flow)
-8. [WebSocket / Real-time](#8-websocket--real-time)
-9. [Caching Strategy](#9-caching-strategy)
-10. [Frontend — Project Structure](#10-frontend--project-structure)
-11. [Frontend — Route Map](#11-frontend--route-map)
-12. [Cricket Tournament Workflow](#12-cricket-tournament-workflow)
-13. [Multi-Sport Architecture](#13-multi-sport-architecture)
-14. [Environment Variables](#14-environment-variables)
-15. [Getting Started](#15-getting-started)
+1. [Features](#features)
+2. [Tech Stack](#tech-stack)
+3. [Project Structure](#project-structure)
+4. [Getting Started](#getting-started)
+5. [Environment Variables](#environment-variables)
+6. [API Reference](#api-reference)
+7. [Real-time (Socket.IO)](#real-time-socketio)
+8. [Cricket Tournament System](#cricket-tournament-system)
+9. [Coding Contest Platform](#coding-contest-platform)
+10. [Caching Strategy](#caching-strategy)
+11. [Authentication](#authentication)
+12. [Monitoring & Observability](#monitoring--observability)
+13. [Docker Deployment](#docker-deployment)
 
 ---
 
-## 1. Project Overview
+## Features
 
-Campus Sphere lets students and organizers manage campus events end-to-end. An organizer creates an event, shares invite codes, and participants or members join. For cricket events the platform handles team formation, AI-generated tournament schedules, ball-by-ball live scoring, and real-time scoreboards via WebSockets.
-
-**Core capabilities**
-- Create and manage events — Cricket, Cultural, Workshop, Coding
-- Two join models: Participant (individual) and Member (team/staff)
-- Full cricket tournament lifecycle: format → teams → schedule → live scoring
-- Real-time score updates via Socket.IO
-- Three auth methods: password, OTP email, Google OAuth
-- Redis caching with automatic in-memory fallback
-- Multi-sport architecture — adding a new sport requires zero changes to existing code
+- **Event Management** — create events with posters, invite codes, rules, and participant limits
+- **Two join models** — Participants (individuals) and Members (team/staff) via unique codes
+- **Cricket Tournaments** — full tournament lifecycle: format setup → teams → schedule → live ball-by-ball scoring
+- **Coding Contests** — problem sets, Judge0 code execution, binary/partial scoring, live leaderboard
+- **Real-time updates** — Socket.IO for live match scores, contest events, and submission results
+- **Three auth methods** — password, email OTP, Google OAuth
+- **Redis caching** — with automatic in-memory fallback
+- **Observability** — Prometheus metrics + Grafana dashboards + alert rules
 
 ---
 
-## 2. Tech Stack
-
-### Backend
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Runtime | Node.js ≥ 18 |
-| Framework | Express 5 |
-| Database | MongoDB + Mongoose 8 |
-| Auth | JWT (access + refresh tokens) |
-| Social Auth | Passport + Google OAuth 2.0 |
-| Password | bcrypt |
-| Cache | Redis (ioredis) + in-memory fallback |
-| Real-time | Socket.IO 4 |
-| File Upload | Multer |
-| Image Hosting | Cloudinary |
-| Email | Nodemailer (Gmail App Password) |
-| Config | dotenv |
-
-### Frontend
-
-| Layer | Technology |
-|---|---|
-| UI Library | React 19 |
-| Build Tool | Vite 7 |
-| Routing | React Router DOM 7 |
-| HTTP Client | Axios + native fetch |
-| Real-time | Socket.IO Client 4 |
-| Styling | TailwindCSS 4 |
-| Animation | Framer Motion |
-| Icons | react-icons, lucide-react, FontAwesome |
-
-### Infrastructure
-
-| Service | Technology |
-|---|---|
-| Cache | Redis 7 Alpine (Docker) |
-| Cache GUI | RedisInsight (port 8001) |
+| Frontend | React 19, Vite 7, TailwindCSS 4, React Router 7, Socket.IO Client |
+| Backend | Node.js ≥18, Express 5, Socket.IO 4 |
+| Database | MongoDB 7 + Mongoose 8 |
+| Cache | Redis 7 (ioredis) with in-memory fallback |
+| Auth | JWT, Passport + Google OAuth 2.0, bcrypt |
+| File Storage | Multer (temp) + Cloudinary |
+| Email | Nodemailer (Gmail) |
+| Code Execution | Judge0 (RapidAPI or self-hosted) |
+| Monitoring | Prometheus, Grafana, prom-client |
+| Reverse Proxy | Nginx |
 | Containers | Docker Compose |
 
 ---
 
-## 3. System Architecture
+## Project Structure
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                       CLIENT BROWSER                         │
-│  React 19 + Vite + TailwindCSS + Socket.IO Client           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐  │
-│  │  Pages   │  │  Hooks   │  │ Services │  │ Socket.IO  │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘  │
-└──────────────────────┬───────────────────────────┬──────────┘
-                       │ HTTP REST                  │ WebSocket
-                       ▼                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  EXPRESS SERVER (Node.js)                    │
-│  ┌────────────┐  ┌──────────────────┐  ┌─────────────────┐  │
-│  │ Middleware │  │     Routers      │  │  Socket.IO      │  │
-│  │ verifyJWT  │  │ /api/v1/         │  │  join:match     │  │
-│  │ eventAccess│  │ /api/cpsh/ (leg) │  │  emit:match:upd │  │
-│  │ multer     │  └──────────────────┘  └─────────────────┘  │
-│  └────────────┘                                              │
-│  ┌────────────┐  ┌──────────────────┐  ┌─────────────────┐  │
-│  │Controllers │  │    Services      │  │     Utils       │  │
-│  │ user       │  │  UserService     │  │ ApiError        │  │
-│  │ event      │  └──────────────────┘  │ ApiResponse     │  │
-│  │ sports/    │                        │ AsyncHandler    │  │
-│  │  cricket/* │                        │ cloudinary      │  │
-│  └────────────┘                        └─────────────────┘  │
-└──────────┬───────────────────────────────────┬──────────────┘
-           │ Mongoose ODM                       │ ioredis
-           ▼                                    ▼
-┌──────────────────────┐            ┌──────────────────────┐
-│       MongoDB        │            │        Redis         │
-│   (Atlas / local)    │            │  (Docker / local)    │
-└──────────────────────┘            └──────────────────────┘
-```
-
----
-
-## 4. Database Design
-
-```
-User ──────────────────────────────────────────────────────────────────────┐
- │  _id, fullname, username, email, password, googleId, avatar, refreshToken│
- └──────────────────────────────────────────────────────────────────────────┘
-      │ organizer              │ owner                  │ owner
-      ▼                        ▼                        ▼
-   Event                  Participant               Member
-    │  eventName            owner (→ User)           owner (→ User)
-    │  festivalName         event (→ Event)          event (→ Event)
-    │  category             identityNumber           name, role
-    │  sports / cultural
-    │  memberCode (unique)
-    │  participantCode (unique)
-    │  scorerUpdater (→ User)
-    │
-    ├──► CricketFormat (1:1)
-    │     tournamentType, overs, playersPerTeam
-    │
-    ├──► Schedule (1:1)
-    │     method (AI/Manual), matches[]
-    │
-    ├──► Team (1:many)
-    │     name, teamCode, teamlogo, owner (→ User)
-    │       │
-    │       ├──► Cricket_Player (1:many)
-    │       │     owner (→ User), balls, runs, wickets, overs
-    │       │
-    │       └──► Match (many:many via team1Id/team2Id)
-    │
-    └──► Match (1:many)
-          team1, team2, team1Id, team2Id
-          status: upcoming | toss_done | squads_ready | live | completed | abandoned
-          tossWinner, tossDecision
-          currentInnings (1 or 2)
-          innings1, innings2 (embedded)
-            ├ battingTeam, runs, wickets, overs, balls, extras
-            ├ batsmen[] — name, runs, balls, fours, sixes, isOut
-            ├ bowlers[]  — name, overs, balls, runs, wickets
-            └ ballByBall[] — over, ball, runs, isWicket, isWide, commentary
-          result
+campus-sphere/
+├── Backend/
+│   └── src/
+│       ├── config/          # App config, Passport strategy
+│       ├── constants/       # HTTP status codes, cookie options
+│       ├── controllers/     # Event, user, team, participant, member, schedule
+│       ├── db/              # MongoDB connection + command monitoring
+│       ├── middlewares/     # Auth, event access, metrics, multer, validation, error
+│       ├── models/          # Mongoose schemas
+│       ├── routes/          # Express routers
+│       ├── services/        # User service, join request service
+│       ├── sports/
+│       │   ├── cricket/     # Cricket controllers, models, routes
+│       │   └── coding/      # Contest, problem, submission controllers/models/routes
+│       ├── utils/           # ApiError, ApiResponse, AsyncHandler, cloudinary, mailer, redis, metrics
+│       ├── app.js           # Express app setup
+│       ├── socket.js        # Socket.IO server
+│       └── index.js         # Entry point
+├── Frontend/
+│   └── client/
+│       └── src/
+│           ├── components/  # Shared UI components
+│           ├── config/      # API config, fetchWithAuth, socket
+│           ├── hooks/       # Custom React hooks
+│           └── pages/       # Route-level page components
+├── monitoring/
+│   ├── prometheus/          # prometheus.yml + alert rules
+│   └── grafana/
+│       └── provisioning/    # Auto-provisioned datasources, dashboards, alerts
+├── compose.yaml             # Full Docker Compose stack
+└── DOCKER.md                # Docker setup guide
 ```
 
 ---
 
-## 5. Backend — Project Structure
+## Getting Started
 
-```
-Backend/
-├── .env                        ← Environment variables (never commit)
-├── .env.example                ← Template for required variables
-├── package.json
-└── src/
-    ├── index.js                ← Server entry — connects DB, starts HTTP + Socket
-    ├── app.js                  ← Express app — middleware, route mounting
-    ├── socket.js               ← Socket.IO init + emitMatchUpdate()
-    │
-    ├── config/
-    │   ├── index.js            ← Validated config object from env vars
-    │   └── passport.js         ← Google OAuth strategy
-    │
-    ├── constants/
-    │   └── index.js            ← HTTP_STATUS, COOKIE_OPTIONS, EVENT_TYPES, etc.
-    │
-    ├── db/
-    │   └── index.js            ← Mongoose connection
-    │
-    ├── middlewares/
-    │   ├── auth.middleware.js       ← verifyJWT — decodes token, attaches req.user
-    │   ├── eventAccess.middleware.js← verifyEventAccess — organizer/member/participant check
-    │   ├── error.middleware.js      ← Global error handler + 404 handler
-    │   ├── multer.middleware.js     ← Disk storage to public/temp/
-    │   └── validate.middleware.js   ← Request body validation helper
-    │
-    ├── models/                 ← Generic / shared models
-    │   ├── user.model.js
-    │   ├── event.model.js
-    │   ├── participant.model.js
-    │   ├── members.model.js
-    │   ├── team.model.js
-    │   ├── match.model.js
-    │   └── schedule.model.js
-    │
-    ├── controllers/            ← Generic controllers
-    │   ├── user.controller.js
-    │   ├── event.controller.js
-    │   ├── participant.controller.js
-    │   ├── member.controller.js
-    │   ├── team.controller.js
-    │   └── schedule.controller.js
-    │
-    ├── routes/                 ← Generic routes
-    │   ├── user.route.js
-    │   ├── event.route.js
-    │   ├── participant.route.js
-    │   ├── member.route.js
-    │   ├── team.route.js
-    │   └── schedule.route.js
-    │
-    ├── sports/                 ← Sport-specific code (one folder per sport)
-    │   └── cricket/
-    │       ├── models/
-    │       │   ├── format.model.js     ← CricketFormat (tournamentType, overs, playersPerTeam)
-    │       │   ├── player.model.js     ← Cricket_Player (team, owner, stats)
-    │       │   └── cricket.model.js    ← Legacy cricket model
-    │       ├── controllers/
-    │       │   ├── format.controller.js  ← saveFormat, getFormat
-    │       │   ├── player.controller.js  ← joinTeam, getMyTeam, leaveTeam, removePlayer
-    │       │   └── match.controller.js   ← Full match lifecycle
-    │       └── routes/
-    │           ├── format.route.js
-    │           ├── player.route.js
-    │           └── match.route.js
-    │
-    ├── services/
-    │   └── user.service.js     ← User business logic (register, login, profile)
-    │
-    └── utils/
-        ├── ApiError.js         ← Custom error class with statusCode
-        ├── ApiResponse.js      ← Standard response wrapper
-        ├── AsyncHandler.js     ← Wraps async controllers, forwards errors
-        ├── cloudinary.js       ← Upload + delete helpers
-        ├── mailer.js           ← OTP email sender
-        └── redis.js            ← cacheGet / cacheSet / cacheDel with fallback
+### Prerequisites
+
+- Docker Desktop (recommended)
+- Or: Node.js ≥18 + MongoDB + Redis for local dev
+
+### With Docker (recommended)
+
+```bash
+# 1. Copy and fill in environment variables
+cp Backend/.env.example Backend/.env
+# Edit Backend/.env — fill in JWT secrets, Cloudinary, Google OAuth, etc.
+
+# 2. Start everything
+docker compose up --build
+
+# 3. Access the app
+# Frontend:   http://localhost
+# Backend:    http://localhost:4000
+# Grafana:    http://localhost:3000  (admin / admin)
+# Prometheus: http://localhost:9090
 ```
 
-### Route Mounting (app.js)
+### Local Development (without Docker)
 
-```
-/api/v1/users                       → user routes
-/api/v1/events                      → event routes
-/api/v1/participants                 → participant routes
-/api/v1/members                     → member routes
-/api/v1/teams                       → team routes
-/api/v1/schedule                    → schedule routes
-/api/v1/sports/cricket/players      → cricket player routes
-/api/v1/sports/cricket/format       → cricket format routes
-/api/v1/sports/cricket/matches      → cricket match routes
+```bash
+# Backend
+cd Backend
+npm install
+cp .env.example .env   # fill in your values
+npm start              # starts on port 4000
 
-/api/cpsh/*  →  same routers (legacy backward-compatibility)
+# Frontend
+cd Frontend/client
+npm install
+npm run dev            # starts on port 5173
 ```
 
 ---
 
-## 6. Backend — API Reference
+## Environment Variables
 
-> All protected routes require `Authorization: Bearer <token>` header or `accessToken` cookie.
-> `EventAccess` = user must be organizer, member, participant, or cricket player of that event.
-
-### Users — `/api/v1/users`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/register` | No | Register — body: `fullname, username, email, password` + file `avatar` |
-| POST | `/login` | No | Login — body: `usermail, password` |
-| POST | `/logout` | JWT | Logout, clears refresh token |
-| POST | `/refresh-token` | No | Rotate tokens using refresh token cookie |
-| GET | `/profile` | JWT | Get current user profile |
-| POST | `/send-otp` | No | Send 6-digit OTP to email |
-| POST | `/verify-otp` | No | Verify OTP and login |
-| GET | `/auth/google` | No | Redirect to Google OAuth |
-| GET | `/auth/google/callback` | No | Google OAuth callback |
-
-### Events — `/api/v1/events`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/create` | JWT | Create event — multipart with file `poster` |
-| PATCH | `/update/:eventId` | JWT | Update event — optional file `poster` |
-| DELETE | `/delete/:eventId` | JWT | Delete event |
-| GET | `/get-all-events` | JWT | Get organizer's own events |
-| GET | `/get-single-event/:eventId` | No | Get event by ID |
-| GET | `/public` | No | Get all public events |
-| PATCH | `/:eventId/assign-scorer` | JWT | Assign scorer to event |
-| DELETE | `/:eventId/revoke-scorer` | JWT | Revoke scorer from event |
-
-### Participants — `/api/v1/participants`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/participate/:participantCode` | JWT | Join event — body: `identityNumber` |
-| GET | `/participate/:participantCode` | No | Get event by participant code |
-| GET | `/my-events` | JWT | Get all events user participates in |
-| GET | `/get-all-participants/:eventId` | JWT | Get all participants for event |
-| GET | `/get-single-participant/:eventId` | JWT | Get current user's participation |
-| DELETE | `/delete-participant/:participantId` | JWT | Leave event |
-
-### Members — `/api/v1/members`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/participate/:memberCode` | JWT | Join event as member |
-| GET | `/participate/:memberCode` | No | Get event by member code |
-| GET | `/get-all-events` | JWT | Get all events user is member of |
-| PATCH | `/edit-role/:memberId` | JWT | Update member role |
-| GET | `/get-member/:eventId` | JWT | Get all members for event |
-
-### Teams — `/api/v1/teams`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/create-team/:eventId` | JWT | Create team — body: `name` + file `teamlogo` |
-| GET | `/get-team/:eventId` | JWT | Get user's team for event |
-| GET | `/get-event-teams/:eventId` | JWT | Get all teams for event |
-| PATCH | `/update-team/:eventId` | JWT | Update team name or logo |
-| DELETE | `/delete-team/:eventId` | JWT | Delete team |
-
-### Schedule — `/api/v1/schedule`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/:eventId` | JWT | Get schedule for event |
-| POST | `/:eventId/ai` | JWT | Generate schedule with Gemini AI |
-| POST | `/:eventId/manual` | JWT | Save manual schedule |
-
-### Cricket Players — `/api/v1/sports/cricket/players`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/join-team/:teamCode/:eventId` | JWT | Join team with team code |
-| GET | `/my-team/:eventId` | JWT | Get team + players user is in |
-| DELETE | `/leave-team/:eventId` | JWT | Leave team |
-| DELETE | `/remove-player/:playerId` | JWT | Captain removes a player |
-
-### Cricket Format — `/api/v1/sports/cricket/format`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/:eventId` | JWT | Save tournament format |
-| GET | `/:eventId` | JWT | Get format for event |
-
-### Cricket Matches — `/api/v1/sports/cricket/matches`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/event/:eventId/is-live` | No | Check if any match is currently live |
-| GET | `/event/:eventId` | JWT + EventAccess | Get all matches for event |
-| GET | `/:matchId` | JWT + EventAccess | Get single match |
-| POST | `/event/:eventId/init` | JWT + EventAccess | Initialize matches from schedule |
-| PATCH | `/:matchId/start` | JWT + EventAccess | Start match, record toss |
-| POST | `/:matchId/delivery` | JWT + EventAccess | Record a delivery (ball-by-ball) |
-| PATCH | `/:matchId` | JWT + EventAccess | Update match metadata |
-| POST | `/:matchId/submit-squad` | JWT + EventAccess | Captain submits squad |
-| POST | `/:matchId/confirm-xi` | JWT + EventAccess | Scorer confirms playing XI |
-
-### Standard Response Shape
-
-```json
-{ "statusCode": 200, "data": {}, "message": "Success", "success": true }
-```
-```json
-{ "statusCode": 404, "message": "Not found", "errors": [], "success": false }
-```
-
----
-
-## 7. Authentication Flow
-
-### Password Login
-```
-POST /login { usermail, password }
-  → bcrypt.compare
-  → generateAccessToken()  (JWT, 1d)
-  → generateRefreshToken() (JWT, 7d, saved to DB)
-  → Set-Cookie: accessToken + refreshToken
-```
-
-### OTP Login
-```
-POST /send-otp { email }
-  → generate 6-digit OTP
-  → cacheSet(otp, 10min)
-  → send email via Nodemailer
-
-POST /verify-otp { email, otp }
-  → cacheGet(otp) → compare
-  → cacheDel(otp)
-  → generateTokens() → Set-Cookie
-```
-
-### Google OAuth
-```
-GET /auth/google
-  → passport.authenticate → redirect to Google
-
-GET /auth/google/callback
-  → passport callback → findOrCreate User
-  → generateTokens()
-  → redirect to /auth/callback?token=<accessToken>
-  → frontend stores token in localStorage
-```
-
-### Token Refresh
-```
-POST /refresh-token (cookie: refreshToken)
-  → verify JWT → findOne({ refreshToken })
-  → rotate both tokens
-  → Set-Cookie new tokens
-```
-
-### Frontend Route Guard
-```
-<ProtectedRoute>
-  → useAuth() → isAuthenticated?
-  → No  → redirect /login
-  → Yes → render children
-```
-
----
-
-## 8. WebSocket / Real-time
-
-Socket.IO is used exclusively for live cricket score broadcasting.
-
-### Room Model
-```
-Client connects → socket.emit("join:match", matchId)
-                → socket.emit("join:event", eventId)
-
-Scorer POSTs delivery → server updates MongoDB
-                      → emitMatchUpdate(match)
-                      → io.to("match:<id>").emit("match:updated", match)
-                      → io.to("event:<id>").emit("match:updated", match)
-
-LiveScoreboard receives "match:updated" → re-renders
-```
-
-### Events
-
-| Direction | Event | Payload |
-|---|---|---|
-| Client → Server | `join:match` | `matchId` |
-| Client → Server | `join:event` | `eventId` |
-| Client → Server | `leave:match` | `matchId` |
-| Client → Server | `leave:event` | `eventId` |
-| Server → Client | `match:updated` | Full match object |
-
----
-
-## 9. Caching Strategy
-
-Redis is the primary cache. If Redis is unavailable the app falls back to an in-memory `Map` with TTL — no crash, no data loss.
-
-| Cache Key | TTL | Invalidated When |
-|---|---|---|
-| `event:<eventId>` | 5 min | Event updated or deleted |
-| `events:organizer:<userId>` | 2 min | Event created, updated, or deleted |
-| `events:public` | 2 min | Any event created or deleted |
-| `match:<matchId>` | 10 sec | Delivery added, match started/updated |
-| `matches:event:<eventId>` | 10 sec | Any match in event changes |
-| `cricketFormat:event:<eventId>` | 5 min | Format saved |
-| `otp:<email>` | 10 min | OTP verified or expired |
-
----
-
-## 10. Frontend — Project Structure
-
-```
-Frontend/client/
-├── index.html
-├── vite.config.js              ← Vite proxy: /api → http://localhost:3000
-├── .env                        ← VITE_API_URL=http://localhost:3000
-└── src/
-    ├── main.jsx                ← BrowserRouter (base: /Campus-Sphere)
-    ├── App.jsx                 ← Renders <AppRoutes />
-    ├── index.css
-    │
-    ├── config/
-    │   ├── api.js              ← API_URL = VITE_API_URL || '' (uses Vite proxy in dev)
-    │   ├── fetchWithAuth.js    ← fetch() wrapper that adds Authorization header
-    │   └── socket.js           ← Socket.IO client (lazy connect)
-    │
-    ├── routes/
-    │   ├── Route.jsx           ← All route definitions
-    │   ├── ProtectedRoute.jsx  ← Redirects to /login if not authenticated
-    │   └── PublicRoute.jsx     ← Redirects to /home if already authenticated
-    │
-    ├── hooks/
-    │   ├── index.js            ← Barrel export
-    │   ├── useAuth.js          ← Auth context + provider
-    │   ├── useFetch.js         ← useFetch, useLazyFetch, useMutation
-    │   ├── useApi.js           ← useList, useItem, useCreate, useUpdate, useDelete
-    │   ├── useForm.js          ← Form state + validation
-    │   ├── useEvents.js        ← useEvents, useMyHostedEvents, useMyParticipatedEvents, useMyMemberEvents
-    │   ├── useTeams.js         ← useMyTeams, useTeam, useEventTeams
-    │   ├── useEventParticipant.js ← Fetches participant record for an event
-    │   ├── useEventAccess.js   ← Checks if user can access match data
-    │   ├── useScorerRole.js    ← Checks if user is assigned scorer for event
-    │   └── useIsLive.js        ← Polls /is-live every 30s, returns { isLive }
-    │
-    ├── services/
-    │   ├── index.js
-    │   ├── api.service.js      ← Axios instance with token refresh interceptor
-    │   ├── event.service.js    ← Event CRUD + create (FormData via fetch)
-    │   ├── participant.service.js
-    │   └── user.service.js
-    │
-    ├── components/
-    │   └── shared/
-    │       ├── index.js
-    │       ├── EventCard.jsx       ← Unified card: basic | participant | team | hosted
-    │       ├── FormInput.jsx
-    │       ├── FormSelect.jsx
-    │       ├── FormTextarea.jsx
-    │       └── CopyToClipboard.jsx
-    │
-    ├── utils/
-    │   ├── helpers.js          ← formatDateTime, formatDate
-    │   ├── constants.js
-    │   └── validation.js
-    │
-    └── pages/
-        ├── LoadingPage.jsx
-        ├── Login.jsx
-        ├── Register.jsx
-        ├── Profile.jsx
-        ├── AuthCallback.jsx    ← Reads ?token= from Google OAuth redirect
-        │
-        ├── Front/              ← Landing page
-        │   ├── Front.jsx
-        │   ├── Top.jsx
-        │   ├── Features.jsx
-        │   └── Foot.jsx
-        │
-        ├── Home/               ← Dashboard
-        │   ├── Home.jsx
-        │   ├── Navbar.jsx
-        │   ├── Body.jsx
-        │   ├── Option.jsx      ← "I am" choice (Member / Participant)
-        │   └── AllEvents.jsx
-        │
-        ├── EventCreation/      ← Create event forms
-        │   ├── CreateEvent.jsx
-        │   ├── WorkshopEventDetails.jsx
-        │   ├── CulturalEventDetails.jsx
-        │   └── Rule.jsx
-        │
-        ├── EditEvent/
-        │   └── UpdateEvent.jsx
-        │
-        ├── MyHostedEvent/
-        │   └── EventList.jsx
-        │
-        ├── ParticipateEvent/   ← Join as participant
-        │   ├── JoinEvent.jsx
-        │   └── EventDetails.jsx
-        │
-        ├── MyParticipatedEvents/
-        │   ├── MyEvents.jsx
-        │   ├── EventCardParticipant.jsx
-        │   └── ParticipateateasMember.jsx
-        │
-        ├── JoinMember/         ← Join as member
-        │   ├── JoinMember.jsx
-        │   └── EventDetailsMember.jsx
-        │
-        ├── MyTeam/
-        │   ├── Myteam.jsx
-        │   └── EventCardTeam.jsx
-        │
-        ├── Schedule/
-        │   └── SchedulePage.jsx
-        │
-        └── sports/             ← Sport-specific pages (one folder per sport)
-            └── cricket/
-                ├── EventSetup.jsx      ← Organizer: teams, schedule, match init
-                ├── Format.jsx          ← Set tournament format
-                ├── LiveScoreboard.jsx  ← Real-time scoreboard
-                ├── MatchManager.jsx    ← Start match, record toss, confirm XI
-                ├── MatchScorecard.jsx  ← Full scorecard view
-                ├── ScoreInput.jsx      ← Ball-by-ball score entry
-                ├── SquadSubmit.jsx     ← Captain submits squad
-                └── participant/
-                    ├── EventDetails.jsx  ← Role detection → redirect to creator/member
-                    ├── CreateTeam.jsx    ← Create a new team
-                    ├── JoinTeam.jsx      ← Join existing team with code
-                    ├── TeamCreator.jsx   ← Team captain dashboard
-                    └── TeamMember.jsx    ← Team member view
-```
-
----
-
-## 11. Frontend — Route Map
-
-```
-PUBLIC
-  /                           Landing page
-  /login                      Login (redirects to /home if already logged in)
-  /register                   Register
-  /auth/callback              Google OAuth token handler
-
-PROTECTED — General
-  /home                       Dashboard
-  /choice                     Role selection (Member / Participant)
-  /all-events                 Browse all public events
-  /profile                    User profile
-
-PROTECTED — Organizer
-  /new-events-hosted                          Create event
-  /events-hosted                              My hosted events
-  /update-event/:eventId                      Edit event
-  /event/:eventName/:eventId/workshop         Workshop event setup
-
-PROTECTED — Participant
-  /join-event                                 Join event with invitation code
-  /event-details/:identityNumber/:participantCode/:participantId
-                                              Participant event details
-  /my-events                                  My participated events
-
-PROTECTED — Member
-  /joinMember                                 Join event as member
-  /get-event/:memberCode                      Member event details
-  /my-events-member                           My member events
-
-PROTECTED — Schedule
-  /sports/cricket/schedule/:eventId           View / generate tournament schedule
-
-PROTECTED — Cricket (Organizer)
-  /event/:eventName/:eventId/sports/cricket   Cricket event setup page
-  /sports/cricket/format/:eventId             Set tournament format
-  /sports/cricket/format/:eventId/view        View format (read-only)
-  /sports/cricket/match-manager/:eventId      Manage matches (toss, XI, scoring)
-
-PROTECTED — Cricket (Participant)
-  /sports/cricket/event-details/:eventId/:identityNumber/:participantCode/:participantId
-                                              Role detection → redirect
-  /sports/cricket/create-team/:eventId        Create a team
-  /sports/cricket/join-team/:eventId          Join a team with code
-  /sports/cricket/team-creator/:eventId       Team captain dashboard
-  /sports/cricket/team-member/:eventId        Team member view
-
-PROTECTED — Cricket (Live Scoring)
-  /sports/cricket/scoreboard/:eventId         Live scoreboard
-  /sports/cricket/match/:matchId/scorecard    Full match scorecard
-  /sports/cricket/match/:matchId/score-input  Ball-by-ball score entry
-  /sports/cricket/match/:matchId/squad-submit Captain squad submission
-```
-
----
-
-## 12. Cricket Tournament Workflow
-
-```
-1. ORGANIZER CREATES EVENT
-   POST /api/v1/events/create  (category: sports, sports: cricket)
-   → navigates to /event/:name/:id/sports/cricket  (EventSetup page)
-
-2. PARTICIPANTS JOIN
-   POST /api/v1/participants/participate/:participantCode
-   → navigates to /sports/cricket/event-details/:eventId/...
-   → EventDetails detects role (creator / member / none)
-   → creator  → /sports/cricket/team-creator/:eventId
-   → member   → /sports/cricket/team-member/:eventId
-   → none     → show Create Team / Join Team buttons
-
-3. TEAM FORMATION
-   Create team:  POST /api/v1/teams/create-team/:eventId
-   Join team:    POST /api/v1/sports/cricket/players/join-team/:teamCode/:eventId
-
-4. ORGANIZER SETS FORMAT
-   POST /api/v1/sports/cricket/format/:eventId
-   { tournamentType, overs, playersPerTeam }
-
-5. SCHEDULE GENERATION
-   POST /api/v1/schedule/:eventId/ai      ← Gemini AI generates fixtures
-   POST /api/v1/schedule/:eventId/manual  ← Manual fixture entry
-
-6. MATCH INITIALIZATION
-   POST /api/v1/sports/cricket/matches/event/:eventId/init
-   → creates Match documents from schedule
-
-7. MATCH DAY
-   a. Toss
-      PATCH /api/v1/sports/cricket/matches/:matchId/start
-      { tossWinner, tossDecision }  → status: toss_done
-
-   b. Squad Submission (both captains)
-      POST /api/v1/sports/cricket/matches/:matchId/submit-squad
-      { teamName, players[] }  → status: squads_ready (when both done)
-
-   c. Confirm Playing XI (scorer)
-      POST /api/v1/sports/cricket/matches/:matchId/confirm-xi
-      { team1PlayingXI[], team2PlayingXI[] }  → status: live
-
-   d. Ball-by-ball Scoring
-      POST /api/v1/sports/cricket/matches/:matchId/delivery
-      { runs, isWicket, isWide, isNoBall, batsmanName, bowlerName, ... }
-      → updates innings, emits "match:updated" via Socket.IO
-
-   e. Match End
-      → auto-detected when wickets >= 10 or overs >= format.overs
-      → status: completed, result string set
-
-8. LIVE VIEWING
-   GET /api/v1/sports/cricket/matches/event/:eventId/is-live
-   → "Watch Live" button appears only when isLive === true
-   → LiveScoreboard subscribes to Socket.IO room, re-renders on each delivery
-```
-
----
-
-## 13. Multi-Sport Architecture
-
-Cricket is fully isolated under `sports/cricket/`. Adding a new sport (e.g. volleyball) requires:
-
-**Backend** — create `Backend/src/sports/volleyball/`
-```
-sports/volleyball/
-├── models/
-│   └── format.model.js       ← sport-specific format
-├── controllers/
-│   └── match.controller.js   ← sport-specific match logic
-└── routes/
-    └── match.route.js
-```
-Mount in `app.js`:
-```js
-import volleyballMatchRouter from "./sports/volleyball/routes/match.route.js";
-app.use("/api/v1/sports/volleyball/matches", volleyballMatchRouter);
-```
-
-**Frontend** — create `Frontend/client/src/pages/sports/volleyball/`
-```
-sports/volleyball/
-├── EventSetup.jsx
-├── LiveScoreboard.jsx
-└── participant/
-    └── EventDetails.jsx
-```
-Add routes in `Route.jsx`:
-```jsx
-import VolleyballEventSetup from "../pages/sports/volleyball/EventSetup";
-<Route path="/event/:name/:id/sports/volleyball" element={<VolleyballEventSetup />} />
-```
-
-Zero changes to existing cricket code.
-
----
-
-## 14. Environment Variables
-
-Copy `.env.example` to `.env` in the `Backend/` folder and fill in the values.
+Copy `Backend/.env.example` to `Backend/.env` and fill in the values below.
 
 | Variable | Required | Description |
 |---|---|---|
-| `MONGODB_URI` | Yes | MongoDB connection string |
-| `PORT` | Yes | Server port (default 3000) |
-| `NODE_ENV` | No | `development` or `production` |
-| `ACCESS_TOKEN_SECRET` | Yes | JWT secret for access tokens |
-| `ACCESS_TOKEN_EXPIRY` | No | Access token expiry (default `1d`) |
-| `REFRESH_TOKEN_SECRET` | Yes | JWT secret for refresh tokens |
-| `REFRESH_TOKEN_EXPIRY` | No | Refresh token expiry (default `7d`) |
-| `CLOUDINARY_NAME` | Yes | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret |
-| `FRONTEND_ORIGIN` | Yes | Frontend URL for CORS (e.g. `http://localhost:5173`) |
-| `FRONTEND_ORIGIN_WITH_PATH` | No | Frontend URL with base path |
-| `FRONTEND_BASE_PATH` | No | Base path (e.g. `/Campus-Sphere`) |
-| `REDIS_URL` | No | Redis URL (default `redis://localhost:6379`) |
-| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
-| `GOOGLE_CALLBACK_URL` | No | Google OAuth callback URL |
-| `EMAIL_USER` | No | Gmail address for OTP emails |
-| `EMAIL_PASS` | No | Gmail App Password |
-| `GEMINI_API_KEY` | No | Google Gemini API key for AI schedule generation |
+| `MONGODB_URI` | yes | MongoDB connection string |
+| `PORT` | yes | Server port (default: 4000) |
+| `NODE_ENV` | no | `development` or `production` |
+| `ACCESS_TOKEN_SECRET` | yes | JWT secret for access tokens |
+| `ACCESS_TOKEN_EXPIRY` | no | Default: `1d` |
+| `REFRESH_TOKEN_SECRET` | yes | JWT secret for refresh tokens |
+| `REFRESH_TOKEN_EXPIRY` | no | Default: `7d` |
+| `CLOUDINARY_NAME` | yes | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | yes | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | yes | Cloudinary API secret |
+| `FRONTEND_ORIGIN` | yes | Frontend URL for CORS (e.g. `http://localhost:5173`) |
+| `REDIS_URL` | no | Redis URL (default: `redis://localhost:6379`) |
+| `GOOGLE_CLIENT_ID` | no | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | no | Google OAuth client secret |
+| `GOOGLE_CALLBACK_URL` | no | OAuth callback URL |
+| `EMAIL_USER` | no | Gmail address for OTP emails |
+| `EMAIL_PASS` | no | Gmail App Password |
+| `JUDGE0_URL` | no | Judge0 endpoint (default: RapidAPI hosted) |
+| `JUDGE0_API_KEY` | no | RapidAPI key for Judge0 |
 
-Frontend `.env` (`Frontend/client/.env`):
-
-| Variable | Description |
-|---|---|
-| `VITE_API_URL` | Backend URL (e.g. `http://localhost:3000`). Leave empty to use Vite proxy. |
+> When running via Docker Compose, `MONGODB_URI`, `REDIS_URL`, `FRONTEND_ORIGIN`, and `GOOGLE_CALLBACK_URL` are automatically overridden to point at internal service names.
 
 ---
 
-## 15. Getting Started
+## API Reference
 
-### Prerequisites
-- Node.js ≥ 18
-- MongoDB (Atlas or local)
-- Docker (for Redis) — optional but recommended
+All routes are available under `/api/v1/` (and legacy `/api/cpsh/` for backward compatibility).
 
-### 1. Clone and install
+### Users — `/api/v1/users`
 
-```bash
-git clone https://github.com/Surajshivam-123/Campus-Sphere.git
-cd Campus-Sphere
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/register` | no | Register with avatar upload |
+| POST | `/login` | no | Password login |
+| POST | `/logout` | yes | Logout, clear tokens |
+| POST | `/refresh-token` | no | Rotate access/refresh tokens |
+| GET | `/profile` | yes | Get current user |
+| POST | `/send-otp` | no | Send OTP to email |
+| POST | `/verify-otp` | no | Verify OTP and login |
+| GET | `/auth/google` | no | Google OAuth redirect |
+| GET | `/auth/google/callback` | no | Google OAuth callback |
 
-# Backend
-cd Backend && npm install
+### Events — `/api/v1/events`
 
-# Frontend
-cd ../Frontend/client && npm install
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/create` | yes | Create event with poster |
+| PATCH | `/update/:eventId` | yes | Update event details |
+| DELETE | `/delete/:eventId` | yes | Delete event |
+| GET | `/get-all-events` | yes | Organizer's events |
+| GET | `/get-single-event/:eventId` | yes | Get event by ID |
+| GET | `/public` | no | All public events |
+| PATCH | `/:eventId/assign-scorer` | yes | Assign scorer updater |
+| DELETE | `/:eventId/revoke-scorer` | yes | Revoke scorer |
+
+### Participants — `/api/v1/participants`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/participate/:participantCode` | yes | Join event as participant |
+| GET | `/participate/:participantCode` | yes | Get event by participant code |
+| GET | `/my-events` | yes | User's participated events |
+| GET | `/get-all-participants/:eventId` | yes | All participants for event |
+| DELETE | `/delete-participant/:participantId` | yes | Leave event |
+
+### Members — `/api/v1/members`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/participate/:memberCode` | yes | Join event as member |
+| GET | `/get-all-events` | yes | User's member events |
+| PATCH | `/edit-role/:memberId` | yes | Update member role |
+| GET | `/get-member/:eventId` | yes | All members for event |
+
+### Teams — `/api/v1/teams`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/create-team/:eventId` | yes | Create team with logo |
+| GET | `/get-team/:eventId` | yes | User's team for event |
+| GET | `/get-event-teams/:eventId` | yes | All teams for event |
+| PATCH | `/update-team/:eventId` | yes | Update team |
+| DELETE | `/delete-team/:eventId` | yes | Delete team |
+
+### Schedule — `/api/v1/schedule`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/:eventId` | yes | Get schedule |
+| POST | `/:eventId/ai` | yes | AI-generate schedule (Gemini) |
+| POST | `/:eventId/manual` | yes | Save manual schedule |
+
+### Cricket — `/api/v1/sports/cricket`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/format/:eventId` | yes | Save tournament format |
+| GET | `/format/:eventId` | yes | Get format |
+| POST | `/players/join-team/:teamCode/:eventId` | yes | Join team as player |
+| GET | `/players/my-team/:eventId` | yes | User's team + players |
+| DELETE | `/players/leave-team/:eventId` | yes | Leave team |
+| DELETE | `/players/remove-player/:playerId` | yes | Captain removes player |
+| GET | `/matches/event/:eventId/is-live` | no | Check if any match is live |
+| GET | `/matches/event/:eventId` | yes | All matches for event |
+| GET | `/matches/:matchId` | yes | Single match |
+| POST | `/matches/event/:eventId/init` | yes | Init matches from schedule |
+| PATCH | `/matches/:matchId/start` | yes | Start match, record toss |
+| POST | `/matches/:matchId/delivery` | yes | Record delivery (ball-by-ball) |
+| POST | `/matches/:matchId/submit-squad` | yes | Captain submits squad |
+| POST | `/matches/:matchId/confirm-xi` | yes | Scorer confirms playing XI |
+| PATCH | `/matches/:matchId` | yes | Update match metadata |
+
+### Coding — `/api/v1/coding`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/contest/:eventId` | yes | Save contest settings |
+| GET | `/contest/:eventId` | yes | Get contest |
+| POST | `/contest/:eventId/schedule` | yes | Schedule contest |
+| POST | `/contest/:eventId/start` | yes | Start contest |
+| POST | `/contest/:eventId/pause` | yes | Pause contest |
+| POST | `/contest/:eventId/resume` | yes | Resume contest |
+| POST | `/contest/:eventId/extend` | yes | Extend duration |
+| POST | `/contest/:eventId/end` | yes | End contest |
+| POST | `/contest/:eventId/restart` | yes | Reset to draft |
+| POST | `/problems/:eventId` | yes | Create problem |
+| GET | `/problems/:eventId` | yes | Get problems |
+| PATCH | `/problems/:problemId` | yes | Update problem |
+| DELETE | `/problems/:problemId` | yes | Delete problem |
+| POST | `/submissions/:eventId/:problemId` | yes | Submit code |
+| GET | `/submissions/:submissionId` | yes | Get submission |
+| GET | `/submissions/:eventId/my-submissions` | yes | User's submissions |
+| GET | `/submissions/:eventId/leaderboard` | yes | Contest leaderboard |
+
+---
+
+## Real-time (Socket.IO)
+
+The backend runs a Socket.IO server on the same port as the HTTP server.
+
+### Rooms
+
+| Room | Purpose |
+|---|---|
+| `match:<matchId>` | Live match score viewers |
+| `event:<eventId>` | Event-wide updates (matches + contests) |
+| `user:<userId>` | Personal notifications (submission results) |
+| `captain:<userId>` | Captain-specific notifications |
+| `organizer:<userId>` | Organizer join request notifications |
+
+### Client → Server Events
+
+```
+join:match <matchId>       leave:match <matchId>
+join:event <eventId>       leave:event <eventId>
+join:contest <eventId>     leave:contest <eventId>
+join:user <userId>
+join:captain <userId>
+join:organizer <userId>
 ```
 
-### 2. Configure environment
+### Server → Client Events
+
+| Event | Payload | Trigger |
+|---|---|---|
+| `match:updated` | Full match object | Every delivery, status change |
+| `leaderboard:updated` | `{ eventId }` | Submission accepted |
+| `submission:result` | `{ submissionId, status, score, passedCount, totalCount }` | Judging complete |
+| `contest:started` | `{ endTime }` | Contest goes live |
+| `contest:paused` | `{ pausedAt }` | Contest paused |
+| `contest:resumed` | `{ endTime }` | Contest resumed |
+| `contest:extended` | `{ endTime, addedMinutes }` | Duration extended |
+| `contest:ended` | — | Contest ended |
+| `contest:scheduled` | `{ scheduledStartTime }` | Contest scheduled |
+
+---
+
+## Cricket Tournament System
+
+The cricket module supports full tournament management from setup to live scoring.
+
+### Lifecycle
+
+```
+Format Setup → Team Creation → Player Registration → Schedule Generation
+    → Match Init → Toss → Squad Submission → XI Confirmation → Live Scoring → Result
+```
+
+### Tournament Formats
+
+- Knockout, League, Round Robin, Double Elimination
+
+### Match States
+
+```
+upcoming → toss_done → squads_ready → live → completed / abandoned
+```
+
+### Live Scoring
+
+Ball-by-ball input via `POST /matches/:matchId/delivery` with fields:
+
+```json
+{
+  "runs": 4,
+  "isWicket": false,
+  "isWide": false,
+  "isNoBall": false,
+  "isBye": false,
+  "isLegBye": false,
+  "batsmanName": "Player A",
+  "bowlerName": "Player B",
+  "striker": "Player A",
+  "nonStriker": "Player C"
+}
+```
+
+The server handles:
+- Batsman/bowler stat updates
+- Over completion and strike rotation
+- Innings transition
+- Chase detection and result calculation
+- Immediate Socket.IO broadcast (DB save happens in background)
+
+---
+
+## Coding Contest Platform
+
+### Contest Lifecycle
+
+```
+draft → scheduled → live → paused → resumed → ended
+                                  ↑___________↓ (can extend while live/paused)
+```
+
+### Supported Languages
+
+C++, Python, Java, JavaScript (via Judge0 language IDs)
+
+### Scoring Modes
+
+- **Binary** — full points only if all test cases pass
+- **Partial** — proportional points based on test cases passed
+
+### Leaderboard Ranking
+
+1. Total score (descending)
+2. Last accepted submission time (ascending) — earlier is better
+
+Leaderboard is cached in Redis for 15 seconds and invalidated on each accepted submission.
+
+### Judge0 Setup
+
+**Option 1 — RapidAPI (free tier):**
+```
+JUDGE0_URL=https://judge0-ce.p.rapidapi.com
+JUDGE0_API_KEY=your_rapidapi_key
+```
+
+**Option 2 — Self-hosted:**
+```
+JUDGE0_URL=http://localhost:2358
+# Leave JUDGE0_API_KEY empty
+```
+
+---
+
+## Caching Strategy
+
+Redis is used as the primary cache with automatic fallback to an in-memory `Map` if Redis is unavailable — the app never crashes due to cache failure.
+
+| Cache Key | TTL | Invalidated on |
+|---|---|---|
+| `event:<id>` | 5 min | Event update/delete |
+| `events:organizer:<id>` | 2 min | Event create/update/delete |
+| `events:public` | 2 min | Any event change |
+| `matches:event:<id>` | 10 sec | Match update |
+| `match:<id>` | 10 sec | Delivery recorded |
+| `contest:<id>` | 60 sec | Contest state change |
+| `leaderboard:<id>` | 15 sec | Submission accepted |
+
+---
+
+## Authentication
+
+### Password Login
+
+Standard email/password with bcrypt hashing. Returns JWT access + refresh tokens as HTTP-only cookies.
+
+### OTP Login
+
+1. `POST /users/send-otp` — sends a 6-digit OTP to the email (valid 10 minutes)
+2. `POST /users/verify-otp` — verifies OTP, returns tokens
+
+### Google OAuth
+
+1. `GET /users/auth/google` — redirects to Google consent screen
+2. `GET /users/auth/google/callback` — creates/finds user, sends welcome email on first login, redirects to frontend with token
+
+### Token Refresh
+
+`POST /users/refresh-token` — validates refresh token, issues new access + refresh token pair.
+
+### Event Access Control
+
+The `verifyEventAccess` middleware checks if the user is any of:
+- Event organizer
+- Assigned scorer updater
+- Member (joined via memberCode)
+- Participant (joined via participantCode)
+- Cricket player (in a team for this event)
+- Coding participant (has a submission for this event)
+
+---
+
+## Monitoring & Observability
+
+### Prometheus Metrics
+
+Exposed at `GET /metrics` on the backend.
+
+| Metric | Type | Description |
+|---|---|---|
+| `campussphere_http_request_duration_seconds` | Histogram | Request latency by method/route/status |
+| `campussphere_http_requests_total` | Counter | Total requests |
+| `campussphere_http_requests_in_flight` | Gauge | Concurrent requests |
+| `campussphere_socket_connections_active` | Gauge | Active Socket.IO connections |
+| `campussphere_db_operation_duration_seconds` | Histogram | MongoDB operation times by op/collection |
+| `campussphere_mongodb_connection_state` | Gauge | 1 = connected, 0 = disconnected |
+| `campussphere_nodejs_*` | Various | Default Node.js metrics (heap, GC, event loop) |
+
+### Grafana Dashboards
+
+Access at `http://localhost:3000` (admin / admin)
+
+**CampusSphere Overview:**
+- HTTP request rate, latency (p50/p95/p99), error rate
+- In-flight requests, active Socket.IO connections
+- Node.js heap memory, event loop lag, GC duration
+- MongoDB connection state, operation duration (p95)
+- Redis memory usage, commands/sec
+- Scrape health table
+
+**Windows Host Metrics:**
+- CPU usage (total + per core)
+- Memory used/free/total
+- Disk read/write bytes/sec, free space per volume
+- Network bytes sent/received
+- Running processes and threads
+
+### Alert Rules
+
+| Alert | Condition |
+|---|---|
+| BackendDown | Backend unreachable for 1 min |
+| HighErrorRate | >5% 5xx responses for 2 min |
+| SlowRequests | p95 latency >2s for 5 min |
+| HighInFlightRequests | >100 concurrent requests for 2 min |
+| HighHeapUsage | Heap >90% for 5 min |
+| RedisDown | Redis exporter unreachable for 1 min |
+| HighRedisMemory | Redis using >85% max memory for 5 min |
+
+### Windows Host Metrics Setup
+
+Install `windows_exporter` natively (runs outside Docker):
+
+1. Download the `.msi` from [windows_exporter releases](https://github.com/prometheus-community/windows_exporter/releases)
+2. Run the installer — it registers as a Windows Service
+3. Verify: `http://localhost:9182/metrics`
+
+> If skipped, the `windows-host` Prometheus target shows DOWN but everything else works fine.
+
+---
+
+## Docker Deployment
+
+### Services
+
+| Service | Port | Description |
+|---|---|---|
+| frontend | 80 | React SPA + Nginx reverse proxy |
+| backend | 4000 | Node.js API + Socket.IO |
+| mongo | — | MongoDB 7 (internal only) |
+| redis | — | Redis 7 (internal only) |
+| prometheus | 9090 | Metrics collection |
+| grafana | 3000 | Dashboards |
+| redis-exporter | 9121 | Redis metrics for Prometheus |
+
+### Startup Order
+
+```
+mongo (healthy) ──┐
+                  ├──► backend ──► frontend
+redis (healthy) ──┘
+                  └──► prometheus ──► grafana
+```
+
+### Common Commands
 
 ```bash
-# Backend
+# First time
 cp Backend/.env.example Backend/.env
-# Fill in MONGODB_URI, JWT secrets, Cloudinary, etc.
+docker compose up --build
 
-# Frontend
-echo "VITE_API_URL=http://localhost:3000" > Frontend/client/.env
+# Day-to-day
+docker compose up           # start
+docker compose stop         # pause (keeps data)
+docker compose down         # stop + remove containers (keeps volumes)
+docker compose down -v      # stop + wipe all data
+
+# Logs
+docker compose logs -f
+docker compose logs backend
+
+# Rebuild one service after code change
+docker compose up --build backend
+docker compose up --build frontend
+
+# Restart Grafana after dashboard changes
+docker compose restart grafana
 ```
 
-### 3. Start Redis (optional)
+### Useful URLs
 
-```bash
-docker compose up -d
-# Redis on :6379, RedisInsight on :8001
-```
-
-### 4. Run the servers
-
-```bash
-# Backend (terminal 1)
-cd Backend && npm start
-
-# Frontend (terminal 2)
-cd Frontend/client && npm run dev
-```
-
-Frontend runs at `http://localhost:5173/Campus-Sphere/`
-Backend runs at `http://localhost:3000`
-
-The Vite dev server proxies all `/api` requests to the backend, so no CORS issues in development.
+| Service | URL |
+|---|---|
+| App | http://localhost |
+| Backend API | http://localhost:4000 |
+| Backend Health | http://localhost:4000/health |
+| Backend Metrics | http://localhost:4000/metrics |
+| Grafana | http://localhost:3000 |
+| Prometheus | http://localhost:9090 |
+| Prometheus Targets | http://localhost:9090/targets |
+| Redis Exporter | http://localhost:9121/metrics |
+| Windows Exporter | http://localhost:9182/metrics |

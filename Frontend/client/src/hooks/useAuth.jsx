@@ -1,7 +1,17 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext, useCallback } from "react";
 import userService from "../services/user.service";
+import { setForceLogoutHandler } from "../services/api.service";
 
 const AuthContext = createContext(null);
+
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Auth Provider Component
@@ -11,6 +21,19 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Called by the axios interceptor when both access + refresh tokens are dead
+  const forceLogout = useCallback(() => {
+    localStorage.removeItem("accessToken");
+    setUser(null);
+    // Use replace so the user can't go back to the protected page
+    window.location.replace("/login");
+  }, []);
+
+  // Register the forceLogout handler with the axios interceptor on mount
+  useEffect(() => {
+    setForceLogoutHandler(forceLogout);
+  }, [forceLogout]);
+
   // Check if user is logged in on mount
   useEffect(() => {
     checkAuth();
@@ -19,13 +42,38 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      if (token) {
-        const response = await userService.getProfile();
-        setUser(response.data);
+
+      // No token — not authenticated
+      if (!token) {
+        setLoading(false);
+        return;
       }
+
+      // Token expired client-side — try silent refresh first
+      if (isTokenExpired(token)) {
+        localStorage.removeItem("accessToken");
+        try {
+          await userService.refreshToken();
+        } catch {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Verify against backend — catches tampered/revoked tokens
+      const response = await userService.getProfile();
+      if (!response?.data) throw new Error("Invalid profile response");
+      setUser(response.data);
     } catch (err) {
-      console.error("Auth check failed:", err);
-      localStorage.removeItem("accessToken");
+      // Only clear auth on explicit 401 — not on network errors (backend down)
+      if (err?.status === 401) {
+        localStorage.removeItem("accessToken");
+        setUser(null);
+      } else {
+        // Network error or server down — keep existing token, user stays logged in
+        console.warn("Auth check failed (network?):", err?.message || err);
+      }
     } finally {
       setLoading(false);
     }
@@ -57,14 +105,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Tell backend to clear refreshToken from DB and clear cookies
       await userService.logout();
-      setUser(null);
-      localStorage.removeItem("accessToken");
     } catch (err) {
       console.error("Logout failed:", err);
-      // Still clear local state even if API call fails
-      setUser(null);
+    } finally {
+      // Always clear local state regardless of API result
       localStorage.removeItem("accessToken");
+      setUser(null);
     }
   };
 

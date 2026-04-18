@@ -58,3 +58,15 @@ Thumbs.db
 .classpath
 .settings/
 .vscode/
+monitoring/
+k6/
+
+# Docker
+compose.yaml
+.dockerignore
+DOCKER.md
+README.Docker.md
+MONITORING.md
+**/Dockerfile
+Backend/Dockerfile
+Frontend/client/Dockerfile

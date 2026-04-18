@@ -2,11 +2,13 @@ import logo from "../../public/logo.jpg";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import API_URL from "../config/api.js";
+import { useAuth } from "../hooks/useAuth";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [usermail, setUsermail] = useState("");
   const [password, setPassword] = useState("");
   const [otpMode, setOtpMode] = useState(false);
@@ -23,22 +25,14 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/cpsh/users/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usermail, password }),
-      });
-      const result = await response.json();
-      if (result?.statusCode === 200) {
-        if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
-        navigate("/home");
-      } else {
-        setMessage(result?.message);
-      }
+      await login({ usermail, password });
+      navigate("/home", { replace: true });
     } catch (error) {
-      console.error("Login error:", error);
+      setMessage(error?.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,7 +69,8 @@ export default function Login() {
       const result = await res.json();
       if (result?.statusCode === 200) {
         if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
-        navigate("/home");
+        // Reload so AuthProvider re-runs checkAuth and sets user in context
+        window.location.replace("/home");
       } else setMessage(result?.message);
     } catch { setMessage("Verification failed. Try again."); }
     finally { setLoading(false); }

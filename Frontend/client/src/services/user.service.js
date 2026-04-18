@@ -30,12 +30,12 @@ class UserService {
    */
   async login(credentials) {
     const response = await apiClient.post("/api/v1/users/login", credentials);
-    
-    // Store token if returned
-    if (response.data?.accessToken) {
+
+    // Interceptor unwraps axios response, so shape is: { statusCode, data: { user, accessToken, refreshToken }, message }
+    if (response?.data?.accessToken) {
       localStorage.setItem("accessToken", response.data.accessToken);
     }
-    
+
     return response;
   }
 
@@ -59,7 +59,11 @@ class UserService {
    * Refresh access token
    */
   async refreshToken() {
-    return apiClient.post("/api/v1/users/refresh-token");
+    const response = await apiClient.post("/api/v1/users/refresh-token");
+    if (response.data?.accessToken) {
+      localStorage.setItem("accessToken", response.data.accessToken);
+    }
+    return response;
   }
 }
 

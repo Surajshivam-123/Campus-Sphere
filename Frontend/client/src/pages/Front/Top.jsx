@@ -1,6 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import logo from "../../../public/logo.jpg";
 
 export default function Top({ onGetStartedClick }) {
+  const navigate = useNavigate();
   return (
     <section
       className="min-h-screen flex flex-col items-center justify-center text-center p-8"
@@ -22,12 +24,19 @@ export default function Top({ onGetStartedClick }) {
       <p className="text-base md:text-lg max-w-xl leading-relaxed" style={{ color: "#e8e6e1" }}>
         Organize, manage, and join campus events — coding contests, sports tournaments, and more — all in one place.
       </p>
-      <div className="mt-8">
+      <div className="mt-8 flex gap-4">
         <button
-          onClick={onGetStartedClick}
+          onClick={() => navigate("/login")}
           className="btn-gold px-6 py-2.5"
         >
           Get Started
+        </button>
+        <button
+          onClick={onGetStartedClick}
+          className="px-6 py-2.5 rounded border text-white/80 hover:text-white transition-colors"
+          style={{ borderColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }}
+        >
+          Learn More
         </button>
       </div>
     </section>

@@ -21,6 +21,10 @@
   --color-text-muted:    #6b7280;
   --color-text-inverse:  #ffffff;
 
+  /* Heading text — navy in light, light in dark */
+  --color-text-heading:     #1e3a5f;
+  --color-text-on-surface:  #1e3a5f;
+
   /* Semantic states */
   --color-success:  #16a34a;
   --color-warning:  #d97706;
@@ -45,6 +49,14 @@
   /* Slightly brighten gold for dark backgrounds */
   --color-gold:          #d4a017;
   --color-gold-light:    #e6b422;
+
+  /* In dark mode, navy text becomes light so it's readable on dark surfaces */
+  --color-navy:          #1e3a5f;
+  --color-navy-light:    #2d4a6f;
+
+  /* Heading/label text that must be readable on surfaces in both themes */
+  --color-text-heading:  #f1f5f9;
+  --color-text-on-surface: #e2e8f0;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
@@ -119,12 +131,28 @@ body {
 .text-muted     { color: var(--color-text-muted); }
 
 /* Brand */
-.text-navy  { color: var(--color-navy); }
+.text-navy  { color: var(--color-text-heading); }
 .text-gold  { color: var(--color-gold); }
 .bg-navy    { background-color: var(--color-navy); }
 .bg-navy-light { background-color: var(--color-navy-light); }
 .border-navy { border-color: var(--color-navy); }
 .border-gold { border-color: var(--color-gold); }
+
+/* ── Dark mode: make inline navy text readable on dark surfaces ─────────────
+   Covers all components using style={{ color: "var(--color-navy)" }} for text.
+   btn-primary / bg-navy keep their navy background via explicit class rules.  */
+.dark [style*="color: var(--color-navy)"] {
+  color: var(--color-text-heading) !important;
+}
+/* Navy-tinted badge/chip backgrounds → gold tint in dark */
+.dark [style*="color-mix(in srgb, var(--color-navy)"] {
+  background-color: color-mix(in srgb, var(--color-gold) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-gold) 30%, transparent) !important;
+  color: var(--color-gold) !important;
+}
+/* Ensure btn-primary keeps its navy background in dark mode */
+.dark .btn-primary { background-color: var(--color-navy); border-color: var(--color-navy); }
+.dark .btn-primary:hover { background-color: var(--color-navy-light); }
 
 /* Input base — used by FormInput, FormSelect, FormTextarea */
 .input-base {
@@ -260,3 +288,116 @@ body {
   padding: 10px 16px;
   font-size: 0.875rem;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MODE — Static Tailwind class overrides
+   These pages use hardcoded Tailwind colors (bg-white, text-gray-*, etc.)
+   that don't adapt to dark mode. These rules fix them globally.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* White backgrounds → surface */
+.dark .bg-white { background-color: var(--color-surface) !important; }
+
+/* Gray backgrounds */
+.dark .bg-gray-50  { background-color: var(--color-surface-2) !important; }
+.dark .bg-gray-100 { background-color: var(--color-surface-2) !important; }
+.dark .bg-gray-200 { background-color: var(--color-border) !important; }
+
+/* Gray text */
+.dark .text-gray-300 { color: var(--color-text-muted) !important; }
+.dark .text-gray-400 { color: var(--color-text-muted) !important; }
+.dark .text-gray-500 { color: var(--color-text-muted) !important; }
+.dark .text-gray-600 { color: var(--color-text-secondary) !important; }
+.dark .text-gray-700 { color: var(--color-text-secondary) !important; }
+.dark .text-gray-800 { color: var(--color-text-primary) !important; }
+.dark .text-gray-900 { color: var(--color-text-primary) !important; }
+
+/* Gray borders */
+.dark .border-gray-200 { border-color: var(--color-border) !important; }
+.dark .border-gray-300 { border-color: var(--color-border) !important; }
+
+/* Indigo — keep as-is on dark (already visible), but fix light variants */
+.dark .bg-indigo-50  { background-color: color-mix(in srgb, #6366f1 15%, transparent) !important; }
+.dark .text-indigo-400 { color: #818cf8 !important; }
+.dark .text-indigo-800 { color: #c7d2fe !important; }
+.dark .hover\:bg-indigo-50:hover { background-color: color-mix(in srgb, #6366f1 15%, transparent) !important; }
+
+/* Green light variants */
+.dark .bg-green-50  { background-color: color-mix(in srgb, #16a34a 15%, transparent) !important; }
+.dark .border-green-300 { border-color: color-mix(in srgb, #16a34a 40%, transparent) !important; }
+.dark .border-green-400 { border-color: color-mix(in srgb, #16a34a 50%, transparent) !important; }
+
+/* Blue light variants */
+.dark .bg-blue-100  { background-color: color-mix(in srgb, #3b82f6 15%, transparent) !important; }
+.dark .text-blue-800 { color: #93c5fd !important; }
+
+/* Yellow */
+.dark .text-yellow-700 { color: #fbbf24 !important; }
+
+/* Hardcoded background pages */
+.dark .bg-\[#faf9f6\] { background-color: var(--color-bg) !important; }
+
+/* Hardcoded navy hex used in cricket pages */
+.dark .bg-\[#1e3a5f\]         { background-color: var(--color-navy) !important; }
+.dark .hover\:bg-\[#2d4a6f\]:hover { background-color: var(--color-navy-light) !important; }
+.dark .border-\[#1e3a5f\]     { border-color: var(--color-navy) !important; }
+
+/* ── #e8e6e1 text (used on navy backgrounds — already fine, keep as-is) ── */
+/* These are intentionally light text on dark navy sections, no change needed */
+
+/* ── Inline style: color var(--color-navy) on text ── (already handled above) */
+
+/* ── Hardcoded hex text colors used in cricket pages ── */
+.dark .text-\[#1e3a5f\]  { color: var(--color-text-heading) !important; }
+.dark .text-\[#374151\]  { color: var(--color-text-secondary) !important; }
+.dark .text-\[#6b7280\]  { color: var(--color-text-muted) !important; }
+
+/* ── Hardcoded hex backgrounds ── */
+.dark .bg-\[#faf9f6\]    { background-color: var(--color-bg) !important; }
+.dark .bg-\[#f0ede6\]    { background-color: var(--color-surface-2) !important; }
+
+/* ── File input in dark mode ── */
+.dark .file\:bg-\[#faf9f6\] { --tw-file-bg: var(--color-surface-2); }
+
+/* ── red-700 text (confirm dialogs) — ensure visible in dark ── */
+.dark .text-red-700 { color: #fca5a5 !important; }
+
+/* ── Scorecard / match pages: bg-white cards ── */
+.dark .rounded-2xl.bg-white,
+.dark .rounded-xl.bg-white,
+.dark .rounded-lg.bg-white { background-color: var(--color-surface) !important; }
+
+/* ── Indigo score strip ── */
+.dark .bg-indigo-600 { background-color: #4f46e5 !important; }
+.dark .hover\:bg-indigo-700:hover { background-color: #4338ca !important; }
+
+/* ── Select / input in cricket pages ── */
+.dark select.border-gray-200,
+.dark input.border-gray-200 {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* ── Purple (scorecard bowler section) ── */
+.dark .bg-purple-50     { background-color: color-mix(in srgb, #9333ea 12%, transparent) !important; }
+.dark .border-purple-200 { border-color: color-mix(in srgb, #9333ea 30%, transparent) !important; }
+.dark .text-purple-400  { color: #c084fc !important; }
+
+/* ── Indigo text variants ── */
+.dark .text-indigo-600  { color: #818cf8 !important; }
+.dark .text-indigo-700  { color: #a5b4fc !important; }
+.dark .hover\:text-indigo-800:hover { color: #c7d2fe !important; }
+
+/* ── Table rows in scorecard ── */
+.dark .border-gray-100  { border-color: var(--color-border-soft) !important; }
+.dark .hover\:bg-gray-50:hover { background-color: var(--color-surface-2) !important; }
+
+/* ── Scorecard innings score text ── */
+.dark .text-gray-900 { color: var(--color-text-primary) !important; }
+
+/* ── Format page ── */
+.dark .text-\[#1e3a5f\] { color: var(--color-text-heading) !important; }
+.dark .text-\[#b8860b\] { color: var(--color-gold) !important; }
+.dark .bg-\[#b8860b\]   { background-color: var(--color-gold) !important; }
+.dark .border-\[#b8860b\]\/30 { border-color: color-mix(in srgb, var(--color-gold) 30%, transparent) !important; }

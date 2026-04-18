@@ -6,82 +6,89 @@ import API_URL from "../config/api";
  */
 const apiClient = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 5000,
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Important for cookies
+  withCredentials: true,
 });
+
+// Holds the forceLogout callback registered by AuthProvider
+let forceLogoutHandler = null;
+
+export function setForceLogoutHandler(fn) {
+  forceLogoutHandler = fn;
+}
+
+function triggerForceLogout() {
+  if (forceLogoutHandler) {
+    forceLogoutHandler();
+  } else {
+    // Fallback before AuthProvider mounts
+    localStorage.removeItem("accessToken");
+    window.location.replace("/login");
+  }
+}
 
 /**
  * Request interceptor - Add auth token to requests
  */
 apiClient.interceptors.request.use(
   (config) => {
-    // You can add auth token here if stored in localStorage
     const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 /**
- * Response interceptor - Handle errors globally
+ * Response interceptor - Handle 401s with token refresh, force logout on failure
  */
 apiClient.interceptors.response.use(
   (response) => {
-    // Handle both new format (with success field) and old format
-    if (response.data) {
-      return response.data;
-    }
+    if (response.data) return response.data;
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle 401 Unauthorized - Token expired
+    // Handle 401 Unauthorized — attempt token refresh once
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Try to refresh token (try both API versions)
         const response = await axios.post(
           `${API_URL}/api/v1/users/refresh-token`,
           {},
           { withCredentials: true }
-        ).catch(() => 
-          axios.post(
-            `${API_URL}/api/cpsh/users/refresh-token`,
-            {},
-            { withCredentials: true }
-          )
         );
 
-        if (response.data?.data?.accessToken) {
-          localStorage.setItem("accessToken", response.data.data.accessToken);
-          originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+        const newToken = response.data?.data?.accessToken;
+        if (newToken) {
+          localStorage.setItem("accessToken", newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
         }
-      } catch (refreshError) {
-        // Refresh failed - redirect to login
-        localStorage.removeItem("accessToken");
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+
+        // No token in response — session is dead
+        triggerForceLogout();
+        return Promise.reject(error);
+      } catch {
+        // Refresh token also expired or invalid — force login
+        triggerForceLogout();
+        return Promise.reject(error);
       }
     }
 
-    // Handle other errors
     const errorMessage =
       error.response?.data?.message || error.message || "Something went wrong";
 
     return Promise.reject({
       message: errorMessage,
-      status: error.response?.status,
+      status: error.response?.status,   // undefined on network errors
       errors: error.response?.data?.errors,
     });
   }

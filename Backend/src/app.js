@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import { config } from "./config/index.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 import passport from "./config/passport.js";
+import { metricsMiddleware } from "./middlewares/metrics.middleware.js";
+import { register } from "./utils/metrics.js";
 
 const app = express();
 
@@ -19,10 +21,17 @@ app.use(express.urlencoded({ extended: true, limit: "50kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 app.use(passport.initialize());
+app.use(metricsMiddleware);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Server is running" });
+});
+
+// Prometheus metrics endpoint
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
 });
 
 // API Routes

@@ -48,16 +48,31 @@ export default function ContestArena() {
     load();
   }, [eventId]);
 
-  // Countdown timer
+  // Countdown timer — live (time left), draft (time to start), paused (frozen)
   useEffect(() => {
-    if (!contest?.endTime || contest.status !== "live") return;
-    const tick = () => {
-      const secs = Math.max(0, Math.floor((new Date(contest.endTime) - Date.now()) / 1000));
-      setTimeLeft(secs);
-      if (secs === 0) clearInterval(timerRef.current);
-    };
-    tick();
-    timerRef.current = setInterval(tick, 1000);
+    clearInterval(timerRef.current);
+    if (contest?.status === "live" && contest?.endTime) {
+      const tick = () => {
+        const secs = Math.max(0, Math.floor((new Date(contest.endTime) - Date.now()) / 1000));
+        setTimeLeft(secs);
+        if (secs === 0) clearInterval(timerRef.current);
+      };
+      tick();
+      timerRef.current = setInterval(tick, 1000);
+    } else if (contest?.status === "paused" && contest?.endTime) {
+      // Show frozen time remaining
+      setTimeLeft(Math.max(0, Math.floor((new Date(contest.endTime) - Date.now()) / 1000)));
+    } else if (contest?.status === "draft" && contest?.scheduledStartTime) {
+      const tick = () => {
+        const secs = Math.max(0, Math.floor((new Date(contest.scheduledStartTime) - Date.now()) / 1000));
+        setTimeLeft(secs);
+        if (secs === 0) clearInterval(timerRef.current);
+      };
+      tick();
+      timerRef.current = setInterval(tick, 1000);
+    } else {
+      setTimeLeft(null);
+    }
     return () => clearInterval(timerRef.current);
   }, [contest]);
 
@@ -67,10 +82,25 @@ export default function ContestArena() {
     socket.emit("join:contest", eventId);
 
     socket.on("contest:started", () => {
-      window.location.reload(); // simplest way to refresh contest state
+      window.location.reload();
+    });
+    socket.on("contest:scheduled", ({ scheduledStartTime }) => {
+      setContest((prev) => prev ? { ...prev, scheduledStartTime: scheduledStartTime || null } : prev);
+    });
+    socket.on("contest:paused", ({ pausedAt }) => {
+      setContest((prev) => prev ? { ...prev, status: "paused", pausedAt } : prev);
+    });
+    socket.on("contest:resumed", ({ endTime }) => {
+      setContest((prev) => prev ? { ...prev, status: "live", endTime, pausedAt: null } : prev);
+    });
+    socket.on("contest:extended", ({ endTime }) => {
+      setContest((prev) => prev ? { ...prev, endTime } : prev);
     });
     socket.on("contest:ended", () => {
       setContest((prev) => prev ? { ...prev, status: "ended" } : prev);
+    });
+    socket.on("contest:restarted", () => {
+      window.location.reload();
     });
     socket.on("submission:result", (result) => {
       setMySubmissions((prev) =>
@@ -81,7 +111,12 @@ export default function ContestArena() {
     return () => {
       socket.emit("leave:contest", eventId);
       socket.off("contest:started");
+      socket.off("contest:scheduled");
+      socket.off("contest:paused");
+      socket.off("contest:resumed");
+      socket.off("contest:extended");
       socket.off("contest:ended");
+      socket.off("contest:restarted");
       socket.off("submission:result");
       socket.disconnect();
     };
@@ -123,21 +158,65 @@ export default function ContestArena() {
   }
 
   if (contest.status === "draft") {
+    const hasSchedule = !!contest.scheduledStartTime;
+    const startsInSecs = hasSchedule
+      ? Math.max(0, Math.floor((new Date(contest.scheduledStartTime) - Date.now()) / 1000))
+      : null;
+
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--color-bg)" }}>
-        <div className="text-center p-8 rounded-lg border max-w-sm w-full" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+        <div className="text-center p-10 rounded-lg border max-w-sm w-full" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
           <FaClock className="mx-auto text-4xl mb-4" style={{ color: "var(--color-gold)" }} />
-          <h2 className="font-heading text-xl font-semibold mb-2" style={{ color: "var(--color-navy)" }}>Contest Not Started</h2>
-          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-            The organizer will start the contest soon. This page will update automatically.
-          </p>
+          <h2 className="font-heading text-xl font-semibold mb-2" style={{ color: "var(--color-navy)" }}>
+            {hasSchedule ? "Contest Starts In" : "Contest Not Started"}
+          </h2>
+
+          {hasSchedule ? (
+            <>
+              <div
+                className="font-mono text-5xl font-bold tracking-tight my-6"
+                style={{ color: timeLeft !== null && timeLeft < 60 ? "var(--color-error)" : "var(--color-navy)" }}
+              >
+                {formatTime(timeLeft ?? startsInSecs)}
+              </div>
+              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                Scheduled for {new Date(contest.scheduledStartTime).toLocaleString()}
+              </p>
+              <p className="text-xs mt-2" style={{ color: "var(--color-text-muted)" }}>
+                This page will update automatically when the contest begins.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm mt-2" style={{ color: "var(--color-text-muted)" }}>
+              The organizer will start the contest soon. This page will update automatically.
+            </p>
+          )}
         </div>
       </div>
     );
   }
 
   const isEnded = contest.status === "ended";
+  const isPaused = contest.status === "paused";
   const isUrgent = timeLeft !== null && timeLeft < 300; // last 5 min
+
+  // ── Paused screen ──
+  if (isPaused) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--color-bg)" }}>
+        <div className="text-center p-10 rounded-lg border max-w-sm w-full" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <div className="text-4xl mb-4">⏸</div>
+          <h2 className="font-heading text-xl font-semibold mb-2" style={{ color: "var(--color-navy)" }}>Contest Paused</h2>
+          <div className="font-mono text-4xl font-bold my-4" style={{ color: "var(--color-gold)" }}>
+            {formatTime(timeLeft)}
+          </div>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+            The organizer has paused the contest. The timer is frozen — your remaining time will be preserved when it resumes.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: "var(--color-bg)" }}>
@@ -162,11 +241,13 @@ export default function ContestArena() {
             <div
               className="flex items-center gap-1.5 font-mono text-sm font-bold px-3 py-1 rounded"
               style={{
-                backgroundColor: isUrgent ? "color-mix(in srgb, var(--color-error) 20%, transparent)" : "color-mix(in srgb, white 10%, transparent)",
-                color: isUrgent ? "#fca5a5" : "white",
+                backgroundColor: isPaused ? "color-mix(in srgb, var(--color-gold) 20%, transparent)"
+                  : isUrgent ? "color-mix(in srgb, var(--color-error) 20%, transparent)"
+                  : "color-mix(in srgb, white 10%, transparent)",
+                color: isPaused ? "var(--color-gold)" : isUrgent ? "#fca5a5" : "white",
               }}
             >
-              <FaClock size={12} />
+              {isPaused ? "⏸" : <FaClock size={12} />}
               {formatTime(timeLeft)}
             </div>
           )}

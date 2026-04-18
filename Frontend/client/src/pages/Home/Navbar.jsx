@@ -3,27 +3,20 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import logo from "/logo.jpg";
-import API_URL from "../../config/api";
 import { useTheme } from "../../hooks/useTheme";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { isDark, toggle } = useTheme();
+  const { logout } = useAuth();
 
-  const logout = async (e) => {
+  const handleLogout = async (e) => {
     e.preventDefault();
-    try {
-      await fetch(`${API_URL}/api/cpsh/users/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      localStorage.removeItem("accessToken");
-      navigate("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    setMenuOpen(false);
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -137,7 +130,7 @@ export default function Navbar() {
                 </button>
 
                 <button
-                  onClick={(e) => { logout(e); setMenuOpen(false); }}
+                  onClick={handleLogout}
                   className="text-left py-2 px-3 rounded border border-transparent transition-colors"
                   style={{ color: "var(--color-error)" }}
                 >

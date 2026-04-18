@@ -34,6 +34,10 @@ export const errorHandler = (err, req, res, next) => {
  * Handle 404 - Route not found
  */
 export const notFound = (req, res, next) => {
+  // Silently ignore favicon requests from browsers
+  if (req.originalUrl === "/favicon.ico") {
+    return res.status(204).end();
+  }
   const error = new ApiError(
     HTTP_STATUS.NOT_FOUND,
     `Route ${req.originalUrl} not found`

@@ -1,26 +1,20 @@
 import { Navigate } from "react-router-dom";
-
-function isTokenValid(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.exp * 1000 > Date.now();
-  } catch {
-    return false;
-  }
-}
+import { useAuth } from "../hooks/useAuth";
 
 /**
- * Wraps public-only routes (login, register) — redirects to /home only if token is valid.
+ * Wraps public-only routes (login, register, landing).
+ * - If authenticated → redirect to /home
+ * - If not authenticated → show the page
+ * - `landing` prop: marks the root "/" page (no redirect for guests)
  */
-export default function PublicRoute({ children }) {
-  const token = localStorage.getItem("accessToken");
+export default function PublicRoute({ children, landing = false }) {
+  const { isAuthenticated, loading } = useAuth();
 
-  if (token && isTokenValid(token)) {
+  if (loading) return null;
+
+  if (isAuthenticated) {
     return <Navigate to="/home" replace />;
   }
-
-  // Clean up expired token if present
-  if (token) localStorage.removeItem("accessToken");
 
   return children;
 }

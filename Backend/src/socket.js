@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { config } from "./config/index.js";
+import { activeSocketConnections } from "./utils/metrics.js";
 
 let io;
 
@@ -13,6 +14,11 @@ export const initSocket = (httpServer) => {
   });
 
   io.on("connection", (socket) => {
+    activeSocketConnections.inc();
+
+    socket.on("disconnect", () => {
+      activeSocketConnections.dec();
+    });
     // Client joins a room for a specific match or event
     socket.on("join:match", (matchId) => {
       socket.join(`match:${matchId}`);

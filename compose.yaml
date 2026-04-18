@@ -1,13 +1,12 @@
 services:
   backend:
-    image: surajdocker01/campussphere-backend:latest
     build:
       context: ./Backend
     env_file:
       - ./Backend/.env
     environment:
       NODE_ENV: production
-      MONGODB_URI: mongodb://mongo:27017/campussphere
+      MONGODB_URI: mongodb+srv://skumar919810_db_user:Csph919810@campus-sphere.1vcerdd.mongodb.net/?appName=Campus-Sphere
       REDIS_URL: redis://redis:6379
       PORT: 4000
       FRONTEND_ORIGIN: http://localhost
@@ -54,6 +53,83 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # ── Monitoring stack ────────────────────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ALERTING_ENABLED: "true"
+      GF_UNIFIED_ALERTING_ENABLED: "true"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # mongodb-exporter does not support Atlas (mongodb+srv://) URIs.
+  # Use MongoDB Atlas built-in monitoring at https://cloud.mongodb.com instead.
+  # If you switch back to a self-hosted MongoDB, restore this service and
+  # change MONGODB_URI back to mongodb://mongo:27017
+  # mongodb-exporter:
+  #   image: percona/mongodb_exporter:0.44
+  #   ...
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # node-exporter is only useful on Linux hosts.
+  # On Windows (Docker Desktop), use windows_exporter natively instead.
+  # To start with node-exporter: docker compose --profile linux up
+  node-exporter:
+    image: prom/node-exporter:latest
+    profiles: ["linux"]
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+
 volumes:
   mongo_data:
   redis_data:
+  prometheus_data:
+  grafana_data:

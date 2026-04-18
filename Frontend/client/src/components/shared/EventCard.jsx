@@ -43,7 +43,9 @@ export default function EventCard({ event, variant = "basic", additionalData = {
         break;
       case "hosted":
         if (event.category === "sports" && event.sports?.toLowerCase() === "cricket") {
-          navigate(`/event/${event.eventName}/${event._id}/sports/cricket`);
+          navigate(`/organizer/cricket/${event._id}`);
+        } else if (event.category === "coding") {
+          navigate(`/organizer/coding/${event._id}`);
         } else {
           navigate(`/hosted-event/${event._id}`);
         }

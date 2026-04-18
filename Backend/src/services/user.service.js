@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { cacheSet, cacheGet, cacheDel } from "../utils/redis.js";
 import { sendOtpEmail, sendWelcomeEmail } from "../utils/mailer.js";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 /**
  * User Service - Business logic for user operations
@@ -129,10 +130,18 @@ class UserService {
   /**
    * Refresh access token
    */
-  async refreshAccessToken(refreshToken) {
-    const user = await User.findOne({ refreshToken });
+  async refreshAccessToken(incomingRefreshToken) {
+    // Verify the refresh token JWT is valid and not expired
+    let decoded;
+    try {
+      decoded = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch {
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Refresh token expired or invalid");
+    }
 
-    if (!user) {
+    const user = await User.findById(decoded._id);
+
+    if (!user || user.refreshToken !== incomingRefreshToken) {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid refresh token");
     }
 
