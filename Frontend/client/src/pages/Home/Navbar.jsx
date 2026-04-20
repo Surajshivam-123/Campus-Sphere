@@ -109,6 +109,36 @@ export default function Navbar() {
                   My Events
                 </Link>
                 <Link
+                  to="/clubs"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2 px-3 rounded border border-transparent transition-colors"
+                  style={{ color: "var(--color-text-secondary)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-navy)"; e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 30%, transparent)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-secondary)"; e.currentTarget.style.borderColor = "transparent"; }}
+                >
+                  Clubs
+                </Link>
+                <Link
+                  to="/clubs/join"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2 px-3 rounded border border-transparent transition-colors"
+                  style={{ color: "var(--color-text-secondary)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-navy)"; e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 30%, transparent)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-secondary)"; e.currentTarget.style.borderColor = "transparent"; }}
+                >
+                  Join a Club
+                </Link>
+                <Link
+                  to="/my-clubs"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2 px-3 rounded border border-transparent transition-colors"
+                  style={{ color: "var(--color-text-secondary)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-navy)"; e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 30%, transparent)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-secondary)"; e.currentTarget.style.borderColor = "transparent"; }}
+                >
+                  My Clubs
+                </Link>
+                <Link
                   to="/profile"
                   onClick={() => setMenuOpen(false)}
                   className="py-2 px-3 rounded border border-transparent transition-colors"

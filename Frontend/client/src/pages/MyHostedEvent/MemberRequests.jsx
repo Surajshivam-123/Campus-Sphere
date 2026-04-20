@@ -2,16 +2,21 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheckCircle, FaTimesCircle, FaUserClock } from "react-icons/fa";
 import memberService from "../../services/member.service";
+import socket from "../../config/socket";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function MemberRequests({ eventId }) {
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [acting, setActing] = useState(null);
 
+  // Initial fetch
   useEffect(() => {
     if (!eventId) return;
     const load = async () => {
+      setLoading(true);
       try {
         const result = await memberService.getJoinRequests(eventId);
         if (result?.success) setRequests(result.data || []);
@@ -24,6 +29,39 @@ export default function MemberRequests({ eventId }) {
     };
     load();
   }, [eventId]);
+
+  // Real-time: join organizer room and listen for new member join requests
+  useEffect(() => {
+    if (!user?._id) return;
+
+    if (!socket.connected) socket.connect();
+    socket.emit("join:organizer", user._id);
+
+    const onNewRequest = (data) => {
+      // Only add if it belongs to this event
+      if (data.eventId?.toString() !== eventId?.toString()) return;
+      // Append as a minimal request object; full data comes from the payload
+      setRequests((prev) => {
+        if (prev.some((r) => r._id === data.requestId)) return prev;
+        return [
+          ...prev,
+          {
+            _id: data.requestId,
+            requester: {
+              _id: data.requesterId,
+              fullname: data.requesterName,
+              username: data.requesterName,
+            },
+          },
+        ];
+      });
+    };
+
+    socket.on("member:join:request", onNewRequest);
+    return () => {
+      socket.off("member:join:request", onNewRequest);
+    };
+  }, [user?._id, eventId]);
 
   const handle = async (requestId, action) => {
     setActing(requestId);

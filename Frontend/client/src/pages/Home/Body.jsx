@@ -15,8 +15,11 @@ export default function Body() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
         {[
-          { to: "/choice", title: "Participate", desc: "Register for exciting campus events and contests." },
-          { to: "/new-events-hosted", title: "Host", desc: "Create and manage your own coding or sports events." },
+          { to: "/choice",       title: "Participate",   desc: "Register for exciting campus events and contests." },
+          { to: "/new-events-hosted", title: "Host",      desc: "Create and manage your own coding or sports events." },
+          { to: "/clubs",        title: "Browse Clubs",   desc: "Discover and join campus clubs that match your interests." },
+          { to: "/clubs/join",   title: "Join a Club",    desc: "Have a club code? Join any public or private club instantly." },
+          { to: "/clubs/create", title: "Create a Club",  desc: "Found a new campus club and build your community." },
         ].map(({ to, title, desc }) => (
           <Link
             key={to}

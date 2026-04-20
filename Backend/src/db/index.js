@@ -38,6 +38,22 @@ export const connectDB = async () => {
       `✅ MongoDB connected! Host: ${connectionInstance.connection.host}`
     );
 
+    // Fix stale indexes — drop old indexes that were created without partialFilterExpression
+    // This is safe to run on every startup; it's a no-op if the index doesn't exist
+    try {
+      const db = connectionInstance.connection.db;
+      const indexes = await db.collection("joinrequests").indexes();
+      const staleTeamIndex = indexes.find(
+        (idx) => idx.key?.requester === 1 && idx.key?.team === 1 && !idx.partialFilterExpression
+      );
+      if (staleTeamIndex) {
+        await db.collection("joinrequests").dropIndex(staleTeamIndex.name);
+        console.log("✅ Dropped stale joinrequests.requester_1_team_1 index");
+      }
+    } catch (e) {
+      console.warn("Index cleanup warning (non-fatal):", e.message);
+    }
+
     // Attach command monitoring to the underlying driver connection
     attachCommandMonitoring(connectionInstance.connection.getClient());
 

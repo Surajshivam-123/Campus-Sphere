@@ -15,8 +15,8 @@ export default function useScorerRole(eventId) {
     const check = async () => {
       try {
         const [eventRes, profileRes] = await Promise.all([
-          fetch(`${API_URL}/api/v1/events/get-single-event/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/v1/users/profile`, { credentials: "include" }),
+          fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, { credentials: "include" }),
+          fetch(`${API_URL}/api/cpsh/users/profile`, { credentials: "include" }),
         ]);
         const eventData = await eventRes.json();
         const profileData = await profileRes.json();

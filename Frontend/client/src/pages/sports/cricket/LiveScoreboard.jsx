@@ -86,7 +86,7 @@ export default function LiveScoreboard() {
   // Initial fetch — only if access granted
   useEffect(() => {
     if (!access) return;
-    fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" })
+    fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => { if (d?.data) setMatches(d.data); })
       .catch(console.log)

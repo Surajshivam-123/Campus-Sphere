@@ -48,7 +48,7 @@ export default function JoinTeam() {
     setError("");
     try {
       const res = await fetchWithAuth(
-        `${API_URL}/api/v1/sports/cricket/players/request-join/${teamCode}/${eventId}`,
+        `${API_URL}/api/cpsh/cricket-players/request-join/${teamCode}/${eventId}`,
         { method: "POST" }
       );
       const result = await res.json();

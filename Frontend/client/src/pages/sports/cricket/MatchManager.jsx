@@ -22,7 +22,7 @@ export default function MatchManager() {
 
   const fetchMatches = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" });
+      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" });
       const data = await res.json();
       if (data?.data) setMatches(data.data);
     } catch (err) {
@@ -38,7 +38,7 @@ export default function MatchManager() {
     setInitialising(true);
     setMsg("");
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, {
+      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
         method: "POST",
         credentials: "include",
       });

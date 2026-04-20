@@ -9,7 +9,7 @@ import { useFetch } from "./useFetch";
  * @returns {Object} { teams, loading, error, refetch }
  */
 export const useMyTeams = () => {
-  const { data, loading, error, refetch } = useFetch("/api/v1/teams/my-teams");
+  const { data, loading, error, refetch } = useFetch("/api/cpsh/teams/my-teams");
 
   return {
     teams: data || [],
@@ -26,7 +26,7 @@ export const useMyTeams = () => {
  */
 export const useTeam = (teamId) => {
   const { data, loading, error, refetch } = useFetch(
-    teamId ? `/api/v1/teams/${teamId}` : null
+    teamId ? `/api/cpsh/teams/${teamId}` : null
   );
 
   return {
@@ -44,7 +44,7 @@ export const useTeam = (teamId) => {
  */
 export const useEventTeams = (eventId) => {
   const { data, loading, error, refetch } = useFetch(
-    eventId ? `/api/v1/teams/event/${eventId}` : null
+    eventId ? `/api/cpsh/teams/event/${eventId}` : null
   );
 
   return {

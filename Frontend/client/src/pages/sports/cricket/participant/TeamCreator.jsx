@@ -46,7 +46,7 @@ export default function TeamCreatorPage() {
         const [evRes, teamRes, matchRes] = await Promise.all([
           fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, { credentials: "include" }),
           fetch(`${API_URL}/api/cpsh/teams/get-team/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" }),
+          fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" }),
         ]);
 
         const evData = await evRes.json();
@@ -84,7 +84,7 @@ export default function TeamCreatorPage() {
 
         // Fetch pending join requests for captain
         try {
-          const reqRes = await fetch(`${API_URL}/api/v1/sports/cricket/players/join-requests/${eventId}`, {
+          const reqRes = await fetch(`${API_URL}/api/cpsh/cricket-players/join-requests/${eventId}`, {
             credentials: "include",
           });
           const reqData = await reqRes.json();
@@ -169,7 +169,7 @@ export default function TeamCreatorPage() {
         .filter((p) => squadSelected.has(p.name))
         .map((p) => ({ name: p.name, playerId: p._id }));
 
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/${pendingMatch._id}/submit-squad`, {
+      const res = await fetch(`${API_URL}/api/cpsh/matches/${pendingMatch._id}/submit-squad`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -191,7 +191,7 @@ export default function TeamCreatorPage() {
 
   const handleRemovePlayer = async (playerId) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/players/remove-player/${playerId}`, {
+      const res = await fetch(`${API_URL}/api/cpsh/cricket-players/remove-player/${playerId}`, {
         method: "DELETE", credentials: "include",
       });
       const result = await res.json();
@@ -207,7 +207,7 @@ export default function TeamCreatorPage() {
   const handleRespondRequest = async (requestId, action) => {
     setRespondingId(requestId);
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/players/join-requests/${requestId}`, {
+      const res = await fetch(`${API_URL}/api/cpsh/cricket-players/join-requests/${requestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -14,7 +14,7 @@ export default function useIsLive(eventId) {
     if (!eventId) { setLoading(false); return; }
 
     const check = () =>
-      fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/is-live`, { credentials: "include" })
+      fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/is-live`, { credentials: "include" })
         .then((r) => r.json())
         .then((res) => setIsLive(!!res?.data?.isLive))
         .catch(() => setIsLive(false))

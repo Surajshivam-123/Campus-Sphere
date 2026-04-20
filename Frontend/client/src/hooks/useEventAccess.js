@@ -13,7 +13,7 @@ export default function useEventAccess(eventId) {
     if (!eventId) { setLoading(false); return; }
 
     // Probe the matches endpoint — 200 means access granted, 403 means denied
-    fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" })
+    fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" })
       .then((r) => setAccess(r.ok))
       .catch(() => setAccess(false))
       .finally(() => setLoading(false));

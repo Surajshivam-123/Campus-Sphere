@@ -27,7 +27,7 @@ export default function CreateCricketFormat({ viewOnly = false }) {
         const teamsData = await teamsRes.json();
         setTeams(teamsData?.data || []);
 
-        const fmtRes = await fetch(`${API_URL}/api/v1/sports/cricket/format/${eventId}`, {
+        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
           credentials: "include",
         });
         const fmtData = await fmtRes.json();
@@ -49,7 +49,7 @@ export default function CreateCricketFormat({ viewOnly = false }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/format/${eventId}`, {
+      const res = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

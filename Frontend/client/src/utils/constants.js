@@ -12,12 +12,12 @@ export const EVENT_TYPES = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  USERS: "/api/v1/users",
-  EVENTS: "/api/v1/events",
-  PARTICIPANTS: "/api/v1/participants",
-  MEMBERS: "/api/v1/members",
-  TEAMS: "/api/v1/teams",
-  CRICKET_PLAYERS: "/api/v1/cricket-players",
+  USERS: "/api/cpsh/users",
+  EVENTS: "/api/cpsh/events",
+  PARTICIPANTS: "/api/cpsh/participants",
+  MEMBERS: "/api/cpsh/members",
+  TEAMS: "/api/cpsh/teams",
+  CRICKET_PLAYERS: "/api/cpsh/cricket-players",
 };
 
 // Routes

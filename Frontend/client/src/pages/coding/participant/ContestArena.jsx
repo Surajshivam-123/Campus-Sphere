@@ -25,9 +25,9 @@ export default function ContestArena() {
     const load = async () => {
       try {
         const [contestRes, probRes, subRes] = await Promise.all([
-          fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}`),
-          fetchWithAuth(`${API_URL}/api/v1/coding/problems/event/${eventId}`),
-          fetchWithAuth(`${API_URL}/api/v1/coding/submissions/event/${eventId}/mine`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/event/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/submissions/event/${eventId}/mine`),
         ]);
         const contestData = await contestRes.json();
         const probData = await probRes.json();

@@ -33,14 +33,18 @@ export default function EventDetailsMemberPage() {
     setError(""); setLoading(true);
     try {
       const result = await memberService.requestJoinEvent(memberCode);
-      if (result?.success) {
-        setStatus("pending");
-      } else {
-        if (result?.data?.status) setStatus(result.data.status);
-        else setError(result?.message || "Could not send request.");
-      }
+      // 201 = new request created, 200 = already pending
+      if (result?.data?.status) setStatus(result.data.status);
+      else setStatus("pending");
     } catch (err) {
-      if (err?.message) setError(err.message);
+      const msg = err?.message || "Could not send request.";
+      if (msg.toLowerCase().includes("already a member")) {
+        setStatus("approved");
+      } else if (msg.toLowerCase().includes("organizer")) {
+        setError("You are the organizer of this event.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

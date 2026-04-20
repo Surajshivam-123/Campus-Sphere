@@ -47,7 +47,7 @@ export default function CricketEventDetailsPageParticipant() {
 
       // Check if user joined as a member
       try {
-        const memberRes = await fetchWithAuth(`${API_URL}/api/v1/sports/cricket/players/my-team/${eventId}`, {
+        const memberRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/my-team/${eventId}`, {
           method: "GET", headers: { "Content-Type": "application/json" },
         });
         const memberData = await memberRes.json();

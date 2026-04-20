@@ -62,6 +62,15 @@ import CodingOrganizerPage from "../pages/coding/organizer/CodingOrganizerPage";
 import ContestArena from "../pages/coding/participant/ContestArena";
 import Leaderboard from "../pages/coding/Leaderboard";
 
+// ── Campus Clubs ──────────────────────────────────────────────────────────────
+import AllClubs from "../pages/Club/AllClubs";
+import CreateClub from "../pages/Club/CreateClub";
+import ClubDetail from "../pages/Club/ClubDetail";
+import ManageClub from "../pages/Club/ManageClub";
+import MyClubs from "../pages/Club/MyClubs";
+import JoinClub from "../pages/Club/JoinClub";
+import ClubChat from "../pages/Club/ClubChat";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -127,6 +136,15 @@ export default function AppRoutes() {
       <Route path="/coding/problem/edit/:problemId" element={<ProtectedRoute><ProblemEditor /></ProtectedRoute>} />
       <Route path="/coding/contest/:eventId"        element={<ProtectedRoute><ContestArena /></ProtectedRoute>} />
       <Route path="/coding/leaderboard/:eventId"    element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+
+      {/* ── Campus Club Routes ───────────────────────────────────────────────── */}
+      <Route path="/clubs"                    element={<AllClubs />} />
+      <Route path="/clubs/create"             element={<ProtectedRoute><CreateClub /></ProtectedRoute>} />
+      <Route path="/clubs/join"               element={<ProtectedRoute><JoinClub /></ProtectedRoute>} />
+      <Route path="/clubs/:clubId/manage"     element={<ProtectedRoute><ManageClub /></ProtectedRoute>} />
+      <Route path="/clubs/:clubId/chat"       element={<ProtectedRoute><ClubChat /></ProtectedRoute>} />
+      <Route path="/clubs/:clubId"            element={<ClubDetail />} />
+      <Route path="/my-clubs"                 element={<ProtectedRoute><MyClubs /></ProtectedRoute>} />
 
       {/* Catch-all — any unknown URL redirects to login */}
       <Route path="*" element={<Navigate to="/login" replace />} />

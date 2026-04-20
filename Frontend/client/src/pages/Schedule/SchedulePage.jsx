@@ -29,7 +29,7 @@ export default function SchedulePage() {
         setTeams(teamsData?.data || []);
         if (schedData?.data) setSchedule(schedData.data);
         try {
-          const matchRes = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" });
+          const matchRes = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" });
           const matchData = await matchRes.json();
           setMatchesExist(matchData?.data?.length > 0);
         } catch { /* ignore */ }
@@ -73,7 +73,7 @@ export default function SchedulePage() {
   const handleInitMatches = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, { method: "POST", credentials: "include" });
+      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, { method: "POST", credentials: "include" });
       const data = await res.json();
       if (res.ok) { setMatchesExist(true); navigate(`/sports/cricket/scoreboard/${eventId}`); }
       else setError(data.message || "Failed to initialize matches");

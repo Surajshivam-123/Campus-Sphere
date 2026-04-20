@@ -11,7 +11,7 @@ import { useList } from "./useApi";
  * @returns {Object} { events, loading, error, refetch }
  */
 export const useEvents = (filters = {}) => {
-  const { items, loading, error, refetch } = useList("/api/v1/events", filters);
+  const { items, loading, error, refetch } = useList("/api/cpsh/events", filters);
 
   return {
     events: items,
@@ -28,7 +28,7 @@ export const useEvents = (filters = {}) => {
  */
 export const useEvent = (eventId) => {
   const { data, loading, error, refetch } = useFetch(
-    eventId ? `/api/v1/events/${eventId}` : null
+    eventId ? `/api/cpsh/events/${eventId}` : null
   );
 
   return {
@@ -44,7 +44,7 @@ export const useEvent = (eventId) => {
  * @returns {Object} { events, loading, error, refetch }
  */
 export const useMyHostedEvents = () => {
-  const { data, loading, error, refetch } = useFetch("/api/v1/events/my-hosted");
+  const { data, loading, error, refetch } = useFetch("/api/cpsh/events/my-hosted");
 
   return {
     events: data || [],
@@ -60,7 +60,7 @@ export const useMyHostedEvents = () => {
  */
 export const useMyParticipatedEvents = () => {
   const { data, loading, error, refetch } = useFetch(
-    "/api/v1/participants/my-events"
+    "/api/cpsh/participants/my-events"
   );
 
   return {
@@ -94,7 +94,7 @@ export const useMyMemberEvents = () => {
  * @returns {Object} { events, loading, error, refetch }
  */
 export const useEventsByType = (eventType) => {
-  const { items, loading, error, refetch } = useList("/api/v1/events", {
+  const { items, loading, error, refetch } = useList("/api/cpsh/events", {
     type: eventType,
   });
 

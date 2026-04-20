@@ -38,7 +38,10 @@ const participateEvent = asyncHandler(async (req, res) => {
     });
 
     if (result.conflict) {
-      return res.status(400).json(new ApiResponse(400, { status: result.status }, `Request already ${result.status}`));
+      const statusCode = result.status === "pending" ? 200 : 400;
+      return res.status(statusCode).json(
+        new ApiResponse(statusCode, { status: result.status }, `Request already ${result.status}`)
+      );
     }
 
     return res.status(201).json(new ApiResponse(201, { status: "pending" }, "Join request sent. Waiting for organizer approval."));

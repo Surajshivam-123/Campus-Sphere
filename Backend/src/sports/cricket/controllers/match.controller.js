@@ -364,7 +364,7 @@ const updateMatch = asyncHandler(async (req, res) => {
 const getEventLiveStatus = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
   const liveMatch = await Match.findOne({ event: eventId, status: "live" }).select("_id").lean();
-  res.status(200).json(new ApiResponse(200, { isLive: !!liveMatch }, "Live status fetched"));
+  res.status(200).json(new ApiResponse(200, { isLive: liveMatch }, "Live status fetched"));
 });
 
 export { initMatchesFromSchedule, getEventMatches, getMatch, startMatch, addDelivery, updateMatch, submitSquad, confirmPlayingXI, getEventLiveStatus };

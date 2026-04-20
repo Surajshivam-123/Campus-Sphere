@@ -37,7 +37,7 @@ export default function ProblemEditor() {
     if (!isEdit) return;
     const load = async () => {
       try {
-        const res = await fetchWithAuth(`${API_URL}/api/v1/coding/problems/${problemId}?organizer=true`);
+        const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/${problemId}?organizer=true`);
         const data = await res.json();
         if (data?.data) setForm(data.data);
       } catch (e) {
@@ -78,8 +78,8 @@ export default function ProblemEditor() {
 
     try {
       const url = isEdit
-        ? `${API_URL}/api/v1/coding/problems/${problemId}`
-        : `${API_URL}/api/v1/coding/problems/event/${eventId}`;
+        ? `${API_URL}/api/cpsh/coding/problems/${problemId}`
+        : `${API_URL}/api/cpsh/coding/problems/event/${eventId}`;
       const method = isEdit ? "PATCH" : "POST";
 
       const res = await fetchWithAuth(url, {

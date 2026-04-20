@@ -1,6 +1,8 @@
 import asyncHandler from "../../../utils/AsyncHandler.js";
 import ApiResponse from "../../../utils/ApiResponse.js";
+import ApiError from "../../../utils/ApiError.js";
 import { Team } from "../../../models/team.model.js";
+import { Event } from "../../../models/event.model.js";
 import { Cricket_Player } from "../models/player.model.js";
 import { JoinRequest } from "../../../models/joinRequest.model.js";
 import { submitJoinRequest, respondToRequest, getPendingRequests } from "../../../services/joinRequest.service.js";
@@ -109,3 +111,34 @@ const getMyRequestStatus = asyncHandler(async (req, res) => {
 });
 
 export { requestJoinTeam, getJoinRequests, respondToJoinRequest, getMyRequestStatus };
+
+// GET /event-join-requests/:eventId — organizer fetches ALL pending team join requests for their event
+export const getEventJoinRequests = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await Event.findById(eventId).select("organizer").lean();
+    if (!event) return res.status(404).json(new ApiResponse(404, null, "Event not found"));
+    if (event.organizer.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "Only the event organizer can view all join requests");
+    }
+
+    const teams = await Team.find({ event: eventId }).select("_id name").lean();
+    const teamIds = teams.map((t) => t._id);
+
+    const requests = await JoinRequest.find({
+      type: "team",
+      team: { $in: teamIds },
+      status: "pending",
+    })
+      .populate("requester", "fullname username avatar")
+      .populate("team", "name teamCode")
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return res.status(200).json(new ApiResponse(200, requests, "Join requests fetched"));
+  } catch (error) {
+    console.log("Error fetching event join requests", error);
+    throw error;
+  }
+});

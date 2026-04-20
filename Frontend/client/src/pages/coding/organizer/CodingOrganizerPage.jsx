@@ -49,8 +49,8 @@ export default function CodingOrganizerPage() {
       try {
         const [evResult, contestRes, probRes] = await Promise.all([
           eventService.getEventById(eventId),
-          fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}`),
-          fetchWithAuth(`${API_URL}/api/v1/coding/problems/event/${eventId}?organizer=true`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/event/${eventId}?organizer=true`),
         ]);
         if (evResult?.success) setEvent(evResult.data);
         const contestData = await contestRes.json();
@@ -115,7 +115,7 @@ export default function CodingOrganizerPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    const data = await apiCall(`${API_URL}/api/v1/coding/contest/${eventId}`, "POST", form);
+    const data = await apiCall(`${API_URL}/api/cpsh/coding/contest/${eventId}`, "POST", form);
     if (data?.success) { setContest(data.data); setMsg({ text: "Settings saved.", type: "success" }); }
     else setMsg({ text: data?.message || "Failed to save.", type: "error" });
     setSaving(false);
@@ -124,7 +124,7 @@ export default function CodingOrganizerPage() {
   const handleSchedule = async () => {
     if (!scheduledInput) return setMsg({ text: "Pick a start date and time.", type: "error" });
     setScheduling(true);
-    const data = await apiCall(`${API_URL}/api/v1/coding/contest/${eventId}/schedule`, "PATCH",
+    const data = await apiCall(`${API_URL}/api/cpsh/coding/contest/${eventId}/schedule`, "PATCH",
       { scheduledStartTime: new Date(scheduledInput).toISOString() });
     if (data?.success) { setContest(data.data); setMsg({ text: "Schedule saved. Participants will see a countdown.", type: "success" }); }
     else setMsg({ text: data?.message || "Failed to schedule.", type: "error" });
@@ -133,7 +133,7 @@ export default function CodingOrganizerPage() {
 
   const handleClearSchedule = async () => {
     setScheduling(true);
-    const data = await apiCall(`${API_URL}/api/v1/coding/contest/${eventId}/schedule`, "PATCH", { scheduledStartTime: null });
+    const data = await apiCall(`${API_URL}/api/cpsh/coding/contest/${eventId}/schedule`, "PATCH", { scheduledStartTime: null });
     if (data?.success) { setContest(data.data); setScheduledInput(""); setMsg({ text: "Schedule cleared.", type: "success" }); }
     else setMsg({ text: data?.message || "Failed to clear.", type: "error" });
     setScheduling(false);
@@ -142,7 +142,7 @@ export default function CodingOrganizerPage() {
   const action = async (endpoint, confirm, successMsg, extra = {}) => {
     if (confirm && !window.confirm(confirm)) return;
     setActing(true);
-    const data = await apiCall(`${API_URL}/api/v1/coding/contest/${eventId}/${endpoint}`, "PATCH",
+    const data = await apiCall(`${API_URL}/api/cpsh/coding/contest/${eventId}/${endpoint}`, "PATCH",
       Object.keys(extra).length ? extra : undefined);
     if (data?.success) { setContest(data.data); setMsg({ text: successMsg, type: "success" }); }
     else setMsg({ text: data?.message || "Action failed.", type: "error" });
@@ -151,7 +151,7 @@ export default function CodingOrganizerPage() {
 
   const handleDeleteProblem = async (problemId) => {
     if (!window.confirm("Delete this problem?")) return;
-    await fetchWithAuth(`${API_URL}/api/v1/coding/problems/${problemId}`, { method: "DELETE" });
+    await fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/${problemId}`, { method: "DELETE" });
     setProblems((prev) => prev.filter((p) => p._id !== problemId));
   };
 

@@ -29,7 +29,7 @@ export default function ProblemManager() {
 
   const load = async () => {
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/problems/event/${eventId}?organizer=true`);
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/event/${eventId}?organizer=true`);
       const data = await res.json();
       if (data?.data) setProblems(data.data);
     } catch (e) { console.error(e); }
@@ -55,8 +55,8 @@ export default function ProblemManager() {
     setSaving(true);
     try {
       const url = editing
-        ? `${API_URL}/api/v1/coding/problems/${editing}`
-        : `${API_URL}/api/v1/coding/problems/event/${eventId}`;
+        ? `${API_URL}/api/cpsh/coding/problems/${editing}`
+        : `${API_URL}/api/cpsh/coding/problems/event/${eventId}`;
       const method = editing ? "PATCH" : "POST";
       const res = await fetchWithAuth(url, {
         method,
@@ -71,7 +71,7 @@ export default function ProblemManager() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this problem?")) return;
-    await fetchWithAuth(`${API_URL}/api/v1/coding/problems/${id}`, { method: "DELETE" });
+    await fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/${id}`, { method: "DELETE" });
     await load();
   };
 

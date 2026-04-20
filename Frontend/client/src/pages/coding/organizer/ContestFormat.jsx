@@ -22,7 +22,7 @@ export default function CodingContestFormat() {
   });
 
   useEffect(() => {
-    fetchWithAuth(`${API_URL}/api/v1/coding/format/${eventId}`)
+    fetchWithAuth(`${API_URL}/api/cpsh/coding/format/${eventId}`)
       .then((r) => r.json())
       .then((d) => {
         if (d?.data) {
@@ -53,7 +53,7 @@ export default function CodingContestFormat() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/format/${eventId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/format/${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

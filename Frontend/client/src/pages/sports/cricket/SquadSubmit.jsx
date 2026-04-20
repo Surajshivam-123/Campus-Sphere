@@ -21,7 +21,7 @@ export default function SquadSubmit() {
     const load = async () => {
       try {
         const [mRes, tRes] = await Promise.all([
-          fetch(`${API_URL}/api/v1/sports/cricket/matches/${matchId}`, { credentials: "include" }),
+          fetch(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" }),
           // profile needed to know which team is ours — we get it from team endpoint
         ]);
         const mData = await mRes.json();
@@ -30,7 +30,7 @@ export default function SquadSubmit() {
         setMatch(m);
 
         // Fetch captain's team for this event
-        const tRes2 = await fetch(`${API_URL}/api/v1/teams/get-team/${m.event}`, { credentials: "include" });
+        const tRes2 = await fetch(`${API_URL}/api/cpsh/teams/get-team/${m.event}`, { credentials: "include" });
         const tData = await tRes2.json();
         const team = tData?.data;
 
@@ -84,7 +84,7 @@ export default function SquadSubmit() {
         .filter((p) => selected.has(p.name))
         .map((p) => ({ name: p.name, playerId: p._id }));
 
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/${matchId}/submit-squad`, {
+      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}/submit-squad`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

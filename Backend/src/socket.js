@@ -1,6 +1,9 @@
 import { Server } from "socket.io";
 import { config } from "./config/index.js";
 import { activeSocketConnections } from "./utils/metrics.js";
+import { ClubMessage } from "./models/clubMessage.model.js";
+import { Club } from "./models/club.model.js";
+import { ClubMember } from "./models/clubMember.model.js";
 
 let io;
 
@@ -50,12 +53,75 @@ export const initSocket = (httpServer) => {
       socket.join(`organizer:${userId}`);
     });
 
-    // Coding contest rooms
-    socket.on("join:contest", (eventId) => {
-      socket.join(`event:${eventId}`);
+    // Founder room for club join request notifications
+    socket.on("join:founder", (userId) => {
+      socket.join(`founder:${userId}`);
     });
-    socket.on("leave:contest", (eventId) => {
-      socket.leave(`event:${eventId}`);
+
+    // Club chat rooms — only active members join via HTTP auth check first
+    socket.on("join:club:chat", (clubId) => {
+      socket.join(`club:chat:${clubId}`);
+    });
+
+    socket.on("leave:club:chat", (clubId) => {
+      socket.leave(`club:chat:${clubId}`);
+    });
+
+    // Send a chat message — save and broadcast immediately, no extra DB membership check
+    socket.on("club:chat:send", async ({ clubId, text, senderId, senderName, senderAvatar, tempId }) => {
+      try {
+        if (!clubId || !text?.trim() || !senderId) return;
+
+        const message = await ClubMessage.create({
+          club: clubId,
+          sender: senderId,
+          text: text.trim(),
+        });
+
+        const payload = {
+          _id: message._id,
+          tempId,
+          club: clubId,
+          text: message.text,
+          deleted: false,
+          createdAt: message.createdAt,
+          sender: {
+            _id: senderId,
+            fullname: senderName,
+            avatar: senderAvatar,
+          },
+        };
+
+        // Broadcast to everyone in the room including sender
+        io.to(`club:chat:${clubId}`).emit("club:chat:message", payload);
+      } catch (err) {
+        console.error("[club:chat:send] error:", err.message);
+        socket.emit("club:chat:error", { tempId, message: "Failed to send message." });
+      }
+    });
+
+    // Delete a message — sender or founder/head
+    socket.on("club:chat:delete", async ({ clubId, messageId, requesterId }) => {
+      try {
+        const message = await ClubMessage.findById(messageId);
+        if (!message || message.club.toString() !== clubId) return;
+
+        const isSender = message.sender.toString() === requesterId;
+        if (!isSender) {
+          const club = await Club.findById(clubId).select("founder").lean();
+          const isFounder = club?.founder.toString() === requesterId;
+          const isHead = await ClubMember.findOne({ club: clubId, user: requesterId, isHead: true }).lean();
+          if (!isFounder && !isHead) return;
+        }
+
+        message.deleted = true;
+        message.text = "This message was deleted.";
+        await message.save();
+
+        io.to(`club:chat:${clubId}`).emit("club:chat:deleted", { messageId });
+      } catch (err) {
+        console.error("[club:chat:delete] error:", err.message);
+      }
     });
 
     // Coding contest rooms

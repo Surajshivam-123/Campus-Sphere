@@ -41,6 +41,7 @@ import participantRouter from "./routes/participant.route.js";
 import memberRouter from "./routes/member.route.js";
 import teamRouter from "./routes/team.route.js";
 import scheduleRouter from "./routes/schedule.route.js";
+import clubRouter from "./routes/club.route.js";
 
 // Sports — Cricket
 import cricketPlayerRouter from "./sports/cricket/routes/player.route.js";
@@ -53,33 +54,23 @@ import codingProblemRouter from "./sports/coding/routes/problem.route.js";
 import codingSubmissionRouter from "./sports/coding/routes/submission.route.js";
 
 // Core routes
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/events", eventRouter);
-app.use("/api/v1/participants", participantRouter);
-app.use("/api/v1/members", memberRouter);
-app.use("/api/v1/teams", teamRouter);
-app.use("/api/v1/schedule", scheduleRouter);
-
-// Cricket routes — namespaced under /sports/cricket
-app.use("/api/v1/sports/cricket/players", cricketPlayerRouter);
-app.use("/api/v1/sports/cricket/format", cricketFormatRouter);
-app.use("/api/v1/sports/cricket/matches", cricketMatchRouter);
-
-// Coding routes — namespaced under /api/v1/coding
-app.use("/api/v1/coding/contest",     codingContestRouter);
-app.use("/api/v1/coding/problems",    codingProblemRouter);
-app.use("/api/v1/coding/submissions", codingSubmissionRouter);
-
-// Legacy routes (backward compatibility)
 app.use("/api/cpsh/users", userRouter);
 app.use("/api/cpsh/events", eventRouter);
 app.use("/api/cpsh/participants", participantRouter);
 app.use("/api/cpsh/members", memberRouter);
 app.use("/api/cpsh/teams", teamRouter);
 app.use("/api/cpsh/schedule", scheduleRouter);
+app.use("/api/cpsh/clubs", clubRouter);
+
+// Cricket routes
 app.use("/api/cpsh/cricket-players", cricketPlayerRouter);
 app.use("/api/cpsh/cricket-format", cricketFormatRouter);
 app.use("/api/cpsh/matches", cricketMatchRouter);
+
+// Coding routes
+app.use("/api/cpsh/coding/contest",     codingContestRouter);
+app.use("/api/cpsh/coding/problems",    codingProblemRouter);
+app.use("/api/cpsh/coding/submissions", codingSubmissionRouter);
 
 // Error handling
 app.use(notFound);

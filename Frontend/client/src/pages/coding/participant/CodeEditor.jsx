@@ -73,7 +73,7 @@ export default function CodeEditor({ problem, eventId, contest, mySubmissions, o
     if (!pendingId) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetchWithAuth(`${API_URL}/api/v1/coding/submissions/${pendingId}`);
+        const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/submissions/${pendingId}`);
         const data = await res.json();
         if (data?.data && !["pending", "running"].includes(data.data.status)) {
           onSubmitSuccess(data.data);
@@ -91,7 +91,7 @@ export default function CodeEditor({ problem, eventId, contest, mySubmissions, o
     setError(""); setSubmitting(true);
     try {
       const res = await fetchWithAuth(
-        `${API_URL}/api/v1/coding/submissions/event/${eventId}/problem/${problem._id}`,
+        `${API_URL}/api/cpsh/coding/submissions/event/${eventId}/problem/${problem._id}`,
         { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, language }) }
       );
       const data = await res.json();

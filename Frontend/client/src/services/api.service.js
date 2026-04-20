@@ -61,7 +61,7 @@ apiClient.interceptors.response.use(
 
       try {
         const response = await axios.post(
-          `${API_URL}/api/v1/users/refresh-token`,
+          `${API_URL}/api/cpsh/users/refresh-token`,
           {},
           { withCredentials: true }
         );

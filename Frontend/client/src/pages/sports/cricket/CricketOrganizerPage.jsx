@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFlag, FaTrophy, FaCalendarAlt, FaUsers, FaChartBar,
-  FaCopy, FaCheck, FaPenAlt, FaTrash,
+  FaCopy, FaCheck, FaPenAlt, FaTrash, FaUserClock, FaCheckCircle, FaTimesCircle,
 } from "react-icons/fa";
 import { CalendarDays, MapPin, Users } from "lucide-react";
 import fetchWithAuth from "../../../config/fetchWithAuth";
 import eventService from "../../../services/event.service";
 import API_URL from "../../../config/api";
+import socket from "../../../config/socket";
+import { useAuth } from "../../../hooks/useAuth";
 import { formatDateTime } from "../../../utils/helpers";
 import LoadingPage from "../../LoadingPage";
 
 export default function CricketOrganizerPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // ── Event state ──
   const [event, setEvent] = useState(null);
@@ -28,22 +31,29 @@ export default function CricketOrganizerPage() {
   const [matchesExist, setMatchesExist] = useState(false);
   const [initLoading, setInitLoading] = useState(false);
 
+  // ── Join requests state ──
+  const [joinRequests, setJoinRequests] = useState([]);
+  const [actingReq, setActingReq] = useState(null);
+
   useEffect(() => {
     const load = async () => {
       try {
-        const [evResult, fmtRes, schedRes, matchRes] = await Promise.all([
+        const [evResult, fmtRes, schedRes, matchRes, reqRes] = await Promise.all([
           eventService.getEventById(eventId),
-          fetch(`${API_URL}/api/v1/sports/cricket/format/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/cpsh/schedule/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/cricket-format/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/event-join-requests/${eventId}`),
         ]);
         if (evResult?.success) setEvent(evResult.data);
         const fmtData   = await fmtRes.json();
         const schedData = await schedRes.json();
         const matchData = await matchRes.json();
+        const reqData   = await reqRes.json();
         setCricketFormat(fmtData?.data || null);
         setSchedule(schedData?.data || null);
         setMatchesExist(matchData?.data?.length > 0);
+        if (reqData?.success) setJoinRequests(reqData.data || []);
       } catch (e) {
         console.error("Error loading cricket organizer page", e);
       } finally {
@@ -52,6 +62,28 @@ export default function CricketOrganizerPage() {
     };
     load();
   }, [eventId]);
+
+  // Real-time: listen for new team join requests via socket
+  useEffect(() => {
+    if (!user?._id) return;
+    if (!socket.connected) socket.connect();
+    socket.emit("join:organizer", user._id);
+
+    const onNewRequest = (data) => {
+      if (data.eventId?.toString() !== eventId?.toString()) return;
+      setJoinRequests((prev) => {
+        if (prev.some((r) => r._id === data.requestId)) return prev;
+        return [...prev, {
+          _id: data.requestId,
+          requester: { _id: data.requesterId, fullname: data.requesterName, username: data.requesterName },
+          team: { name: data.teamName, _id: data.teamId },
+        }];
+      });
+    };
+
+    socket.on("join:request", onNewRequest);
+    return () => socket.off("join:request", onNewRequest);
+  }, [user?._id, eventId]);
 
   const copyCode = (code, key) => {
     navigator.clipboard.writeText(code);
@@ -72,10 +104,27 @@ export default function CricketOrganizerPage() {
     }
   };
 
+  const handleJoinRequest = async (requestId, action) => {
+    setActingReq(requestId);
+    try {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/join-requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (data?.success) setJoinRequests((prev) => prev.filter((r) => r._id !== requestId));
+    } catch (e) {
+      console.error("Error handling join request", e);
+    } finally {
+      setActingReq(null);
+    }
+  };
+
   const handleInitMatches = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, {
+      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
         method: "POST", credentials: "include",
       });
       const data = await res.json();
@@ -207,6 +256,56 @@ export default function CricketOrganizerPage() {
           </span>
           <div className="flex-1 h-px" style={{ backgroundColor: "var(--color-border)" }} />
         </div>
+
+        {/* ── Join Requests ── */}
+        <ActionCard
+          icon={<FaUserClock style={{ color: "var(--color-gold)" }} />}
+          title={`Team Join Requests ${joinRequests.length > 0 ? `(${joinRequests.length})` : ""}`}
+          desc={joinRequests.length === 0 ? "No pending join requests." : "Players waiting to join a team."}>
+          {joinRequests.length === 0 ? null : (
+            <div className="w-full space-y-2">
+              <AnimatePresence>
+                {joinRequests.map((req) => (
+                  <motion.div
+                    key={req._id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex items-center justify-between rounded-lg px-4 py-3 border"
+                    style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+                  >
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: "var(--color-navy)" }}>
+                        {req.requester?.fullname || req.requester?.username}
+                      </p>
+                      <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                        wants to join <span className="font-medium">{req.team?.name}</span>
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleJoinRequest(req._id, "approve")}
+                        disabled={actingReq === req._id}
+                        className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium rounded disabled:opacity-50"
+                        style={{ backgroundColor: "var(--color-success)" }}
+                      >
+                        <FaCheckCircle size={10} /> Approve
+                      </button>
+                      <button
+                        onClick={() => handleJoinRequest(req._id, "reject")}
+                        disabled={actingReq === req._id}
+                        className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium rounded disabled:opacity-50"
+                        style={{ backgroundColor: "var(--color-error)" }}
+                      >
+                        <FaTimesCircle size={10} /> Reject
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+        </ActionCard>
 
         {/* ── Step 1 — Format ── */}
         <ActionCard

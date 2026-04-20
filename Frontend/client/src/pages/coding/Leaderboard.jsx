@@ -19,7 +19,7 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/submissions/event/${eventId}/leaderboard`);
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/submissions/event/${eventId}/leaderboard`);
       const data = await res.json();
       if (data?.data) { setLeaderboard(data.data); setLastUpdated(new Date()); }
     } catch (e) {
@@ -30,7 +30,7 @@ export default function Leaderboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const contestRes = await fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}`);
+        const contestRes = await fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}`);
         const contestData = await contestRes.json();
         if (contestData?.data) setContest(contestData.data);
       } catch (e) {

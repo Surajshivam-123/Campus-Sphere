@@ -91,7 +91,7 @@ export default function CricketEventPage() {
 
       // Fetch cricket format if exists
       try {
-        const fmtRes = await fetch(`${API_URL}/api/v1/sports/cricket/format/${eventId}`, {
+        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
           credentials: "include",
         });
         const fmtData = await fmtRes.json();
@@ -113,7 +113,7 @@ export default function CricketEventPage() {
 
       // Check if matches already exist (tournament started)
       try {
-        const matchRes = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}`, {
+        const matchRes = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, {
           credentials: "include",
         });
         const matchData = await matchRes.json();
@@ -205,7 +205,7 @@ export default function CricketEventPage() {
   const handleInitMatches = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/sports/cricket/matches/event/${eventId}/init`, {
+      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
         method: "POST",
         credentials: "include",
       });

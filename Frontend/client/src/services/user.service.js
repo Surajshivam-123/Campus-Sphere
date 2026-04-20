@@ -18,7 +18,7 @@ class UserService {
       formData.append("avatar", userData.avatar);
     }
 
-    return apiClient.post("/api/v1/users/register", formData, {
+    return apiClient.post("/api/cpsh/users/register", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -29,7 +29,7 @@ class UserService {
    * Login user
    */
   async login(credentials) {
-    const response = await apiClient.post("/api/v1/users/login", credentials);
+    const response = await apiClient.post("/api/cpsh/users/login", credentials);
 
     // Interceptor unwraps axios response, so shape is: { statusCode, data: { user, accessToken, refreshToken }, message }
     if (response?.data?.accessToken) {
@@ -43,7 +43,7 @@ class UserService {
    * Logout user
    */
   async logout() {
-    const response = await apiClient.post("/api/v1/users/logout");
+    const response = await apiClient.post("/api/cpsh/users/logout");
     localStorage.removeItem("accessToken");
     return response;
   }
@@ -52,14 +52,14 @@ class UserService {
    * Get current user profile
    */
   async getProfile() {
-    return apiClient.get("/api/v1/users/profile");
+    return apiClient.get("/api/cpsh/users/profile");
   }
 
   /**
    * Refresh access token
    */
   async refreshToken() {
-    const response = await apiClient.post("/api/v1/users/refresh-token");
+    const response = await apiClient.post("/api/cpsh/users/refresh-token");
     if (response.data?.accessToken) {
       localStorage.setItem("accessToken", response.data.accessToken);
     }

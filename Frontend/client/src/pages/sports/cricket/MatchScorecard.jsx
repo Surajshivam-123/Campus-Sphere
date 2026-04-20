@@ -181,7 +181,7 @@ export default function MatchScorecard() {
 
   // Initial fetch
   useEffect(() => {
-    fetch(`${API_URL}/api/v1/sports/cricket/matches/${matchId}`, { credentials: "include" })
+    fetch(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
         if (d?.data) {

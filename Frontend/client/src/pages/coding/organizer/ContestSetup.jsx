@@ -42,8 +42,8 @@ export default function ContestSetup() {
       try {
         const [evRes, contestRes, probRes] = await Promise.all([
           fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`),
-          fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}`),
-          fetchWithAuth(`${API_URL}/api/v1/coding/problems/event/${eventId}?organizer=true`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/event/${eventId}?organizer=true`),
         ]);
         const evData = await evRes.json();
         const contestData = await contestRes.json();
@@ -80,7 +80,7 @@ export default function ContestSetup() {
   const handleSave = async () => {
     setSaving(true); setMsg({ text: "", type: "" });
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -96,7 +96,7 @@ export default function ContestSetup() {
     if (!scheduledInput) return setMsg({ text: "Pick a start date and time.", type: "error" });
     setScheduling(true); setMsg({ text: "", type: "" });
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}/schedule`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}/schedule`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scheduledStartTime: new Date(scheduledInput).toISOString() }),
@@ -113,7 +113,7 @@ export default function ContestSetup() {
   const handleClearSchedule = async () => {
     setScheduling(true); setMsg({ text: "", type: "" });
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}/schedule`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}/schedule`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scheduledStartTime: null }),
@@ -131,7 +131,7 @@ export default function ContestSetup() {
   const handleStart = async () => {
     if (!window.confirm("Start the contest now? Participants will be notified.")) return;
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}/start`, { method: "PATCH" });
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}/start`, { method: "PATCH" });
       const data = await res.json();
       if (data?.success) {
         setContest(data.data);
@@ -144,7 +144,7 @@ export default function ContestSetup() {
   const handleEnd = async () => {
     if (!window.confirm("End the contest? This cannot be undone.")) return;
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/v1/coding/contest/${eventId}/end`, { method: "PATCH" });
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/contest/${eventId}/end`, { method: "PATCH" });
       const data = await res.json();
       if (data?.success) { setContest(data.data); setMsg({ text: "Contest ended.", type: "success" }); }
     } catch { setMsg({ text: "Error ending contest.", type: "error" }); }
@@ -153,7 +153,7 @@ export default function ContestSetup() {
   const handleDeleteProblem = async (problemId) => {
     if (!window.confirm("Delete this problem?")) return;
     try {
-      await fetchWithAuth(`${API_URL}/api/v1/coding/problems/${problemId}`, { method: "DELETE" });
+      await fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/${problemId}`, { method: "DELETE" });
       setProblems((prev) => prev.filter((p) => p._id !== problemId));
     } catch (e) { console.error("Error deleting problem", e); }
   };
