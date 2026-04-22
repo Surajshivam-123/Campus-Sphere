@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import LoadingPage from "../../LoadingPage";
 import API_URL from "../../../config/api";
+import fetchWithAuth from "../../../config/fetchWithAuth";
 import { formatDateTime } from "../../../utils/helpers";
 import MemberRequests from "../../MyHostedEvent/MemberRequests";
 
@@ -43,12 +44,11 @@ export default function CricketEventPage() {
     const loadEvent = async () => {
       const getsingleEvent = async () => {
         try {
-          const event = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
+          const event = await fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json"
             },
-            credentials: "include"
           })
           const result = await event.json();
           console.log("Server response", result);
@@ -61,14 +61,13 @@ export default function CricketEventPage() {
         }
       }
       getsingleEvent();
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${API_URL}/api/cpsh/members/get-member/${eventId}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include",
         }
       );
       const member = await response.json();
@@ -78,10 +77,9 @@ export default function CricketEventPage() {
 
       // Fetch teams that have participated in this event
       try {
-        const teamsRes = await fetch(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, {
+        const teamsRes = await fetchWithAuth(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
         });
         const teamsData = await teamsRes.json();
         setTeams(teamsData?.data || []);
@@ -91,9 +89,7 @@ export default function CricketEventPage() {
 
       // Fetch cricket format if exists
       try {
-        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
-          credentials: "include",
-        });
+        const fmtRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-format/${eventId}`);
         const fmtData = await fmtRes.json();
         setCricketFormat(fmtData?.data || null);
       } catch (error) {
@@ -102,9 +98,7 @@ export default function CricketEventPage() {
 
       // Fetch schedule if exists
       try {
-        const schedRes = await fetch(`${API_URL}/api/cpsh/schedule/${eventId}`, {
-          credentials: "include",
-        });
+        const schedRes = await fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}`);
         const schedData = await schedRes.json();
         setSchedule(schedData?.data || null);
       } catch (error) {
@@ -113,9 +107,7 @@ export default function CricketEventPage() {
 
       // Check if matches already exist (tournament started)
       try {
-        const matchRes = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, {
-          credentials: "include",
-        });
+        const matchRes = await fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}`);
         const matchData = await matchRes.json();
         setMatchesExist(matchData?.data?.length > 0);
       } catch (error) {
@@ -124,9 +116,7 @@ export default function CricketEventPage() {
 
       // Fetch participants for scorer assignment
       try {
-        const partRes = await fetch(`${API_URL}/api/cpsh/participants/get-all-participants/${eventId}`, {
-          credentials: "include",
-        });
+        const partRes = await fetchWithAuth(`${API_URL}/api/cpsh/participants/get-all-participants/${eventId}`);
         const partData = await partRes.json();
         setParticipants(partData?.data || []);
       } catch (error) {
@@ -135,9 +125,7 @@ export default function CricketEventPage() {
 
       // Fetch current scorer from event
       try {
-        const evRes = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
-          credentials: "include",
-        });
+        const evRes = await fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`);
         const evData = await evRes.json();
         setScorerUpdater(evData?.data?.scorerUpdater || null);
       } catch (error) {
@@ -183,16 +171,13 @@ export default function CricketEventPage() {
   };
   const handeldelete = async () => {
     if (!window.confirm("Delete this event? This cannot be undone.")) return;
-    const token = localStorage.getItem("accessToken");
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${API_URL}/api/cpsh/events/delete/${eventId}`,
       {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        credentials: "include",
       }
     );
     if (!response.ok) {
@@ -205,9 +190,8 @@ export default function CricketEventPage() {
   const handleInitMatches = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
         method: "POST",
-        credentials: "include",
       });
       const data = await res.json();
       if (res.ok) {
@@ -227,10 +211,9 @@ export default function CricketEventPage() {
   const handleAssignScorer = async (userId) => {
     setScorerLoading(userId);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/events/${eventId}/assign-scorer`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/events/${eventId}/assign-scorer`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ userId }),
       });
       const data = await res.json();
@@ -246,9 +229,8 @@ export default function CricketEventPage() {
   const handleRevokeScorer = async () => {
     setScorerLoading("revoke");
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/events/${eventId}/revoke-scorer`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/events/${eventId}/revoke-scorer`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (res.ok) setScorerUpdater(null);
     } catch (err) {
@@ -261,14 +243,13 @@ export default function CricketEventPage() {
   const handleSaveRole = async (memberId) => {
     try {
       const role = editedRoles[memberId];
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${API_URL}/api/cpsh/members/edit-role/${memberId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include",
           body: JSON.stringify({ role }),
         }
       );
