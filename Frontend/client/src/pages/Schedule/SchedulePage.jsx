@@ -2,7 +2,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaRobot, FaPenAlt, FaTrophy, FaCheckCircle, FaSpinner } from "react-icons/fa";
-import API_URL from "../../config/api";
+import API_URL from "../../config/api.js";
+import fetchWithAuth from "../../config/fetchWithAuth.js"
 
 export default function SchedulePage() {
   const { eventId } = useParams();
@@ -21,15 +22,15 @@ export default function SchedulePage() {
     const load = async () => {
       try {
         const [teamsRes, schedRes] = await Promise.all([
-          fetch(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/cpsh/schedule/${eventId}`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}`),
         ]);
         const teamsData = await teamsRes.json();
         const schedData = await schedRes.json();
         setTeams(teamsData?.data || []);
         if (schedData?.data) setSchedule(schedData.data);
         try {
-          const matchRes = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" });
+          const matchRes = await fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}`);
           const matchData = await matchRes.json();
           setMatchesExist(matchData?.data?.length > 0);
         } catch { /* ignore */ }
@@ -41,7 +42,7 @@ export default function SchedulePage() {
   const handleAIGenerate = async () => {
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/schedule/${eventId}/ai`, { method: "POST", credentials: "include" });
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}/ai`, { method: "POST"});
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to generate schedule");
       setSchedule(data.data); setSaved(true);
@@ -54,8 +55,8 @@ export default function SchedulePage() {
     if (!valid) { setError("Each match needs two different teams selected."); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/schedule/${eventId}/manual`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}/manual`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matches: manualMatches }),
       });
       const data = await res.json();
@@ -73,7 +74,7 @@ export default function SchedulePage() {
   const handleInitMatches = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, { method: "POST", credentials: "include" });
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, { method: "POST"});
       const data = await res.json();
       if (res.ok) { setMatchesExist(true); navigate(`/sports/cricket/scoreboard/${eventId}`); }
       else setError(data.message || "Failed to initialize matches");

@@ -14,10 +14,8 @@ import API_URL from "../../config/api";
 import { formatDateTime } from "../../utils/helpers";
 import LoadingPage from "../LoadingPage";
 
-// â”€â”€ Shared label style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const LabelCls = "block text-xs font-medium mb-2 uppercase tracking-wider";
 
-// â”€â”€ Avatar helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Avatar({ user, size = 8 }) {
   const initials = (user?.fullname || user?.username || "?").charAt(0).toUpperCase();
   return user?.avatar ? (
@@ -35,8 +33,6 @@ function Avatar({ user, size = 8 }) {
     </div>
   );
 }
-
-// â”€â”€ Members tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MembersTab({ eventId }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);

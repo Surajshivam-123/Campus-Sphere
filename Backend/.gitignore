@@ -78,10 +78,6 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -140,5 +136,6 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
+.env.example
 
 # End of https://www.toptal.com/developers/gitignore/api/node

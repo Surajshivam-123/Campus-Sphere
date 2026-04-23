@@ -13,7 +13,6 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Holds the forceLogout callback registered by AuthProvider
 let forceLogoutHandler = null;
 
 export function setForceLogoutHandler(fn) {
@@ -24,7 +23,6 @@ function triggerForceLogout() {
   if (forceLogoutHandler) {
     forceLogoutHandler();
   } else {
-    // Fallback before AuthProvider mounts
     localStorage.removeItem("accessToken");
     window.location.replace("/login");
   }
