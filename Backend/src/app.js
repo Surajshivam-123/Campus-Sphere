@@ -12,7 +12,25 @@ const app = express();
 // Middlewares
 app.use(
   cors({
-    origin: config.cors.origins,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (Postman, server-to-server, mobile apps)
+      if (!origin) return callback(null, true);
+
+      // Check against the static whitelist
+      if (config.cors.origins.includes(origin)) return callback(null, true);
+
+      // Allow Vercel preview/branch deploys that share the same project prefix
+      // e.g. if FRONTEND_ORIGIN contains "campus-sphere…vercel.app",
+      //       then "campus-sphere-git-feat-xyz…vercel.app" is also accepted.
+      if (origin.endsWith(".vercel.app")) {
+        const hasVercel = config.cors.origins.some((o) =>
+          o.includes(".vercel.app")
+        );
+        if (hasVercel) return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
