@@ -50,8 +50,8 @@ export const config = {
   // CORS
   cors: {
     origins: [
-      process.env.FRONTEND_ORIGIN,
-      process.env.FRONTEND_ORIGIN_WITH_PATH,
+      (process.env.FRONTEND_ORIGIN || "").split(",").map((s) => s.trim()),
+      ...(process.env.FRONTEND_ORIGIN_WITH_PATH || "").split(",").map((s) => s.trim()),
       "http://localhost",
       "http://localhost:5173",
       "http://localhost:4173", // Vite preview

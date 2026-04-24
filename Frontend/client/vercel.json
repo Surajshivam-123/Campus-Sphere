@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://campus-sphere-nn6h.onrender.com/api/$1" },
     { "source": "/((?!api).*)", "destination": "/index.html" }
   ]
 }
