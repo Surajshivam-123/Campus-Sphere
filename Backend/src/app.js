@@ -16,18 +16,24 @@ app.use(
       // Allow requests with no origin (Postman, server-to-server, mobile apps)
       if (!origin) return callback(null, true);
 
-      // Check against the static whitelist
+      // Check against the static whitelist (FRONTEND_ORIGIN + localhost)
       if (config.cors.origins.includes(origin)) return callback(null, true);
 
-      // Allow Vercel preview/branch deploys that share the same project prefix
-      // e.g. if FRONTEND_ORIGIN contains "campus-sphere…vercel.app",
-      //       then "campus-sphere-git-feat-xyz…vercel.app" is also accepted.
+      // Allow Vercel preview/branch deploys when any vercel.app origin is whitelisted
       if (origin.endsWith(".vercel.app")) {
         const hasVercel = config.cors.origins.some((o) =>
           o.includes(".vercel.app")
         );
         if (hasVercel) return callback(null, true);
       }
+
+      // Fallback: when no production origins are configured (only localhost
+      // entries), reflect the requesting origin so the app works out of the box.
+      // Set FRONTEND_ORIGIN on the server for stricter production security.
+      const hasProductionOrigin = config.cors.origins.some(
+        (o) => !o.includes("localhost")
+      );
+      if (!hasProductionOrigin) return callback(null, true);
 
       callback(new Error("Not allowed by CORS"));
     },
