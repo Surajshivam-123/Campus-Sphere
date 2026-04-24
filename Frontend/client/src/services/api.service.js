@@ -53,8 +53,16 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle 401 Unauthorized — attempt token refresh once
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (!error.response) {
+      const message =
+        error.code === "ECONNABORTED"
+          ? "Request timed out. The server may be starting up — please try again in a moment."
+          : "Unable to reach the server. Please check your connection and try again.";
+      return Promise.reject({ message, status: undefined, errors: undefined });
+    }
+    const isAuthEndpoint = originalRequest.url?.includes("/login") || originalRequest.url?.includes("/register");
+
+    if (error.response.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
@@ -86,7 +94,7 @@ apiClient.interceptors.response.use(
 
     return Promise.reject({
       message: errorMessage,
-      status: error.response?.status,   // undefined on network errors
+      status: error.response?.status,  
       errors: error.response?.data?.errors,
     });
   }
