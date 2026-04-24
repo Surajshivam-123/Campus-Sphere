@@ -47,10 +47,10 @@ export const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 
-  // CORS
+  // CORS — FRONTEND_ORIGIN accepts comma-separated URLs
   cors: {
     origins: [
-      (process.env.FRONTEND_ORIGIN || "").split(",").map((s) => s.trim()),
+      ...(process.env.FRONTEND_ORIGIN || "").split(",").map((s) => s.trim()),
       ...(process.env.FRONTEND_ORIGIN_WITH_PATH || "").split(",").map((s) => s.trim()),
       "http://localhost",
       "http://localhost:5173",
