@@ -6,7 +6,6 @@ import API_URL from "../config/api";
  */
 const apiClient = axios.create({
   baseURL: API_URL,
-  timeout: 5000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -53,6 +52,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // No response at all — network-level failure (CORS block, DNS, server down, etc.)
     if (!error.response) {
       const message =
         error.code === "ECONNABORTED"
@@ -60,6 +60,9 @@ apiClient.interceptors.response.use(
           : "Unable to reach the server. Please check your connection and try again.";
       return Promise.reject({ message, status: undefined, errors: undefined });
     }
+
+    // Handle 401 Unauthorized — attempt token refresh once
+    // Skip refresh for auth endpoints (login, register) — there is no session yet
     const isAuthEndpoint = originalRequest.url?.includes("/login") || originalRequest.url?.includes("/register");
 
     if (error.response.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
@@ -94,7 +97,7 @@ apiClient.interceptors.response.use(
 
     return Promise.reject({
       message: errorMessage,
-      status: error.response?.status,  
+      status: error.response?.status,
       errors: error.response?.data?.errors,
     });
   }
