@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import API_URL from "../config/api";
-
+import fetchWithAuth from "../config/fetchWithAuth.js";
 /**
  * Custom hook to fetch participant data for an event
  * @param {string} eventId - Event ID
@@ -21,7 +21,7 @@ export const useEventParticipant = (eventId) => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${API_URL}/api/cpsh/participants/get-single-participant/${eventId}`,
         {
           method: "GET",

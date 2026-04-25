@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import API_URL from "../../config/api";
 import { formatDateTime } from "../../utils/helpers";
 import useIsLive from "../../hooks/useIsLive";
+import fetchWithAuth from "../../config/fetchWithAuth.js";
 
 export default function EventCard({ event, variant = "basic", additionalData = {}, index = 0, onLeave }) {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function EventCard({ event, variant = "basic", additionalData = {
     if (!window.confirm("Are you sure you want to leave this event?")) return;
     setLeaving(true);
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${API_URL}/api/cpsh/participants/delete-participant/${additionalData.participantId}`,
         { method: "DELETE", credentials: "include" }
       );
