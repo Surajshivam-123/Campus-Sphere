@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import API_URL from "../config/api";
-
+import fetchWithAuth from "../config/fetchWithAuth.js";
 /**
  * Returns whether the current logged-in user is the assigned scorer for an event.
  * @param {string} eventId
@@ -15,8 +15,8 @@ export default function useScorerRole(eventId) {
     const check = async () => {
       try {
         const [eventRes, profileRes] = await Promise.all([
-          fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/cpsh/users/profile`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/users/profile`),
         ]);
         const eventData = await eventRes.json();
         const profileData = await profileRes.json();
