@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import API_URL from "../../config/api";
+import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function JoinClub() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function JoinClub() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/clubs/join/${code}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/clubs/join/${code}`, {
         method: "POST",
         credentials: "include",
       });
