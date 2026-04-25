@@ -28,7 +28,6 @@ export const useEventParticipant = (eventId) => {
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include",
         }
       );
 

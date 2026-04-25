@@ -13,6 +13,7 @@ import useScorerRole from "../../../../hooks/useScorerRole";
 import useIsLive from "../../../../hooks/useIsLive";
 import socket from "../../../../config/socket";
 import { useAuth } from "../../../../hooks/useAuth";
+import fetchWithAuth from "../../../../config/fetchWithAuth";
 
 export default function TeamCreatorPage() {
   const navigate = useNavigate();
@@ -44,9 +45,9 @@ export default function TeamCreatorPage() {
       try {
         // Fetch event, team, and matches all at once
         const [evRes, teamRes, matchRes] = await Promise.all([
-          fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/cpsh/teams/get-team/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/teams/get-team/${eventId}`),
+          fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}`),
         ]);
 
         const evData = await evRes.json();
@@ -84,7 +85,7 @@ export default function TeamCreatorPage() {
 
         // Fetch pending join requests for captain
         try {
-          const reqRes = await fetch(`${API_URL}/api/cpsh/cricket-players/join-requests/${eventId}`, {
+          const reqRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/join-requests/${eventId}`, {
             credentials: "include",
           });
           const reqData = await reqRes.json();
@@ -129,7 +130,7 @@ export default function TeamCreatorPage() {
       const formData = new FormData();
       formData.append("name", teamName);
       if (teamlogo instanceof File) formData.append("teamlogo", teamlogo);
-      const res = await fetch(`${API_URL}/api/cpsh/teams/update-team/${eventId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/teams/update-team/${eventId}`, {
         method: "PATCH", credentials: "include", body: formData,
       });
       const result = await res.json();
@@ -143,8 +144,8 @@ export default function TeamCreatorPage() {
 
   const handleDeleteTeam = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/teams/delete-team/${eventId}`, {
-        method: "DELETE", credentials: "include",
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/teams/delete-team/${eventId}`, {
+        method: "DELETE"
       });
       const result = await res.json();
       if (result?.success) navigate(-1);
@@ -169,10 +170,9 @@ export default function TeamCreatorPage() {
         .filter((p) => squadSelected.has(p.name))
         .map((p) => ({ name: p.name, playerId: p._id }));
 
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${pendingMatch._id}/submit-squad`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${pendingMatch._id}/submit-squad`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ teamName: teamdata.name, players }),
       });
       const data = await res.json();
@@ -191,8 +191,8 @@ export default function TeamCreatorPage() {
 
   const handleRemovePlayer = async (playerId) => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/cricket-players/remove-player/${playerId}`, {
-        method: "DELETE", credentials: "include",
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/remove-player/${playerId}`, {
+        method: "DELETE"
       });
       const result = await res.json();
       if (result?.success) {
@@ -207,10 +207,9 @@ export default function TeamCreatorPage() {
   const handleRespondRequest = async (requestId, action) => {
     setRespondingId(requestId);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/cricket-players/join-requests/${requestId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-players/join-requests/${requestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ action }),
       });
       const result = await res.json();
@@ -218,7 +217,7 @@ export default function TeamCreatorPage() {
         setJoinRequests((prev) => prev.filter((r) => r._id !== requestId));
         if (action === "approve") {
           // Refresh team data to show new player
-          const teamRes = await fetch(`${API_URL}/api/cpsh/teams/get-team/${eventId}`, { credentials: "include" });
+          const teamRes = await fetchWithAuth(`${API_URL}/api/cpsh/teams/get-team/${eventId}`, { credentials: "include" });
           const teamData = await teamRes.json();
           if (teamData?.data) {
             setTeamdata(teamData.data);
