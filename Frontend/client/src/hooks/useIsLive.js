@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import API_URL from "../config/api";
-
+import fetchWithAuth from "../config/fetchWithAuth"
 /**
  * Polls the backend to check if any match in the event is currently live.
  * @param {string} eventId
@@ -14,7 +14,7 @@ export default function useIsLive(eventId) {
     if (!eventId) { setLoading(false); return; }
 
     const check = () =>
-      fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/is-live`, { credentials: "include" })
+      fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}/is-live`, { credentials: "include" })
         .then((r) => r.json())
         .then((res) => setIsLive(!!res?.data?.isLive))
         .catch(() => setIsLive(false))

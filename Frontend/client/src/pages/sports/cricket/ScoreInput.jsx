@@ -5,7 +5,7 @@ import { FaArrowLeft, FaCircle, FaCheckCircle } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
 import API_URL from "../../../config/api";
 import socket from "../../../config/socket";
-
+import fetchWithAuth from "../../../config/fetchWithAuth"
 // ── Toss Setup ────────────────────────────────────────────────────────────────
 function TossSetup({ match, onStart }) {
   const [tossWinner, setTossWinner] = useState(match.team1);
@@ -545,14 +545,14 @@ export default function ScoreInput() {
 
   const fetchMatch = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" });
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" });
       const data = await res.json();
       if (data?.data) {
         setMatch(data.data);
         const eventId = data.data.event;
         const [eventRes, profileRes] = await Promise.all([
-          fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, { credentials: "include" }),
-          fetch(`${API_URL}/api/cpsh/users/profile`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/users/profile`, { credentials: "include" }),
         ]);
         const eventData = await eventRes.json();
         const profileData = await profileRes.json();
@@ -585,10 +585,9 @@ export default function ScoreInput() {
 
   const handleStartMatch = async (tossData) => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}/start`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}/start`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(tossData),
       });
       const data = await res.json();
@@ -598,10 +597,9 @@ export default function ScoreInput() {
 
   const handleConfirmXI = async (xiData) => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}/confirm-xi`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}/confirm-xi`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(xiData),
       });
       const data = await res.json();
@@ -612,10 +610,9 @@ export default function ScoreInput() {
 
   const handleDelivery = async (deliveryData) => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}/delivery`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}/delivery`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(deliveryData),
       });
       const data = await res.json();
@@ -631,10 +628,9 @@ export default function ScoreInput() {
 
   const handleResumeMatch = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ status: "live" }),
       });
       const data = await res.json();
@@ -645,10 +641,9 @@ export default function ScoreInput() {
 
   const handleAbandonMatch = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ status: "abandoned" }),
       });
       const data = await res.json();

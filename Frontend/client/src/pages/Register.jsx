@@ -42,7 +42,6 @@ export default function Register() {
     try {
       const response = await fetch(`${API_URL}/api/cpsh/users/register`, {
         method: "POST",
-        credentials: "include",
         body: formData,
       });
       const result = await response.json();

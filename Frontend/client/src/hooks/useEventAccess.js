@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import API_URL from "../config/api";
-
+import fetchWithAuth from "../config/fetchWithAuth.js"
 /**
  * Checks if the logged-in user has access to an event's matches.
  * Access = organiser | member | participant | cricket player in that event.

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTrophy, FaCheckCircle } from "react-icons/fa";
 import API_URL from "../../../config/api";
-
+import fetchWithAuth from "../../../config/fetchWithAuth"
 const TOURNAMENT_TYPES = ["Knockout", "League", "Round Robin", "Double Elimination"];
 
 export default function CreateCricketFormat({ viewOnly = false }) {
@@ -21,13 +21,13 @@ export default function CreateCricketFormat({ viewOnly = false }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const teamsRes = await fetch(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, {
+        const teamsRes = await fetchWithAuth(`${API_URL}/api/cpsh/teams/get-event-teams/${eventId}`, {
           credentials: "include",
         });
         const teamsData = await teamsRes.json();
         setTeams(teamsData?.data || []);
 
-        const fmtRes = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
+        const fmtRes = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
           credentials: "include",
         });
         const fmtData = await fmtRes.json();
@@ -49,7 +49,7 @@ export default function CreateCricketFormat({ viewOnly = false }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/cricket-format/${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

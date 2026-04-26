@@ -124,7 +124,7 @@ export default function CricketOrganizerPage() {
   const handleInitMatches = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}/init`, {
         method: "POST", credentials: "include",
       });
       const data = await res.json();

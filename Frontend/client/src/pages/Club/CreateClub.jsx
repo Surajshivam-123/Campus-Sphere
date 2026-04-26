@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
 import API_URL from "../../config/api";
+import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function CreateClub() {
   const navigate = useNavigate();
@@ -49,9 +50,8 @@ export default function CreateClub() {
       formData.append("isPublic", form.isPublic);
       if (logo) formData.append("logo", logo);
 
-      const res = await fetch(`${API_URL}/api/cpsh/clubs/create`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/clubs/create`, {
         method: "POST",
-        credentials: "include",
         body: formData,
       });
       const data = await res.json();

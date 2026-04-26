@@ -56,10 +56,9 @@ function MembersTab({ eventId }) {
 
   const handleSaveRole = async (memberId) => {
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/members/edit-role/${memberId}`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/members/edit-role/${memberId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ role: editedRoles[memberId] }),
       });
       const result = await res.json();
@@ -189,9 +188,7 @@ function ParticipantsTab({ eventId }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/cpsh/participants/get-all-participants/${eventId}`, {
-          credentials: "include",
-        });
+        const res = await fetchWithAuth(`${API_URL}/api/cpsh/participants/get-all-participants/${eventId}`);
         const data = await res.json();
         if (data?.data) setParticipants(data.data);
       } catch (e) {

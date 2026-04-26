@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowLeft, FaCheckCircle, FaUsers } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
 import API_URL from "../../../config/api";
-
+import fetchWithAuth from "../../../config/fetchWithAuth"
 export default function SquadSubmit() {
   const { matchId } = useParams();
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function SquadSubmit() {
     const load = async () => {
       try {
         const [mRes, tRes] = await Promise.all([
-          fetch(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" }),
+          fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" }),
           // profile needed to know which team is ours — we get it from team endpoint
         ]);
         const mData = await mRes.json();
@@ -30,7 +30,7 @@ export default function SquadSubmit() {
         setMatch(m);
 
         // Fetch captain's team for this event
-        const tRes2 = await fetch(`${API_URL}/api/cpsh/teams/get-team/${m.event}`, { credentials: "include" });
+        const tRes2 = await fetchWithAuth(`${API_URL}/api/cpsh/teams/get-team/${m.event}`);
         const tData = await tRes2.json();
         const team = tData?.data;
 
@@ -84,10 +84,9 @@ export default function SquadSubmit() {
         .filter((p) => selected.has(p.name))
         .map((p) => ({ name: p.name, playerId: p._id }));
 
-      const res = await fetch(`${API_URL}/api/cpsh/matches/${matchId}/submit-squad`, {
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}/submit-squad`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ teamName: myTeam.name, players }),
       });
       const data = await res.json();

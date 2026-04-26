@@ -24,10 +24,11 @@ export default function TeamMemberPage() {
   const [error, setError] = useState("");
   const { isScorer } = useScorerRole(eventId);
   const { isLive } = useIsLive(eventId);
+
   useEffect(() => {
     const load = async () => {
       try {
-        const evRes = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
+        const evRes = await fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
           method: "GET", headers: { "Content-Type": "application/json" }, credentials: "include",
         });
         const evData = await evRes.json();

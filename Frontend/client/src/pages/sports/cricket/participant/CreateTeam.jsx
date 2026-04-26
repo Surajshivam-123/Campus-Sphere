@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import API_URL from "../../../../config/api";
-
+import fetchWithAuth from "../../../../config/fetchWithAuth.js"
 export default function CreateTeamPage() {
   const navigate = useNavigate();
   const { eventId } = useParams();
@@ -19,8 +19,8 @@ export default function CreateTeamPage() {
       const formData = new FormData();
       formData.append("name", teamName);
       if (teamlogo) formData.append("teamlogo", teamlogo);
-      const res = await fetch(`${API_URL}/api/cpsh/teams/create-team/${eventId}`, {
-        method: "POST", credentials: "include", body: formData,
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/teams/create-team/${eventId}`, {
+        method: "POST", body: formData,
       });
       const result = await res.json();
       if (result?.success) {

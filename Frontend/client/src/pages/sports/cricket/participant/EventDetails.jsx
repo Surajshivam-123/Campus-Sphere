@@ -26,8 +26,8 @@ export default function CricketEventDetailsPageParticipant() {
     const load = async () => {
       // Load event
       try {
-        const evRes = await fetch(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
-          method: "GET", headers: { "Content-Type": "application/json" }, credentials: "include",
+        const evRes = await fetchWithAuth(`${API_URL}/api/cpsh/events/get-single-event/${eventId}`, {
+          method: "GET", headers: { "Content-Type": "application/json" }
         });
         const evData = await evRes.json();
         setEvent(evData?.data);

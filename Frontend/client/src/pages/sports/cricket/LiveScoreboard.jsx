@@ -7,7 +7,7 @@ import API_URL from "../../../config/api";
 import socket from "../../../config/socket";
 import useEventAccess from "../../../hooks/useEventAccess";
 import { formatDate } from "../../../utils/helpers";
-
+import fetchWithAuth from "../../../config/fetchWithAuth"
 const STATUS_COLOR = {
   live: "text-green-500",
   upcoming: "text-yellow-500",
@@ -86,7 +86,7 @@ export default function LiveScoreboard() {
   // Initial fetch — only if access granted
   useEffect(() => {
     if (!access) return;
-    fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" })
+    fetchWithAuth(`${API_URL}/api/cpsh/matches/event/${eventId}`)
       .then((r) => r.json())
       .then((d) => { if (d?.data) setMatches(d.data); })
       .catch(console.log)

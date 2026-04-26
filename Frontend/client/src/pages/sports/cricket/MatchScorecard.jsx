@@ -6,6 +6,7 @@ import { MdSportsCricket } from "react-icons/md";
 import API_URL from "../../../config/api";
 import socket from "../../../config/socket";
 import useEventAccess from "../../../hooks/useEventAccess";
+import fetchWithAuth from "../../../config/fetchWithAuth"
 
 function InningsTable({ innings, label }) {
   if (!innings?.battingTeam) return null;
@@ -181,7 +182,7 @@ export default function MatchScorecard() {
 
   // Initial fetch
   useEffect(() => {
-    fetch(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" })
+    fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
         if (d?.data) {
