@@ -340,7 +340,7 @@ export default function ClubChat() {
   return (
     <div
       className="flex flex-col"
-      style={{ height: "100dvh", backgroundColor: "var(--color-bg)" }}
+      style={{ height: "calc(100dvh - 6rem)", backgroundColor: "var(--color-bg)" }}
     >
       {/* ── Header ── */}
       <div
@@ -368,7 +368,7 @@ export default function ClubChat() {
         )}
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: "var(--color-navy)" }}>
+          <p className="text-lg font-bold truncate text-navy">
             {club?.name || "Club Chat"}
           </p>
           <p className="text-xs truncate" style={{ color: "var(--color-text-muted)" }}>

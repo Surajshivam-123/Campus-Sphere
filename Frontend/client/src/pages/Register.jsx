@@ -66,18 +66,11 @@ export default function Register() {
   ];
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center py-10 px-4"
-      style={{ backgroundColor: "var(--color-bg)" }}
-    >
-      <div
-        className="rounded-lg shadow-sm p-8 w-full max-w-md border"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
-        <h2
-          className="font-heading text-2xl font-semibold text-center mb-6 tracking-tight"
-          style={{ color: "var(--color-navy)" }}
-        >
+    <div className="min-h-screen flex items-center justify-center py-10 px-4 animated-bg">
+      <div className="card glass overflow-hidden w-full max-w-lg p-8 border border-white/10 shadow-2xl relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent z-0 rounded-lg pointer-events-none"></div>
+        <div className="relative z-10">
+        <h2 className="font-heading text-3xl font-bold text-center mb-8 tracking-tight text-navy">
           Create an account
         </h2>
 
@@ -167,12 +160,13 @@ export default function Register() {
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-center" style={{ color: "var(--color-text-muted)" }}>
+        <p className="mt-8 text-sm text-center text-secondary">
           Already have an account?{" "}
-          <Link to="/login" className="font-medium hover:underline" style={{ color: "var(--color-gold)" }}>
+          <Link to="/login" className="font-bold hover:underline text-gold">
             Sign in
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

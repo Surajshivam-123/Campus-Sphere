@@ -5,16 +5,12 @@ export default function IamChoice() {
   const navigate = useNavigate();
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-bg)" }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 animated-bg">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="rounded-lg shadow-sm p-10 w-full max-w-md text-center space-y-8 border"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        className="card glass p-10 w-full max-w-md text-center space-y-8"
       >
         <h1
           className="font-heading text-3xl font-semibold tracking-tight"

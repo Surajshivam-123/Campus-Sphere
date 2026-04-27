@@ -1,56 +1,64 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function Body() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div
-      className="pt-28 min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-bg)" }}
-    >
-      <h1
-        className="font-heading text-4xl font-semibold mb-12 text-center tracking-tight"
-        style={{ color: "var(--color-navy)" }}
+    <div className="pt-12 pb-20 min-h-screen flex flex-col items-center px-4 bg-page">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="font-heading text-4xl md:text-5xl font-bold mb-16 text-center tracking-tight text-navy"
       >
         What would you like to do?
-      </h1>
+      </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full"
+      >
         {[
           { to: "/choice",       title: "Participate",   desc: "Register for exciting campus events and contests." },
           { to: "/new-events-hosted", title: "Host",      desc: "Create and manage your own coding or sports events." },
           { to: "/clubs",        title: "Browse Clubs",   desc: "Discover and join campus clubs that match your interests." },
           { to: "/clubs/join",   title: "Join a Club",    desc: "Have a club code? Join any public or private club instantly." },
           { to: "/clubs/create", title: "Create a Club",  desc: "Found a new campus club and build your community." },
-        ].map(({ to, title, desc }) => (
-          <Link
-            key={to}
-            to={to}
-            className="rounded-lg p-8 text-center transition-all duration-200 group border"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 50%, transparent)";
-              e.currentTarget.style.boxShadow = "0 4px 12px color-mix(in srgb, var(--color-gold) 10%, transparent)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--color-border)";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          >
-            <div
-              className="h-0.5 mx-auto mb-4 transition-all duration-200 group-hover:w-16"
-              style={{ width: "3rem", backgroundColor: "var(--color-gold)" }}
-            />
-            <h2
-              className="font-heading text-2xl font-semibold mb-2"
-              style={{ color: "var(--color-navy)" }}
+        ].map(({ to, title, desc }, idx) => (
+          <motion.div key={to} variants={itemVariants} className="h-full">
+            <Link
+              to={to}
+              className="card flex flex-col items-center justify-center h-full p-8 text-center group"
             >
-              {title}
-            </h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-              {desc}
-            </p>
-          </Link>
+              <div
+                className="h-1 rounded-full mb-6 transition-all duration-300 w-12 group-hover:w-24 bg-gold"
+              />
+              <h2 className="font-heading text-2xl font-semibold mb-3 text-navy group-hover:gradient-text transition-colors duration-300">
+                {title}
+              </h2>
+              <p className="text-secondary leading-relaxed">
+                {desc}
+              </p>
+            </Link>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

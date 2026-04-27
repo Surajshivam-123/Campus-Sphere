@@ -5,10 +5,7 @@ export default function AllEvents() {
   const navigate = useNavigate();
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-bg)" }}
-    >
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 animated-bg">
       <motion.h1
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -23,8 +20,7 @@ export default function AllEvents() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="rounded-lg shadow-sm p-8 w-full max-w-lg space-y-6 border"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        className="card glass p-8 w-full max-w-lg space-y-6"
       >
         <div className="text-center">
           <h2

@@ -77,37 +77,29 @@ export default function Login() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-bg)" }}
-    >
-      <div
-        className="rounded-lg shadow-sm overflow-hidden w-full max-w-5xl flex flex-col md:flex-row border"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
+    <div className="min-h-screen flex items-center justify-center p-4 animated-bg">
+      <div className="card glass overflow-hidden w-full max-w-4xl flex flex-col md:flex-row border border-white/10 shadow-2xl">
         {/* Left: Branding */}
-        <div
-          className="w-full md:w-1/2 p-10 flex flex-col justify-center items-center text-center"
-          style={{ backgroundColor: "var(--color-navy)" }}
-        >
-          <img
-            src={logo}
-            alt="Campus Sphere Logo"
-            className="rounded-md w-24 h-24 object-cover border"
-            style={{ borderColor: "color-mix(in srgb, var(--color-gold) 30%, transparent)" }}
-          />
-          <p className="mt-4 text-sm leading-relaxed max-w-xs" style={{ color: "#e8e6e1" }}>
-            Organize, participate, and celebrate campus events seamlessly.
-          </p>
-          <div className="mt-6 w-12 h-px" style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 50%, transparent)" }} />
+        <div className="w-full md:w-1/2 p-12 flex flex-col justify-center items-center text-center bg-navy relative overflow-hidden">
+          {/* Subtle gradient overlay on branding side */}
+          <div className="absolute inset-0 bg-gradient-to-br from-navy to-navy-light opacity-90 z-0"></div>
+          <div className="relative z-10 flex flex-col items-center">
+            <img
+              src={logo}
+              alt="Campus Sphere Logo"
+              className="rounded-xl w-32 h-32 object-cover border-2 shadow-xl border-white/20 mb-6"
+            />
+            <h1 className="font-heading text-3xl font-bold text-white mb-3">Welcome Back!</h1>
+            <p className="text-sm leading-relaxed max-w-xs text-blue-100/80">
+              Organize, participate, and celebrate campus events seamlessly.
+            </p>
+            <div className="mt-8 w-16 h-1 rounded-full bg-gold" />
+          </div>
         </div>
 
         {/* Right: Form */}
         <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
-          <h2
-            className="font-heading text-2xl font-semibold mb-6 tracking-tight"
-            style={{ color: "var(--color-navy)" }}
-          >
+          <h2 className="font-heading text-3xl font-bold mb-8 tracking-tight text-navy">
             Sign in to your account
           </h2>
 

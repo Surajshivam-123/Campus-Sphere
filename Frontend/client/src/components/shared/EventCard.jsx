@@ -56,11 +56,6 @@ export default function EventCard({ event, variant = "basic", additionalData = {
     }
   };
 
-  const cardStyle = {
-    backgroundColor: "var(--color-surface)",
-    borderColor: "var(--color-border)",
-  };
-
   const liveButton = isLive && (
     <button
       onClick={(e) => { e.stopPropagation(); navigate(`/sports/cricket/scoreboard/${event._id}`); }}
@@ -76,14 +71,10 @@ export default function EventCard({ event, variant = "basic", additionalData = {
 
   return (
     <motion.div
-      className="rounded-lg border transition-colors"
-      style={cardStyle}
-      whileHover={{ scale: 1.01 }}
+      className="card flex flex-col justify-between"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
-      onMouseEnter={(e) => e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 40%, transparent)"}
-      onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--color-border)"}
+      transition={{ delay: index * 0.05, duration: 0.5, ease: "easeOut" }}
     >
       <div className="p-6 cursor-pointer" onClick={handleClick}>
         {event.festivalName && event.festivalName !== "" && (

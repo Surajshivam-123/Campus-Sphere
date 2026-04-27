@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import { useAuth } from "../hooks/useAuth";
@@ -71,11 +72,28 @@ import MyClubs from "../pages/Club/MyClubs";
 import JoinClub from "../pages/Club/JoinClub";
 import ClubChat from "../pages/Club/ClubChat";
 
-export default function AppRoutes() {
+const PageLayout = () => {
   return (
-    <Routes>
-      {/* Root — show landing page to guests, redirect authenticated users to /home */}
-      <Route path="/" element={<PublicRoute landing><Front /></PublicRoute>} />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-full h-full"
+    >
+      <Outlet />
+    </motion.div>
+  );
+};
+
+export default function AppRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route element={<PageLayout />}>
+          {/* Root — show landing page to guests, redirect authenticated users to /home */}
+          <Route path="/" element={<PublicRoute landing><Front /></PublicRoute>} />
 
       {/* Public-only Routes (redirect to /home if already logged in) */}
       <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />
@@ -146,8 +164,10 @@ export default function AppRoutes() {
       <Route path="/clubs/:clubId"            element={<ClubDetail />} />
       <Route path="/my-clubs"                 element={<ProtectedRoute><MyClubs /></ProtectedRoute>} />
 
-      {/* Catch-all — any unknown URL redirects to login */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+          {/* Catch-all — any unknown URL redirects to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
   );
 }
