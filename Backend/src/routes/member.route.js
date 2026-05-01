@@ -32,4 +32,18 @@ memberRouter.route("/edit-role/:memberId").patch(verifyJWT, editRole);
 // Get all members of an event
 memberRouter.route("/get-member/:eventId").get(verifyJWT, getMember);
 
+// Check if current user is a member of an event
+memberRouter.route("/check/:eventId").get(verifyJWT, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user._id;
+    const member = await import("../models/members.model.js").then(m => 
+      m.Member.findOne({ event: eventId, owner: userId }).lean()
+    );
+    res.json({ success: true, isMember: !!member });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default memberRouter;

@@ -42,6 +42,8 @@ import memberRouter from "./routes/member.route.js";
 import teamRouter from "./routes/team.route.js";
 import scheduleRouter from "./routes/schedule.route.js";
 import clubRouter from "./routes/club.route.js";
+import eventMessageRouter from "./routes/eventMessage.route.js";
+import teamMessageRouter from "./routes/teamMessage.route.js";
 
 // Sports — Cricket
 import cricketPlayerRouter from "./sports/cricket/routes/player.route.js";
@@ -61,6 +63,8 @@ app.use("/api/cpsh/members", memberRouter);
 app.use("/api/cpsh/teams", teamRouter);
 app.use("/api/cpsh/schedule", scheduleRouter);
 app.use("/api/cpsh/clubs", clubRouter);
+app.use("/api/cpsh/event-messages", eventMessageRouter);
+app.use("/api/cpsh/team-messages", teamMessageRouter);
 
 // Cricket routes
 app.use("/api/cpsh/cricket-players", cricketPlayerRouter);

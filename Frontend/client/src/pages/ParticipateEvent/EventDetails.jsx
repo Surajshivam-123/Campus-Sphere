@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Info, Hash } from "lucide-react";
+import { FaComments } from "react-icons/fa";
 import participantService from "../../services/participant.service";
 import { formatDateTime } from "../../utils/helpers";
 import LoadingPage from "../LoadingPage";
+import FloatingChatButton from "../../components/shared/FloatingChatButton";
 
 export default function EventDetailsPage() {
   const navigate = useNavigate();
@@ -53,6 +55,7 @@ export default function EventDetailsPage() {
       className="min-h-screen py-12 px-4"
       style={{ backgroundColor: "var(--color-bg)" }}
     >
+      <FloatingChatButton eventId={eventId} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -83,7 +86,14 @@ export default function EventDetailsPage() {
           ))}
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex flex-col gap-3">
+          <button
+            onClick={() => navigate(`/events/${eventData._id}/chat`)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition"
+            style={{ backgroundColor: "var(--color-navy)" }}
+          >
+            <FaComments size={14} /> Open Chat
+          </button>
           <button
             onClick={handleDelete}
             disabled={deleting}

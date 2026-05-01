@@ -1,4 +1,4 @@
-﻿import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +14,7 @@ import useIsLive from "../../../../hooks/useIsLive";
 import socket from "../../../../config/socket";
 import { useAuth } from "../../../../hooks/useAuth";
 import fetchWithAuth from "../../../../config/fetchWithAuth";
+import FloatingChatButton from "../../../../components/shared/FloatingChatButton";
 
 export default function TeamCreatorPage() {
   const navigate = useNavigate();
@@ -234,6 +235,7 @@ export default function TeamCreatorPage() {
   return (
     <motion.div className="min-h-screen bg-[#faf9f6] py-10 px-4"
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <FloatingChatButton eventId={eventId} teamId={teamdata?._id} isCaptain={true} />
       <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s"
           alt="Cricket Event Poster" className="w-full h-48 object-cover" />

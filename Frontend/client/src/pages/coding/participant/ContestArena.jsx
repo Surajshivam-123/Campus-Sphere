@@ -7,6 +7,7 @@ import socket from "../../../config/socket";
 import LoadingPage from "../../LoadingPage";
 import ProblemView from "./ProblemView";
 import CodeEditor from "./CodeEditor";
+import FloatingChatButton from "../../../components/shared/FloatingChatButton";
 
 export default function ContestArena() {
   const { eventId } = useParams();
@@ -148,6 +149,7 @@ export default function ContestArena() {
   if (!contest) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--color-bg)" }}>
+        <FloatingChatButton eventId={eventId} />
         <div className="text-center p-8">
           <FaCode className="mx-auto text-5xl mb-4" style={{ color: "var(--color-border)" }} />
           <p className="font-medium" style={{ color: "var(--color-text-secondary)" }}>Contest not set up yet.</p>
@@ -220,6 +222,7 @@ export default function ContestArena() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: "var(--color-bg)" }}>
+      <FloatingChatButton eventId={eventId} />
       {/* Top bar */}
       <div
         className="flex items-center justify-between px-4 py-2 border-b shrink-0"
@@ -329,3 +332,7 @@ export default function ContestArena() {
     </div>
   );
 }
+
+const sumTwoNumbers = (a, b) => a + b;
+
+

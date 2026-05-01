@@ -1,9 +1,10 @@
 ﻿import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingPage from "../LoadingPage";
+import FloatingChatButton from "../../components/shared/FloatingChatButton";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Info } from "lucide-react";
-import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import { FaCheckCircle, FaExclamationTriangle, FaComments } from "react-icons/fa";
 import { formatDateTime } from "../../utils/helpers";
 import useIsLive from "../../hooks/useIsLive";
 import memberService from "../../services/member.service";
@@ -33,7 +34,6 @@ export default function EventDetailsMemberPage() {
     setError(""); setLoading(true);
     try {
       const result = await memberService.requestJoinEvent(memberCode);
-      // 201 = new request created, 200 = already pending
       if (result?.data?.status) setStatus(result.data.status);
       else setStatus("pending");
     } catch (err) {
@@ -66,10 +66,8 @@ export default function EventDetailsMemberPage() {
   };
 
   return (
-    <div
-      className="min-h-screen py-12 px-4"
-      style={{ backgroundColor: "var(--color-bg)" }}
-    >
+    <div className="min-h-screen py-12 px-4" style={{ backgroundColor: "var(--color-bg)" }}>
+      <FloatingChatButton eventId={eventData?._id} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -77,16 +75,10 @@ export default function EventDetailsMemberPage() {
         className="max-w-2xl mx-auto rounded-lg shadow-sm p-8 border"
         style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
-        <h1
-          className="font-heading text-2xl font-semibold mb-1"
-          style={{ color: "var(--color-navy)" }}
-        >
+        <h1 className="font-heading text-2xl font-semibold mb-1" style={{ color: "var(--color-navy)" }}>
           Event Details
         </h1>
-        <div
-          className="w-8 h-px mb-6"
-          style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }}
-        />
+        <div className="w-8 h-px mb-6" style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }} />
 
         <div className="space-y-4 text-sm mb-8" style={{ color: "var(--color-text-secondary)" }}>
           {details.map(({ icon, label, value }) => (
@@ -113,11 +105,7 @@ export default function EventDetailsMemberPage() {
             </div>
           )}
           {status === null && !error && (
-            <button
-              onClick={handleRequestJoin}
-              disabled={loading}
-              className="btn-primary w-full"
-            >
+            <button onClick={handleRequestJoin} disabled={loading} className="btn-primary w-full">
               {loading ? "Sending request…" : "Request to join"}
             </button>
           )}
@@ -129,6 +117,15 @@ export default function EventDetailsMemberPage() {
             >
               <span className="w-2 h-2 rounded-full bg-white animate-pulse inline-block" />
               Watch Live
+            </button>
+          )}
+          {status === "approved" && (
+            <button
+              onClick={() => navigate(`/events/${eventData._id}/chat`)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition"
+              style={{ backgroundColor: "var(--color-navy)" }}
+            >
+              <FaComments size={14} /> Open Chat
             </button>
           )}
         </div>

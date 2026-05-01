@@ -1,4 +1,4 @@
-﻿import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import fetchWithAuth from "../../../../config/fetchWithAuth";
 import { formatDateTime } from "../../../../utils/helpers";
 import useScorerRole from "../../../../hooks/useScorerRole";
 import useIsLive from "../../../../hooks/useIsLive";
+import FloatingChatButton from "../../../../components/shared/FloatingChatButton";
 
 export default function TeamMemberPage() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function TeamMemberPage() {
 
   const [event, setEvent] = useState(null);
   const [teamdata, setTeamdata] = useState(null);
+  const [teamId, setTeamId] = useState(null);
   const [showTeam, setShowTeam] = useState(true);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [error, setError] = useState("");
@@ -44,6 +46,7 @@ export default function TeamMemberPage() {
         // console.log("Captain: ",teamData.data.captain)
         if (teamData?.data) {
           const { team, players ,captain} = teamData.data;
+          setTeamId(team._id?.toString() || null);
           setTeamdata({
             name: team.name,
             captain:captain.fullname,
@@ -83,6 +86,7 @@ export default function TeamMemberPage() {
   return (
     <motion.div className="min-h-screen bg-[#faf9f6] py-10 px-4"
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <FloatingChatButton eventId={eventId} teamId={teamId} isCaptain={false} />
       <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s"
           alt="Cricket Event Poster" className="w-full h-48 object-cover" />

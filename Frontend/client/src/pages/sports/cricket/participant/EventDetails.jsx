@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaChalkboardTeacher,
+  FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaChalkboardTeacher, FaComments,
 } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
 import LoadingPage from "../../../LoadingPage";
+import FloatingChatButton from "../../../../components/shared/FloatingChatButton";
 import API_URL from "../../../../config/api";
 import fetchWithAuth from "../../../../config/fetchWithAuth";
 import { formatDateTime } from "../../../../utils/helpers";
@@ -81,6 +82,7 @@ export default function CricketEventDetailsPageParticipant() {
   return (
     <motion.div className="min-h-screen bg-[#faf9f6] py-10 px-4"
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <FloatingChatButton eventId={eventId} />
       <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <img
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpuzEbDVckv1B-qGW2FO8sHwBmOKa7g9jQLwbtC3rhx4cTOIKY_mdhlCEKZOfixY0O9Yq&s"
@@ -134,7 +136,12 @@ export default function CricketEventDetailsPageParticipant() {
           </div>
         )}
 
-        <div className="px-8 pb-8 flex gap-3">
+        <div className="px-8 pb-8 flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate(`/events/${eventId}/chat`)}
+            className="bg-[#1e3a5f] text-white rounded px-5 py-2 hover:bg-[#2d4a6f] transition font-medium text-sm flex items-center gap-2">
+            <FaComments size={12} /> Open Chat
+          </button>
           <button
             onClick={() => navigate(`/sports/cricket/create-team/${eventId}`)}
             className="bg-[#1e3a5f] text-white rounded px-5 py-2 hover:bg-[#2d4a6f] transition font-medium text-sm border border-[#1e3a5f]">

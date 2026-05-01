@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import { useAuth } from "../hooks/useAuth";
+import EventChatWrapper from "../components/shared/EventChatWrapper";
 
 // Public Pages
 import Front from "../pages/Front/Front";
@@ -71,18 +72,22 @@ import ManageClub from "../pages/Club/ManageClub";
 import MyClubs from "../pages/Club/MyClubs";
 import JoinClub from "../pages/Club/JoinClub";
 import ClubChat from "../pages/Club/ClubChat";
+import EventChat from "../pages/Event/EventChat";
+import TeamChat from "../pages/Event/TeamChat";
 
 const PageLayout = () => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="w-full h-full"
-    >
-      <Outlet />
-    </motion.div>
+    <EventChatWrapper>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="w-full h-full"
+      >
+        <Outlet />
+      </motion.div>
+    </EventChatWrapper>
   );
 };
 
@@ -161,6 +166,8 @@ export default function AppRoutes() {
       <Route path="/clubs/join"               element={<ProtectedRoute><JoinClub /></ProtectedRoute>} />
       <Route path="/clubs/:clubId/manage"     element={<ProtectedRoute><ManageClub /></ProtectedRoute>} />
       <Route path="/clubs/:clubId/chat"       element={<ProtectedRoute><ClubChat /></ProtectedRoute>} />
+<Route path="/events/:eventId/chat"      element={<ProtectedRoute><EventChat /></ProtectedRoute>} />
+      <Route path="/teams/:teamId/chat"       element={<ProtectedRoute><TeamChat /></ProtectedRoute>} />
       <Route path="/clubs/:clubId"            element={<ClubDetail />} />
       <Route path="/my-clubs"                 element={<ProtectedRoute><MyClubs /></ProtectedRoute>} />
 

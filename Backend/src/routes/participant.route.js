@@ -10,4 +10,18 @@ participantRouter.route('/get-all-participants/:eventId').get(verifyJWT,getAllPa
 participantRouter.route('/get-single-participant/:eventId').get(verifyJWT,getSingleParticipant);
 participantRouter.route('/delete-participant/:participantId').delete(verifyJWT,deleteParticipant);
 
+// Check if current user is a participant of an event
+participantRouter.route('/check/:eventId').get(verifyJWT, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user._id;
+    const participant = await import("../models/participant.model.js").then(m =>
+      m.Participant.findOne({ event: eventId, owner: userId }).lean()
+    );
+    res.json({ success: true, isParticipant: !!participant });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default participantRouter;

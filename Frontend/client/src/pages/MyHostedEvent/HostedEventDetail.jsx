@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FaUsers, FaCopy, FaCheck, FaCode,
-  FaPenAlt, FaTrash, FaFlag,
+  FaPenAlt, FaTrash, FaFlag, FaComments,
 } from "react-icons/fa";
 import { CalendarDays, MapPin, Users } from "lucide-react";
 import MemberRequests from "./MemberRequests";
@@ -13,6 +13,7 @@ import fetchWithAuth from "../../config/fetchWithAuth";
 import API_URL from "../../config/api";
 import { formatDateTime } from "../../utils/helpers";
 import LoadingPage from "../LoadingPage";
+import FloatingChatButton from "../../components/shared/FloatingChatButton";
 
 const LabelCls = "block text-xs font-medium mb-2 uppercase tracking-wider";
 
@@ -370,6 +371,7 @@ export default function HostedEventDetail() {
 
   return (
     <div className="min-h-screen py-10 px-4" style={{ backgroundColor: "var(--color-bg)" }}>
+      <FloatingChatButton eventId={eventId} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -412,8 +414,15 @@ export default function HostedEventDetail() {
                 </div>
               </div>
 
-              {/* Edit / Delete */}
+              {/* Edit / Delete / Chat */}
               <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => navigate(`/events/${eventId}/chat`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition text-white"
+                  style={{ backgroundColor: "var(--color-navy)" }}
+                >
+                  <FaComments size={10} /> Chat
+                </button>
                 <button
                   onClick={() => navigate(`/update-event/${eventId}`)}
                   className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs"
@@ -510,14 +519,23 @@ export default function HostedEventDetail() {
           className="rounded-lg p-6 border shadow-sm"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
-          {/* Overview */}
-          {effectiveTab === "overview" && (
-            <div className="space-y-6">
-              {/* Description */}
-              <div>
-                <h2 className="font-heading text-base font-semibold mb-2" style={{ color: "var(--color-navy)" }}>Description</h2>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{event.description}</p>
-              </div>
+           {/* Overview */}
+           {effectiveTab === "overview" && (
+             <div className="space-y-6">
+               {/* Chat button for organizer - always visible in overview */}
+               <button
+                 onClick={() => navigate(`/events/${eventId}/chat`)}
+                 className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition"
+                 style={{ backgroundColor: "var(--color-navy)" }}
+               >
+                 <FaComments size={14} /> Open Event Chat
+               </button>
+
+               {/* Description */}
+               <div>
+                 <h2 className="font-heading text-base font-semibold mb-2" style={{ color: "var(--color-navy)" }}>Description</h2>
+                 <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{event.description}</p>
+               </div>
 
               {/* Rules */}
               {event.rules?.length > 0 && (
@@ -534,50 +552,50 @@ export default function HostedEventDetail() {
                 </div>
               )}
 
-              {/* Quick-action hint for coding events */}
-              {isCoding && (
-                <div
-                  className="flex items-center gap-3 rounded-lg px-4 py-3 border"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, var(--color-gold) 8%, transparent)",
-                    borderColor: "color-mix(in srgb, var(--color-gold) 30%, transparent)",
-                  }}
+          {/* Quick-action hint for coding events */}
+          {isCoding && (
+            <div
+              className="flex items-center gap-3 rounded-lg px-4 py-3 border"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--color-gold) 8%, transparent)",
+                borderColor: "color-mix(in srgb, var(--color-gold) 30%, transparent)",
+              }}
+            >
+              <FaCode style={{ color: "var(--color-gold)", flexShrink: 0 }} />
+              <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                This is a coding event.{" "}
+                <button
+                  onClick={() => navigate(`/organizer/coding/${eventId}`)}
+                  className="font-semibold underline"
+                  style={{ color: "var(--color-navy)" }}
                 >
-                  <FaCode style={{ color: "var(--color-gold)", flexShrink: 0 }} />
-                  <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                    This is a coding event.{" "}
-                    <button
-                      onClick={() => navigate(`/organizer/coding/${eventId}`)}
-                      className="font-semibold underline"
-                      style={{ color: "var(--color-navy)" }}
-                    >
-                      Open Coding Contest Organizer
-                    </button>
-                  </p>
-                </div>
-              )}
+                  Open Coding Contest Organizer
+                </button>
+              </p>
+            </div>
+          )}
 
-              {isCricket && (
-                <div
-                  className="flex items-center gap-3 rounded-lg px-4 py-3 border"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, var(--color-navy) 6%, transparent)",
-                    borderColor: "color-mix(in srgb, var(--color-navy) 20%, transparent)",
-                  }}
+          {isCricket && (
+            <div
+              className="flex items-center gap-3 rounded-lg px-4 py-3 border"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--color-navy) 6%, transparent)",
+                borderColor: "color-mix(in srgb, var(--color-navy) 20%, transparent)",
+              }}
+            >
+              <FaFlag style={{ color: "var(--color-navy)", flexShrink: 0 }} />
+              <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                This is a cricket event.{" "}
+                <button
+                  onClick={() => navigate(`/organizer/cricket/${eventId}`)}
+                  className="font-semibold underline"
+                  style={{ color: "var(--color-navy)" }}
                 >
-                  <FaFlag style={{ color: "var(--color-navy)", flexShrink: 0 }} />
-                  <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                    This is a cricket event.{" "}
-                    <button
-                      onClick={() => navigate(`/organizer/cricket/${eventId}`)}
-                      className="font-semibold underline"
-                      style={{ color: "var(--color-navy)" }}
-                    >
-                      Open Cricket Tournament Organizer
-                    </button>
-                  </p>
-                </div>
-              )}
+                  Open Cricket Tournament Organizer
+                </button>
+              </p>
+            </div>
+          )}
             </div>
           )}
 

@@ -24,7 +24,6 @@ const getMessages = asyncHandler(async (req, res) => {
   const { clubId } = req.params;
   const { before } = req.query;
   const allowed = await isMemberOrFounder(clubId, req.user._id);
-  console 
   if (!allowed) throw new ApiError(403, "Only club members can read messages");
 
   const filter = { club: clubId };
