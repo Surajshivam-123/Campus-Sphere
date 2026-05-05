@@ -23,14 +23,7 @@ export default function CTA() {
         </button>
         <button
           onClick={() => navigate("/register")}
-          className="px-5 py-2.5 rounded text-sm font-medium transition-colors border"
-          style={{
-            backgroundColor: "white",
-            color: "var(--color-navy)",
-            borderColor: "white",
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f9fafb"}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "white"}
+          className="btn-secondary px-6 py-2.5"
         >
           Register
         </button>
