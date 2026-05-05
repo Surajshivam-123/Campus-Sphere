@@ -155,7 +155,7 @@ const updateEvent = asyncHandler(async (req, res) => {
       event.rules = rules;
     }
     const updatedEvent = await Event.findByIdAndUpdate(eventId, event, { new: true });
-    if (!updateEvent) {
+    if (!updatedEvent) {
       throw new ApiError(400, "Error while updating event");
     }
     await cacheDel(
