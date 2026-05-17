@@ -12,14 +12,24 @@ import {
 import {upload} from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
 import passport from "../config/passport.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  registerSchema,
+  loginSchema,
+} from "../validations/auth.validation.js";
 
 const userRouter = Router();
 
-userRouter.route('/register').post(
-    upload.single('avatar'),registerUser
-)
+userRouter.route("/register").post(
+  upload.single("avatar"),
+  validate(registerSchema),
+  registerUser
+);
 
-userRouter.route("/login").post(loginUser)
+userRouter.route("/login").post(
+  validate(loginSchema),
+  loginUser
+);
 userRouter.route("/logout").post(verifyJWT,logoutUser);
 userRouter.route("/refresh-token").post(refreshToken);
 userRouter.route("/profile").get(verifyJWT,getUser);
