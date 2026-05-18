@@ -3,7 +3,7 @@
 A full-stack campus event management platform. Organizers can create and manage events, participants can join via invite codes, and the platform supports live cricket scoring, coding contests with real-time leaderboards, team management, and a full observability stack.
 
 ---
-
+Live on https://campus-sphere-liard.vercel.app/
 ## Table of Contents
 
 1. [Features](#features)
