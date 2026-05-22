@@ -74,6 +74,7 @@ import JoinClub from "../pages/Club/JoinClub";
 import ClubChat from "../pages/Club/ClubChat";
 import EventChat from "../pages/Event/EventChat";
 import TeamChat from "../pages/Event/TeamChat";
+import NotFound from "../components/shared/NotFound";
 
 const PageLayout = () => {
   return (
@@ -172,7 +173,7 @@ export default function AppRoutes() {
       <Route path="/my-clubs"                 element={<ProtectedRoute><MyClubs /></ProtectedRoute>} />
 
           {/* Catch-all — any unknown URL redirects to login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+         <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </AnimatePresence>
