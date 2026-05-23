@@ -1,5 +1,12 @@
 import Router from "express";
 import {
+  loginLimiter,
+  registerLimiter,
+  otpSendLimiter,
+  otpVerifyLimiter,
+  refreshTokenLimiter,
+} from "../middlewares/rateLimiter.js";
+import {
   registerUser,
   loginUser,
   logoutUser,
@@ -19,22 +26,22 @@ import passport from "../config/passport.js";
 const userRouter = Router();
 
 userRouter.route('/register').post(
-    upload.single('avatar'),registerUser
+    registerLimiter, upload.single('avatar'), registerUser
 )
 
-userRouter.route("/register/send-otp").post(sendRegistrationOtp);
-userRouter.route("/register/verify-otp").post(verifyRegistrationOtp);
+userRouter.route("/register/send-otp").post(otpSendLimiter, sendRegistrationOtp);
+userRouter.route("/register/verify-otp").post(otpVerifyLimiter, verifyRegistrationOtp);
 
-userRouter.route("/login").post(loginUser)
-userRouter.route("/logout").post(verifyJWT,logoutUser);
-userRouter.route("/refresh-token").post(refreshToken);
+userRouter.route("/login").post(loginLimiter, loginUser)
+userRouter.route("/logout").post(verifyJWT, logoutUser);
+userRouter.route("/refresh-token").post(refreshTokenLimiter, refreshToken);
 userRouter.route("/profile")
   .get(verifyJWT, getUser)
   .patch(verifyJWT, upload.single("avatar"), updateProfile);
 
 // OTP login
-userRouter.route("/send-otp").post(sendOtp);
-userRouter.route("/verify-otp").post(verifyOtp);
+userRouter.route("/send-otp").post(otpSendLimiter, sendOtp);
+userRouter.route("/verify-otp").post(otpVerifyLimiter, verifyOtp);
 
 // Google OAuth
 userRouter.get(
