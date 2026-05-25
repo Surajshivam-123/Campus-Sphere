@@ -116,7 +116,8 @@ export default function AllClubs() {
               placeholder="Search clubs…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-base pl-8 py-2 text-sm w-full"
+              className="input-base py-2 text-sm w-full"
+              style={{ paddingLeft: "2.5rem" }}
             />
           </div>
           <select
