@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 
 export default function CTA() {
@@ -32,7 +31,6 @@ export default function CTA() {
     </section>
   );
 }
-=======
 import { useNavigate } from "react-router-dom";
 
 export default function CTA() {
@@ -66,4 +64,3 @@ export default function CTA() {
     </section>
   );
 }
->>>>>>> a64e1eb (resolved some minor issues)
