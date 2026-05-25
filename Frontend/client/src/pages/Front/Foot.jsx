@@ -31,7 +31,6 @@ export default function CTA() {
     </section>
   );
 }
-import { useNavigate } from "react-router-dom";
 
 export default function CTA() {
   const navigate = useNavigate();
