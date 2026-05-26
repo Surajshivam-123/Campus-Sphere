@@ -86,9 +86,9 @@ export default function Footer() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-navy text-white dark:bg-gold dark:text-gray-900 px-4 py-3 rounded-lg shadow-xl text-sm font-medium border border-gold/20"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[var(--color-surface)] text-[var(--color-text-primary)] px-5 py-4 rounded-xl shadow-2xl text-sm font-medium border border-[var(--color-gold)]/40 backdrop-blur-md"
           >
-            <Globe className="h-4 w-4 animate-pulse" />
+            <Globe className="h-5 w-5 text-[var(--color-gold)] animate-pulse shrink-0" />
             <span>{toastMessage}</span>
           </motion.div>
         )}

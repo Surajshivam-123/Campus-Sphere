@@ -130,13 +130,6 @@ export default function Navbar() {
                   Profile
                 </Link>
 
-                <button
-                  onClick={() => { toggle(); setMenuOpen(false); }}
-                  className="text-left py-2 px-3 rounded border border-transparent transition-colors flex items-center gap-2 hover:border-gold hover:text-navy"
-                >
-                  {isDark ? <Sun size={14} /> : <Moon size={14} />}
-                  {isDark ? "Light mode" : "Dark mode"}
-                </button>
 
                 <button
                   onClick={handleLogout}
