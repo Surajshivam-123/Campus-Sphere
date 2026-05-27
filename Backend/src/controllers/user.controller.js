@@ -4,12 +4,37 @@ import ApiResponse from "../utils/ApiResponse.js";
 import userService from "../services/user.service.js";
 import { HTTP_STATUS, COOKIE_OPTIONS } from "../constants/index.js";
 
+const validatePassword = (password) => {
+  if (password.length < 8) {
+    return { isValid: false, message: "Password must be at least 8 characters long" };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one uppercase letter" };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one lowercase letter" };
+  }
+  if (!/\d/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one number" };
+  }
+  if (!/[@$!%*?&#^()\-_+=\[\]{}|;:,./<>~`]/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one special character" };
+  }
+  return { isValid: true };
+};
+
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
   // Validate required fields
   if ([fullname, username, email, password].some((field) => !field?.trim())) {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, "All fields are required");
+  }
+
+  // Validate password strength
+  const pwdValidation = validatePassword(password);
+  if (!pwdValidation.isValid) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, pwdValidation.message);
   }
 
   const avatarPath = req.file?.path;

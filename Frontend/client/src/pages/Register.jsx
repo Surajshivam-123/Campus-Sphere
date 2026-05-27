@@ -24,12 +24,31 @@ export default function Register() {
     }
   };
 
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecial = /[@$!%*?&#^()\-_+=\[\]{}|;:,./<>~`]/.test(password);
+
+  const validatePassword = (pwd) => {
+    if (pwd.length < 8) return "Password must be at least 8 characters long";
+    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
+    if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
+    if (!/\d/.test(pwd)) return "Password must contain at least one number";
+    if (!/[@$!%*?&#^()\-_+=\[\]{}|;:,./<>~`]/.test(pwd)) return "Password must contain at least one special character";
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!fullname) return setErrorMessage("Full name is required");
     if (!username) return setErrorMessage("Username is required");
     if (!email) return setErrorMessage("Email is required");
     if (!password) return setErrorMessage("Password is required");
+
+    const pwdError = validatePassword(password);
+    if (pwdError) return setErrorMessage(pwdError);
+
     if (confirmPassword !== password) return setErrorMessage("Passwords do not match");
 
     const formData = new FormData();
@@ -148,6 +167,43 @@ export default function Register() {
                 onChange={(e) => onChange(e.target.value)}
                 className="input-base"
               />
+              {label === "Password" && password && (
+                <div className="mt-2 p-3 rounded-lg border text-xs bg-surface-2 border-base">
+                  <p className="font-semibold text-secondary mb-1.5">Password requirements:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className={hasMinLength ? "text-success font-bold" : "text-muted font-bold"}>
+                        {hasMinLength ? "✓" : "○"}
+                      </span>
+                      <span className={hasMinLength ? "text-primary" : "text-secondary"}>Min 8 characters</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={hasUppercase ? "text-success font-bold" : "text-muted font-bold"}>
+                        {hasUppercase ? "✓" : "○"}
+                      </span>
+                      <span className={hasUppercase ? "text-primary" : "text-secondary"}>One uppercase letter</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={hasLowercase ? "text-success font-bold" : "text-muted font-bold"}>
+                        {hasLowercase ? "✓" : "○"}
+                      </span>
+                      <span className={hasLowercase ? "text-primary" : "text-secondary"}>One lowercase letter</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={hasNumber ? "text-success font-bold" : "text-muted font-bold"}>
+                        {hasNumber ? "✓" : "○"}
+                      </span>
+                      <span className={hasNumber ? "text-primary" : "text-secondary"}>One number</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 sm:col-span-2">
+                      <span className={hasSpecial ? "text-success font-bold" : "text-muted font-bold"}>
+                        {hasSpecial ? "✓" : "○"}
+                      </span>
+                      <span className={hasSpecial ? "text-primary" : "text-secondary"}>One special character (@$!%*?& etc.)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
