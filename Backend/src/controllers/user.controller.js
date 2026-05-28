@@ -24,11 +24,15 @@ const validatePassword = (password) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullname, username, email, password } = req.body;
+  const { fullname, username, email, password, verificationToken } = req.body;
 
   // Validate required fields
   if ([fullname, username, email, password].some((field) => !field?.trim())) {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, "All fields are required");
+  }
+
+  if (!verificationToken?.trim()) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email verification token is required");
   }
 
   // Validate password strength
@@ -39,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const avatarPath = req.file?.path;
   const { user, accessToken, refreshToken } = await userService.registerUser(
-    { fullname, username, email, password },
+    { fullname, username, email, password, verificationToken },
     avatarPath
   );
 
@@ -151,4 +155,24 @@ const googleAuthCallback = asyncHandler(async (req, res) => {
     .redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
 });
 
-export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp };
+const sendRegistrationOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email?.trim()) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
+  }
+  await userService.sendRegistrationOtp(email);
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, {}, "Verification OTP sent to your email"));
+});
+
+const verifyRegistrationOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email?.trim() || !otp?.trim()) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email and OTP are required");
+  }
+  const { verificationToken } = await userService.verifyRegistrationOtp(email, otp);
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new ApiResponse(HTTP_STATUS.OK, { verificationToken }, "Email verified successfully"));
+});
+
+export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp, sendRegistrationOtp, verifyRegistrationOtp };

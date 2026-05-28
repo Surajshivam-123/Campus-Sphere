@@ -8,6 +8,8 @@ import {
   googleAuthCallback,
   sendOtp,
   verifyOtp,
+  sendRegistrationOtp,
+  verifyRegistrationOtp,
 } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
@@ -18,6 +20,9 @@ const userRouter = Router();
 userRouter.route('/register').post(
     upload.single('avatar'),registerUser
 )
+
+userRouter.route("/register/send-otp").post(sendRegistrationOtp);
+userRouter.route("/register/verify-otp").post(verifyRegistrationOtp);
 
 userRouter.route("/login").post(loginUser)
 userRouter.route("/logout").post(verifyJWT,logoutUser);

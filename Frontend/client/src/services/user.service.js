@@ -13,6 +13,9 @@ class UserService {
     formData.append("username", userData.username);
     formData.append("email", userData.email);
     formData.append("password", userData.password);
+    if (userData.verificationToken) {
+      formData.append("verificationToken", userData.verificationToken);
+    }
     
     if (userData.avatar) {
       formData.append("avatar", userData.avatar);
@@ -23,6 +26,20 @@ class UserService {
         "Content-Type": "multipart/form-data",
       },
     });
+  }
+
+  /**
+   * Send OTP for email verification during registration
+   */
+  async sendRegistrationOtp(email) {
+    return apiClient.post("/api/cpsh/users/register/send-otp", { email });
+  }
+
+  /**
+   * Verify registration OTP and retrieve verification token
+   */
+  async verifyRegistrationOtp(email, otp) {
+    return apiClient.post("/api/cpsh/users/register/verify-otp", { email, otp });
   }
 
   /**

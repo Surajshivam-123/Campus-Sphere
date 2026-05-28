@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import profile from "../assets/download.jpeg";
 import API_URL from "../config/api";
@@ -15,6 +15,84 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
+  // Email verification states
+  const [verificationToken, setVerificationToken] = useState("");
+  const [otpEmailSent, setOtpEmailSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpMessage, setOtpMessage] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleSendOtp = async () => {
+    setErrorMessage("");
+    setOtpMessage("");
+    if (!email?.trim()) return setErrorMessage("Email is required before verification");
+    if (!/\S+@\S+\.\S+/.test(email)) return setErrorMessage("Please enter a valid email address");
+
+    setIsSendingOtp(true);
+    try {
+      const response = await fetch(`${API_URL}/api/cpsh/users/register/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const result = await response.json();
+      if (response.ok || result?.success) {
+        setOtpEmailSent(true);
+        setResendCooldown(60);
+        setOtpMessage("Verification OTP sent to your email!");
+      } else {
+        setErrorMessage(result?.message || "Failed to send verification OTP.");
+      }
+    } catch (err) {
+      console.error("Send Registration OTP error:", err);
+      setErrorMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleConfirmOtp = async () => {
+    setErrorMessage("");
+    setOtpMessage("");
+    if (!otpCode?.trim()) return setOtpMessage("Please enter the 6-digit OTP");
+
+    setIsVerifyingOtp(true);
+    try {
+      const response = await fetch(`${API_URL}/api/cpsh/users/register/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: otpCode }),
+      });
+      const result = await response.json();
+      if (response.ok || result?.success) {
+        setVerificationToken(result?.data?.verificationToken);
+        setIsEmailVerified(true);
+        setOtpEmailSent(false);
+        setOtpMessage("Email address successfully verified!");
+      } else {
+        setOtpMessage(result?.message || "Invalid or expired OTP.");
+      }
+    } catch (err) {
+      console.error("Verify Registration OTP error:", err);
+      setOtpMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -44,6 +122,7 @@ export default function Register() {
     if (!fullname) return setErrorMessage("Full name is required");
     if (!username) return setErrorMessage("Username is required");
     if (!email) return setErrorMessage("Email is required");
+    if (!isEmailVerified) return setErrorMessage("Please verify your email address first");
     if (!password) return setErrorMessage("Password is required");
 
     const pwdError = validatePassword(password);
@@ -56,6 +135,7 @@ export default function Register() {
     formData.append("username", username);
     formData.append("email", email);
     formData.append("password", password);
+    formData.append("verificationToken", verificationToken);
     if (avatarFile) formData.append("avatar", avatarFile);
 
     try {
@@ -160,13 +240,87 @@ export default function Register() {
               >
                 {label}
               </label>
-              <input
-                type={type}
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="input-base"
-              />
+              {label === "Email" ? (
+                <div className="space-y-3">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type={type}
+                      placeholder={placeholder}
+                      value={value}
+                      onChange={(e) => onChange(e.target.value)}
+                      disabled={isEmailVerified}
+                      className="input-base flex-grow"
+                    />
+                    {isEmailVerified ? (
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2.5 rounded border border-emerald-500/20 shrink-0">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Verified
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isSendingOtp || resendCooldown > 0}
+                        className="btn-primary py-2.5 px-4 text-xs font-semibold shrink-0"
+                        style={{
+                          minWidth: "110px",
+                          background: resendCooldown > 0 ? "var(--color-surface-2)" : "linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))",
+                          color: resendCooldown > 0 ? "var(--color-text-muted)" : "var(--color-navy)"
+                        }}
+                      >
+                        {isSendingOtp ? "Sending..." : resendCooldown > 0 ? `${resendCooldown}s` : "Verify Email"}
+                      </button>
+                    )}
+                  </div>
+
+                  {otpEmailSent && !isEmailVerified && (
+                    <div className="p-4 rounded-lg border border-white/10 glass bg-white/5 space-y-3 animated-fade-in shadow-inner">
+                      <p className="text-xs font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                        Enter the 6-digit OTP sent to your email:
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="000000"
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value)}
+                          maxLength={6}
+                          className="input-base text-center tracking-widest text-lg font-bold w-32 flex-grow-0"
+                          style={{ borderColor: "var(--color-gold)" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleConfirmOtp}
+                          disabled={isVerifyingOtp}
+                          className="btn-primary py-2.5 px-4 text-xs font-semibold flex-grow"
+                          style={{
+                            background: "linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))",
+                            color: "var(--color-navy)"
+                          }}
+                        >
+                          {isVerifyingOtp ? "Verifying..." : "Confirm OTP"}
+                        </button>
+                      </div>
+                      {otpMessage && (
+                        <p className="text-xs font-semibold text-gold mt-1">{otpMessage}</p>
+                      )}
+                    </div>
+                  )}
+                  {isEmailVerified && otpMessage && (
+                    <p className="text-xs font-semibold text-emerald-500 mt-1">{otpMessage}</p>
+                  )}
+                </div>
+              ) : (
+                <input
+                  type={type}
+                  placeholder={placeholder}
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  className="input-base"
+                />
+              )}
               {label === "Password" && password && (
                 <div className="mt-2 p-3 rounded-lg border text-xs bg-surface-2 border-base">
                   <p className="font-semibold text-secondary mb-1.5">Password requirements:</p>

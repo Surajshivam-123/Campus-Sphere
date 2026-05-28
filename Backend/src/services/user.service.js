@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import { HTTP_STATUS } from "../constants/index.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { cacheSet, cacheGet, cacheDel } from "../utils/redis.js";
-import { sendOtpEmail, sendWelcomeEmail } from "../utils/mailer.js";
+import { sendOtpEmail, sendWelcomeEmail, sendRegistrationOtpEmail } from "../utils/mailer.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
@@ -40,7 +40,21 @@ class UserService {
    * Register a new user
    */
   async registerUser(userData, avatarPath) {
-    const { fullname, username, email, password } = userData;
+    const { fullname, username, email, password, verificationToken } = userData;
+
+    // Verify email verification token
+    if (!verificationToken) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email verification token is required");
+    }
+
+    try {
+      const decoded = jwt.verify(verificationToken, process.env.ACCESS_TOKEN_SECRET);
+      if (decoded.email !== email.toLowerCase() || decoded.purpose !== "email-verification") {
+        throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid email verification token");
+      }
+    } catch (err) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email verification token expired or invalid");
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -68,6 +82,7 @@ class UserService {
       email: email.toLowerCase(),
       password,
       avatar: avatarUrl,
+      isVerified: true,
     });
 
     // Generate tokens
@@ -196,7 +211,7 @@ class UserService {
         username = `${baseUsername}${counter++}`;
       }
 
-      user = await User.create({ fullname, username, email, googleId, avatar });
+      user = await User.create({ fullname, username, email, googleId, avatar, isVerified: true });
       // Send welcome email to newly registered user (non-blocking)
       sendWelcomeEmail(email, fullname).catch(() => {});
     }
@@ -246,6 +261,48 @@ class UserService {
     const { accessToken, refreshToken } = await this.generateTokens(user);
     const safeUser = await User.findById(user._id).select("-password -refreshToken");
     return { user: safeUser, accessToken, refreshToken };
+  }
+
+  /**
+   * Send OTP to email for registration
+   */
+  async sendRegistrationOtp(email) {
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      throw new ApiError(HTTP_STATUS.CONFLICT, "User with this email already exists");
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+    // Store OTP in Redis with 10-min TTL
+    await cacheSet(`reg-otp:${email.toLowerCase()}`, otp, 600);
+    await sendRegistrationOtpEmail(email, otp);
+  }
+
+  /**
+   * Verify registration OTP and return a signed verification token
+   */
+  async verifyRegistrationOtp(email, otp) {
+    const key = `reg-otp:${email.toLowerCase()}`;
+    const storedOtp = await cacheGet(key);
+
+    if (!storedOtp) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "OTP expired or not requested");
+    }
+    if (storedOtp !== otp) {
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid OTP");
+    }
+
+    // OTP is valid — delete it so it can't be reused
+    await cacheDel(key);
+
+    // Generate a secure temporary verification token (valid for 15 mins)
+    const verificationToken = jwt.sign(
+      { email: email.toLowerCase(), purpose: "email-verification" },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    return { verificationToken };
   }
 
   /**
