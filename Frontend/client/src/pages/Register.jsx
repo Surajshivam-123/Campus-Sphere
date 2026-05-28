@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import profile from "../assets/download.jpeg";
 import API_URL from "../config/api";
+import { Eye, EyeOff } from "lucide-react";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -25,6 +26,10 @@ export default function Register() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  // Password visibility states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     let timer;
@@ -311,6 +316,36 @@ export default function Register() {
                   {isEmailVerified && otpMessage && (
                     <p className="text-xs font-semibold text-emerald-500 mt-1">{otpMessage}</p>
                   )}
+                </div>
+              ) : label === "Password" || label === "Confirm password" ? (
+                <div className="relative">
+                  <input
+                    type={
+                      label === "Password"
+                        ? (showPassword ? "text" : "password")
+                        : (showConfirmPassword ? "text" : "password")
+                    }
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="input-base pr-10 w-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      label === "Password"
+                        ? setShowPassword((prev) => !prev)
+                        : setShowConfirmPassword((prev) => !prev)
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors focus:outline-none flex items-center justify-center"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    {label === "Password" ? (
+                      showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />
+                    ) : (
+                      showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />
+                    )}
+                  </button>
                 </div>
               ) : (
                 <input

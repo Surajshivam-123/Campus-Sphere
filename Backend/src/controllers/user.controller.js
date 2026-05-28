@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import userService from "../services/user.service.js";
 import { HTTP_STATUS, COOKIE_OPTIONS } from "../constants/index.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const validatePassword = (password) => {
   if (password.length < 8) {
@@ -175,4 +176,35 @@ const verifyRegistrationOtp = asyncHandler(async (req, res) => {
     .json(new ApiResponse(HTTP_STATUS.OK, { verificationToken }, "Email verified successfully"));
 });
 
-export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp, sendRegistrationOtp, verifyRegistrationOtp };
+const updateProfile = asyncHandler(async (req, res) => {
+  const { fullname } = req.body;
+  const updateData = {};
+
+  if (fullname !== undefined) {
+    if (!fullname.trim()) {
+      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Full name cannot be empty");
+    }
+    updateData.fullname = fullname;
+  }
+
+  // Handle avatar upload if provided
+  const avatarPath = req.file?.path;
+  if (avatarPath) {
+    const avatar = await uploadOnCloudinary(avatarPath);
+    if (avatar?.url) {
+      updateData.avatar = avatar.url;
+    }
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No fields provided for update");
+  }
+
+  const updatedUser = await userService.updateUserProfile(req.user._id, updateData);
+
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new ApiResponse(HTTP_STATUS.OK, updatedUser, "Profile updated successfully"));
+});
+
+export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp, sendRegistrationOtp, verifyRegistrationOtp, updateProfile };

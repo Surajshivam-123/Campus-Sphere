@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import AppRoutes from "./routes/Route";
 import Navbar from "./pages/Home/Navbar";
-import { Footer } from "./components/shared";
+import { Footer, ScrollToTop } from "./components/shared";
 import OfflinePage from "./pages/OfflinePage";
 
 function App() {
@@ -50,6 +50,7 @@ function App() {
         <AppRoutes />
       </div>
       {showFooter && <Footer />}
+      <ScrollToTop />
     </div>
   );
 }

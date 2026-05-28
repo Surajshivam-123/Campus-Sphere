@@ -10,6 +10,7 @@ import {
   verifyOtp,
   sendRegistrationOtp,
   verifyRegistrationOtp,
+  updateProfile,
 } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
@@ -27,7 +28,9 @@ userRouter.route("/register/verify-otp").post(verifyRegistrationOtp);
 userRouter.route("/login").post(loginUser)
 userRouter.route("/logout").post(verifyJWT,logoutUser);
 userRouter.route("/refresh-token").post(refreshToken);
-userRouter.route("/profile").get(verifyJWT,getUser);
+userRouter.route("/profile")
+  .get(verifyJWT, getUser)
+  .patch(verifyJWT, upload.single("avatar"), updateProfile);
 
 // OTP login
 userRouter.route("/send-otp").post(sendOtp);
@@ -45,11 +48,11 @@ userRouter.get(
     passport.authenticate("google", { session: false }, (err, user, info) => {
       if (err) {
         console.error("Google OAuth error:", err);
-        return res.redirect(`${process.env.FRONTEND_ORIGIN_WITH_PATH || "http://localhost:5173"}/Campus-Sphere/login?error=oauth_error`);
+        return res.redirect(`${process.env.FRONTEND_ORIGIN_WITH_PATH || "http://localhost:5173"}/login?error=oauth_error`);
       }
       if (!user) {
         console.error("Google OAuth no user:", info);
-        return res.redirect(`${process.env.FRONTEND_ORIGIN_WITH_PATH || "http://localhost:5173"}/Campus-Sphere/login?error=no_user`);
+        return res.redirect(`${process.env.FRONTEND_ORIGIN_WITH_PATH || "http://localhost:5173"}/login?error=no_user`);
       }
       req.user = user;
       next();

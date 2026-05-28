@@ -88,7 +88,7 @@ export default function Footer() {
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[var(--color-surface)] text-[var(--color-text-primary)] px-5 py-4 rounded-xl shadow-2xl text-sm font-medium border border-[var(--color-gold)]/40 backdrop-blur-md"
           >
-            <Globe className="h-5 w-5 text-[var(--color-gold)] animate-pulse shrink-0" />
+            <Globe className="h-5 w-5 text-[var(--color-gold)] animate-pulse shrink-0" aria-hidden="true" />
             <span>{toastMessage}</span>
           </motion.div>
         )}
@@ -103,7 +103,8 @@ export default function Footer() {
               <motion.img
                 whileHover={{ scale: 1.03 }}
                 src={logo}
-                alt="Campus Sphere Logo"
+                alt=""
+                aria-hidden="true"
                 className="h-12 w-16 rounded border object-cover"
                 style={{ borderColor: "color-mix(in srgb, var(--color-gold) 40%, transparent)" }}
               />
@@ -132,7 +133,7 @@ export default function Footer() {
                   aria-label={social.label}
                   className="p-2.5 rounded-full bg-surface-2 border border-base text-secondary hover:text-gold hover:border-gold/50 transition-all duration-200 shadow-sm"
                 >
-                  <social.icon className="h-4.5 w-4.5" />
+                  <social.icon className="h-4.5 w-4.5" aria-hidden="true" />
                 </motion.a>
               ))}
             </div>
@@ -271,7 +272,7 @@ export default function Footer() {
                     exit={{ scale: 0.95, opacity: 0 }}
                     className="flex flex-col items-center justify-center p-3 border border-success/20 bg-success/5 rounded-lg text-center"
                   >
-                    <Check className="h-6 w-6 text-success mb-1" />
+                    <Check className="h-6 w-6 text-success mb-1" aria-hidden="true" />
                     <span className="font-heading text-xs font-semibold text-primary">Subscribed!</span>
                   </motion.div>
                 ) : (
@@ -283,7 +284,7 @@ export default function Footer() {
                     <div className="relative">
                       <input
                         type="email"
-                        placeholder="your.email@edu.in"
+                        placeholder="Enter your college email"
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
@@ -293,7 +294,7 @@ export default function Footer() {
                           emailError ? "border-error" : "border-base"
                         }`}
                       />
-                      <Mail className="absolute right-3 top-2.5 h-3.5 w-3.5 text-muted pointer-events-none" />
+                      <Mail className="absolute right-3 top-2.5 h-3.5 w-3.5 text-muted pointer-events-none" aria-hidden="true" />
                     </div>
                     {emailError && (
                       <p className="text-[10px] text-error leading-tight mt-0.5">{emailError}</p>
@@ -304,7 +305,7 @@ export default function Footer() {
                       className="w-full btn-gold text-xs py-2 font-medium flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       {isSubmitting ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
                       ) : (
                         "Subscribe"
                       )}
@@ -349,7 +350,7 @@ export default function Footer() {
                 animate={{ y: [0, -2, 0] }}
                 transition={{ repeat: Infinity, duration: 1.5, repeatDelay: 1 }}
               >
-                <ArrowUp className="h-3.5 w-3.5 text-muted group-hover:text-gold transition-colors" />
+                <ArrowUp className="h-3.5 w-3.5 text-muted group-hover:text-gold transition-colors" aria-hidden="true" />
               </motion.span>
             </button>
           </div>
