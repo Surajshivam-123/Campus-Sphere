@@ -429,17 +429,17 @@ Standard email/password with bcrypt hashing. Returns JWT access + refresh tokens
 
 ### OTP Login
 
-1. `POST /users/send-otp` — sends a 6-digit OTP to the email (valid 10 minutes)
-2. `POST /users/verify-otp` — verifies OTP, returns tokens
+1. `POST /api/v1/users/send-otp` — sends a 6-digit OTP to the email (valid 10 minutes)
+2. `POST /api/v1/users/verify-otp` — verifies OTP, returns tokens
 
 ### Google OAuth
 
-1. `GET /users/auth/google` — redirects to Google consent screen
-2. `GET /users/auth/google/callback` — creates/finds user, sends welcome email on first login, redirects to frontend with token
+1. `GET /api/v1/users/auth/google` — redirects to Google consent screen
+2. `GET /api/v1/users/auth/google/callback` — creates/finds user, sends welcome email on first login, redirects to frontend with token
 
 ### Token Refresh
 
-`POST /users/refresh-token` — validates refresh token, issues new access + refresh token pair.
+`POST /api/v1/users/refresh-token` — validates refresh token, issues new access + refresh token pair.
 
 ### Event Access Control
 
