@@ -95,6 +95,13 @@ export default function Navbar() {
 
               <nav className="flex flex-col gap-1 text-sm font-medium text-secondary">
                 <Link
+                  to="/events"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2 px-3 rounded border border-transparent transition-colors hover:border-gold hover:text-navy"
+                >
+                  Browse Events
+                </Link>
+                <Link
                   to="/all-events"
                   onClick={() => setMenuOpen(false)}
                   className="py-2 px-3 rounded border border-transparent transition-colors hover:border-gold hover:text-navy"

@@ -2,18 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vite.dev/config/
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: '/',
-  server: {
-    proxy: {
-      '/api': 'http://localhost:4000',
-      '/socket.io': {
-        target: 'http://localhost:4000',
-        ws: true,           // proxy WebSocket upgrades
-        changeOrigin: true,
-      },
-    },
-  },
+  // server: {
+  //   proxy: {
+  //     '/api': process.env.VITE_API_URL,
+  //     '/socket.io': {
+  //       target: process.env.VITE_API_URL,
+  //       ws: true,
+  //       changeOrigin: true,
+  //     },
+  //   },
+  // },
 })

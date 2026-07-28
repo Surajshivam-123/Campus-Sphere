@@ -28,8 +28,8 @@ export const config = {
 
   // Server
   server: {
-    port: process.env.PORT || 3000,
-    env: process.env.NODE_ENV || "development",
+    port: process.env.PORT,
+    env: process.env.NODE_ENV,
   },
 
   // JWT
@@ -51,22 +51,18 @@ export const config = {
   cors: {
     origins: [
       ...(process.env.FRONTEND_ORIGIN || "").split(",").map((s) => s.trim()),
-      ...(process.env.FRONTEND_ORIGIN_WITH_PATH || "").split(",").map((s) => s.trim()),
-      "http://localhost",
-      "http://localhost:5173",
-      "http://localhost:4173", // Vite preview
     ].filter(Boolean),
   },
 
   // Redis
   redis: {
-    url: process.env.REDIS_URL || "redis://localhost:6379",
+    url: process.env.REDIS_URL,
   },
 
   // Google OAuth
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackUrl: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/api/cpsh/users/auth/google/callback",
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL
   },
 };

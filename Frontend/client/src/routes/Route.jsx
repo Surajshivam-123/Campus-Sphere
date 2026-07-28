@@ -74,6 +74,7 @@ import JoinClub from "../pages/Club/JoinClub";
 import ClubChat from "../pages/Club/ClubChat";
 import EventChat from "../pages/Event/EventChat";
 import TeamChat from "../pages/Event/TeamChat";
+import PublicEvents from "../pages/Event/PublicEvents";
 
 const PageLayout = () => {
   return (
@@ -113,6 +114,7 @@ export default function AppRoutes() {
       <Route path="/home"        element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/choice"      element={<ProtectedRoute><IamChoice /></ProtectedRoute>} />
       <Route path="/all-events"  element={<ProtectedRoute><AllEvents /></ProtectedRoute>} />
+      <Route path="/events"      element={<ProtectedRoute><PublicEvents /></ProtectedRoute>} />
 
       {/* Event Creation */}
       <Route path="/new-events-hosted"                        element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />

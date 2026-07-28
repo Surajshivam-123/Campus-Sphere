@@ -1,11 +1,10 @@
 import axios from "axios";
-import API_URL from "../config/api";
 
 /**
  * Axios instance with default configuration
  */
 const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
@@ -54,10 +53,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     if (!error.response) {
-      const message =
-        error.code === "ECONNABORTED"
-          ? "Request timed out. The server may be starting up — please try again in a moment."
-          : "Unable to reach the server. Please check your connection and try again.";
+      const message = "Unable to reach the server. Please check your connection and try again.";
       return Promise.reject({ message, status: undefined, errors: undefined });
     }
     const isAuthEndpoint = originalRequest.url?.includes("/login") || originalRequest.url?.includes("/register");
@@ -94,7 +90,7 @@ apiClient.interceptors.response.use(
 
     return Promise.reject({
       message: errorMessage,
-      status: error.response?.status,  
+      status: error.response?.status,
       errors: error.response?.data?.errors,
     });
   }

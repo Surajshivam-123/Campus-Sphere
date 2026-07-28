@@ -44,9 +44,10 @@ export default function Body() {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full"
         >
           {[
+            { to: "/events", title: "Browse Events", desc: "Discover and explore campus events happening around you.", icon: Compass },
             { to: "/choice", title: "Participate", desc: "Register for exciting campus events and contests.", icon: Trophy },
             { to: "/new-events-hosted", title: "Host", desc: "Create and manage your own coding or sports events.", icon: CalendarPlus },
           ].map(({ to, title, desc, icon: Icon }) => (

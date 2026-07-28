@@ -83,7 +83,7 @@ const createEvent = asyncHandler(async (req, res) => {
     participantCode,
   });
 
-  await cacheDel(`events:organizer:${req.user._id}`);
+  await cacheDel(`events:organizer:${req.user._id}`, "events:public");
   res.status(201).json(new ApiResponse(201, event, "Event created successfully"));
 });
 
@@ -95,7 +95,8 @@ const deleteEvent = asyncHandler(async (req, res) => {
   }
   await cacheDel(
     `event:${eventId}`,
-    `events:organizer:${event.organizer}`
+    `events:organizer:${event.organizer}`,
+    "events:public"
   );
   res
     .status(200)
@@ -160,7 +161,8 @@ const updateEvent = asyncHandler(async (req, res) => {
     }
     await cacheDel(
       `event:${eventId}`,
-      `events:organizer:${req.user._id}`
+      `events:organizer:${req.user._id}`,
+      "events:public"
     );
     res
       .status(200)
@@ -221,12 +223,33 @@ const getallEvents = asyncHandler(async (req, res) => {
 // Public — no auth, returns all events (for spectators)
 const getPublicEvents = asyncHandler(async (req, res) => {
   try {
-    const cacheKey = "events:public";
+    const { search, category } = req.query;
+
+    const cacheKey = `events:public:search=${search || ""}:cat=${category || ""}`;
     const cached = await cacheGet(cacheKey);
     if (cached) return res.status(200).json(new ApiResponse(200, cached, "Events fetched"));
 
-    const events = await Event.find({})
-      .select("eventName organization category sports startDate location poster festivalName")
+    const query = {};
+    if (category && category !== "all") {
+      query.category = category;
+    }
+    if (search && search.trim() !== "") {
+      const cleanSearch = search.trim();
+      const searchRegex = new RegExp(cleanSearch, "i");
+      query.$or = [
+        { eventName: searchRegex },
+        { description: searchRegex },
+        { festivalName: searchRegex },
+        { sports: searchRegex },
+        { cultural: searchRegex },
+        { others: searchRegex },
+        { organization: searchRegex },
+        { location: searchRegex }
+      ];
+    }
+
+    const events = await Event.find(query)
+      .select("eventName description category sports startDate location poster festivalName memberCode organization")
       .sort({ startDate: -1 })
       .lean();
 

@@ -66,6 +66,17 @@ const eventService = {
   getMyHostedEvents: async () => {
     return apiClient.get("/api/cpsh/events/get-all-events");
   },
+
+  /**
+   * Get public events with optional search and category filters
+   */
+  getPublicEvents: async (search = "", category = "all") => {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (category && category !== "all") params.append("category", category);
+    const queryString = params.toString() ? `?${params.toString()}` : "";
+    return apiClient.get(`/api/cpsh/events/public${queryString}`);
+  },
 };
 
 export default eventService;
