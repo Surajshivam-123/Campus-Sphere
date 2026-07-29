@@ -1,10 +1,10 @@
+import API_URL from "../../config/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaPlus, FaSearch } from "react-icons/fa";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../hooks/useAuth";
-import API_URL from "../../config/api";
 
 function ClubCard({ club, index }) {
   const navigate = useNavigate();

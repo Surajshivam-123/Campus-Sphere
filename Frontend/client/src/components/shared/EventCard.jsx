@@ -1,7 +1,7 @@
+import API_URL from "../../config/api";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import API_URL from "../../config/api";
 import { formatDateTime } from "../../utils/helpers";
 import useIsLive from "../../hooks/useIsLive";
 import fetchWithAuth from "../../config/fetchWithAuth.js";

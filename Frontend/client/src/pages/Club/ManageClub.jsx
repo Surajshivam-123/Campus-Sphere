@@ -1,9 +1,9 @@
+import API_URL from "../../config/api";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaUserCheck, FaCog, FaCrown, FaStar, FaTrash, FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
-import API_URL from "../../config/api";
 import fetchWithAuth from "../../config/fetchWithAuth";
 
 function Avatar({ user, size = 8 }) {

@@ -1,8 +1,8 @@
+import API_URL from "../../config/api";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTrophy, FaMedal, FaArrowLeft, FaSync } from "react-icons/fa";
-import API_URL from "../../config/api";
 import fetchWithAuth from "../../config/fetchWithAuth";
 import socket from "../../config/socket";
 import LoadingPage from "../LoadingPage";

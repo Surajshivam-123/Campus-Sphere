@@ -1,8 +1,8 @@
+import API_URL from "../../config/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaCrown, FaStar, FaPlus } from "react-icons/fa";
 import { useFetch } from "../../hooks/useFetch";
-import API_URL from "../../config/api";
 
 export default function MyClubs() {
   const navigate = useNavigate();

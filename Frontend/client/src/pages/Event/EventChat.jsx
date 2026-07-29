@@ -1,10 +1,10 @@
+import API_URL from "../../config/api";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowLeft, FaPaperPlane, FaTrash, FaChevronDown } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import socket from "../../config/socket";
-import API_URL from "../../config/api";
 import fetchWithAuth from "../../config/fetchWithAuth";
 
 // ── Avatar ────────────────────────────────────────────────────────────────────

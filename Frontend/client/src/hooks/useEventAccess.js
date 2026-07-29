@@ -1,6 +1,6 @@
-﻿import { useState, useEffect } from "react";
-import API_URL from "../config/api";
-import fetchWithAuth from "../config/fetchWithAuth.js"
+import { useState, useEffect } from "react";
+import apiClient from "../services/api.service";
+
 /**
  * Checks if the logged-in user has access to an event's matches.
  * Access = organiser | member | participant | cricket player in that event.
@@ -12,12 +12,13 @@ export default function useEventAccess(eventId) {
   useEffect(() => {
     if (!eventId) { setLoading(false); return; }
 
-    // Probe the matches endpoint — 200 means access granted, 403 means denied
-    fetch(`${API_URL}/api/cpsh/matches/event/${eventId}`, { credentials: "include" })
-      .then((r) => setAccess(r.ok))
+    // Probe the matches endpoint — success means access granted, failure means denied
+    apiClient.get(`/api/cpsh/matches/event/${eventId}`)
+      .then(() => setAccess(true))
       .catch(() => setAccess(false))
       .finally(() => setLoading(false));
   }, [eventId]);
 
   return { access, loading };
 }
+

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import profile from "../assets/download.jpeg";
-import API_URL from "../config/api";
+import apiClient from "../services/api.service";
 import { Eye, EyeOff } from "lucide-react";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -49,13 +49,8 @@ export default function Register() {
 
     setIsSendingOtp(true);
     try {
-      const response = await fetch(`${API_URL}/api/cpsh/users/register/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const result = await response.json();
-      if (response.ok || result?.success) {
+      const result = await apiClient.post("/api/cpsh/users/register/send-otp", { email });
+      if (result?.success) {
         setOtpEmailSent(true);
         setResendCooldown(60);
         setOtpMessage("Verification OTP sent to your email!");
@@ -64,7 +59,7 @@ export default function Register() {
       }
     } catch (err) {
       console.error("Send Registration OTP error:", err);
-      setErrorMessage("Something went wrong. Please try again.");
+      setErrorMessage(err?.message || "Something went wrong. Please try again.");
     } finally {
       setIsSendingOtp(false);
     }
@@ -77,13 +72,8 @@ export default function Register() {
 
     setIsVerifyingOtp(true);
     try {
-      const response = await fetch(`${API_URL}/api/cpsh/users/register/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: otpCode }),
-      });
-      const result = await response.json();
-      if (response.ok || result?.success) {
+      const result = await apiClient.post("/api/cpsh/users/register/verify-otp", { email, otp: otpCode });
+      if (result?.success) {
         setVerificationToken(result?.data?.verificationToken);
         setIsEmailVerified(true);
         setOtpEmailSent(false);
@@ -93,7 +83,7 @@ export default function Register() {
       }
     } catch (err) {
       console.error("Verify Registration OTP error:", err);
-      setOtpMessage("Something went wrong. Please try again.");
+      setOtpMessage(err?.message || "Something went wrong. Please try again.");
     } finally {
       setIsVerifyingOtp(false);
     }
@@ -144,11 +134,11 @@ export default function Register() {
     if (avatarFile) formData.append("avatar", avatarFile);
 
     try {
-      const response = await fetch(`${API_URL}/api/cpsh/users/register`, {
-        method: "POST",
-        body: formData,
+      const result = await apiClient.post("/api/cpsh/users/register", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      const result = await response.json();
       if (result?.statusCode === 201 || result?.success) {
         if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
         navigate("/home");
@@ -157,7 +147,7 @@ export default function Register() {
       }
     } catch (err) {
       console.error("Registration error:", err);
-      setErrorMessage("Something went wrong. Please try again.");
+      setErrorMessage(err?.message || "Something went wrong. Please try again.");
     }
   };
 

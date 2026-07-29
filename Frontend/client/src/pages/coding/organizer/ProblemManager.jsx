@@ -1,9 +1,9 @@
+import API_URL from "../../../config/api";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import fetchWithAuth from "../../../config/fetchWithAuth";
-import API_URL from "../../../config/api";
 import LoadingPage from "../../LoadingPage";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];

@@ -1,8 +1,8 @@
+import API_URL from "../../config/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
-import API_URL from "../../config/api";
 import fetchWithAuth from "../../config/fetchWithAuth";
 
 export default function CreateClub() {

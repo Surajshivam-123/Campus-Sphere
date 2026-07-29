@@ -1,7 +1,7 @@
 import logo from "../../public/logo.jpg";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
-import API_URL from "../config/api.js";
+import apiClient from "../services/api.service";
 import { useAuth } from "../hooks/useAuth";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -44,16 +44,14 @@ export default function Login() {
     if (!otpEmail.trim()) return setMessage("Please enter your email");
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/users/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: otpEmail }),
-      });
-      const result = await res.json();
+      const result = await apiClient.post("/api/cpsh/users/send-otp", { email: otpEmail });
       if (result?.statusCode === 200) { setOtpSent(true); setMessage(""); }
       else setMessage(result?.message);
-    } catch { setMessage("Failed to send OTP. Try again."); }
-    finally { setLoading(false); }
+    } catch (error) {
+      setMessage(error?.message || "Failed to send OTP. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerifyOtp = async (e) => {
@@ -62,20 +60,16 @@ export default function Login() {
     if (!otp.trim()) return setMessage("Please enter the OTP");
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/cpsh/users/verify-otp`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: otpEmail, otp }),
-      });
-      const result = await res.json();
+      const result = await apiClient.post("/api/cpsh/users/verify-otp", { email: otpEmail, otp });
       if (result?.statusCode === 200) {
         if (result?.data?.accessToken) localStorage.setItem("accessToken", result.data.accessToken);
-        // Reload so AuthProvider re-runs checkAuth and sets user in context
         window.location.replace("/home");
       } else setMessage(result?.message);
-    } catch { setMessage("Verification failed. Try again."); }
-    finally { setLoading(false); }
+    } catch (error) {
+      setMessage(error?.message || "Verification failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

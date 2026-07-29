@@ -1,7 +1,7 @@
+import API_URL from "../../../config/api";
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaCode, FaTrophy, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import API_URL from "../../../config/api";
 import fetchWithAuth from "../../../config/fetchWithAuth";
 import socket from "../../../config/socket";
 import LoadingPage from "../../LoadingPage";

@@ -1,9 +1,9 @@
+import API_URL from "../../../config/api";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 import fetchWithAuth from "../../../config/fetchWithAuth";
-import API_URL from "../../../config/api";
 
 const LANGUAGES = ["cpp", "c", "python", "java", "javascript"];
 

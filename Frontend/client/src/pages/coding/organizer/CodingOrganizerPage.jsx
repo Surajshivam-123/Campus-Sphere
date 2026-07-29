@@ -1,3 +1,4 @@
+import API_URL from "../../../config/api";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -9,7 +10,6 @@ import {
 import { CalendarDays, MapPin, Users } from "lucide-react";
 import fetchWithAuth from "../../../config/fetchWithAuth";
 import eventService from "../../../services/event.service";
-import API_URL from "../../../config/api";
 import { formatDateTime } from "../../../utils/helpers";
 import LoadingPage from "../../LoadingPage";
 
