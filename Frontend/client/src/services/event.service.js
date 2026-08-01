@@ -24,6 +24,10 @@ const eventService = {
     });
   },
 
+  generatePoster: async (prompt) => {
+    return apiClient.post("/api/cpsh/events/generate-poster", { prompt }, { timeout: 60000 });
+  },
+
   updateEvent: async (eventId, eventData) => {
     return apiClient.patch(`/api/cpsh/events/update/${eventId}`, eventData);
   },

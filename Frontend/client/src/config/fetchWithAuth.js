@@ -11,6 +11,7 @@ export default async function fetchWithAuth(url, options = {}) {
   const config = {
     method,
     headers: options.headers || {},
+    timeout: options.timeout,
   };
 
   if (options.body) {

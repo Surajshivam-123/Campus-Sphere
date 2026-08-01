@@ -69,7 +69,7 @@ class UserService {
     }
 
     // Upload avatar to cloudinary
-    let avatarUrl = "";
+    let avatarUrl = userData.avatarUrl || "";
     if (avatarPath) {
       const avatar = await uploadOnCloudinary(avatarPath);
       avatarUrl = avatar?.url || "";

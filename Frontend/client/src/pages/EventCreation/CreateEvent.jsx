@@ -12,6 +12,9 @@ export default function CreateEvent() {
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
   const [err, setErr] = useState("");
+  const [posterSource, setPosterSource] = useState("upload"); // upload | ai
+  const [posterPrompt, setPosterPrompt] = useState("");
+  const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   const [eventData, setEventData] = useState({
     festivalName: "", eventName: "", startDate: "", eventLocation: "",
     organization: "", description: "", mode: "", category: "", sports: "",
@@ -31,6 +34,29 @@ export default function CreateEvent() {
     }
   };
 
+  const handleGeneratePoster = async () => {
+    if (!posterPrompt.trim()) {
+      setErr("Please enter a description for the poster.");
+      return;
+    }
+    setIsGeneratingPoster(true);
+    setErr("");
+    try {
+      const res = await eventService.generatePoster(posterPrompt);
+      if (res?.data?.url) {
+        setEventData((prev) => ({ ...prev, poster: res.data.url }));
+        setImagePreview(res.data.url);
+      } else {
+        setErr(res?.message || "Failed to generate AI poster.");
+      }
+    } catch (error) {
+      console.error("Error generating poster:", error);
+      setErr("Failed to generate AI poster.");
+    } finally {
+      setIsGeneratingPoster(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { eventName, startDate, eventLocation, organization, description, mode, category, maxParticipants } = eventData;
@@ -38,9 +64,26 @@ export default function CreateEvent() {
       setErr("All mandatory fields are required.");
       return;
     }
+    if (!eventData.poster) {
+      setErr("Poster is required.");
+      return;
+    }
     try {
       const formData = new FormData();
-      Object.entries(eventData).forEach(([k, v]) => formData.append(k === "eventLocation" ? "location" : k, v));
+      Object.entries(eventData).forEach(([k, v]) => {
+        if (k === "eventLocation") {
+          formData.append("location", v);
+        } else if (k === "poster") {
+          if (posterSource === "upload") {
+            formData.append("poster", v);
+          }
+        } else {
+          formData.append(k, v);
+        }
+      });
+      if (posterSource === "ai") {
+        formData.append("posterUrl", eventData.poster);
+      }
       const result = await eventService.createEvent(formData);
       console.log("Server Response:", result);
       navigate("/events-hosted");
@@ -110,22 +153,71 @@ export default function CreateEvent() {
             className="block text-xs font-medium mb-2 uppercase tracking-wider flex items-center gap-2"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            <FaFileUpload className="shrink-0" /> Upload poster / image *
+            <FaFileUpload className="shrink-0" /> Poster / Image *
           </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="block w-full max-w-xs text-sm"
-            style={{ color: "var(--color-text-muted)" }}
-          />
-          {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Event preview"
-              className="mt-3 rounded-md w-1/4 max-h-48 object-cover border"
-              style={{ borderColor: "var(--color-border)" }}
+          <div className="flex gap-4 border-b border-gray-100 pb-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setPosterSource("upload")}
+              className={`text-xs font-semibold uppercase tracking-wider pb-1 transition ${
+                posterSource === "upload"
+                  ? "border-b-2 border-[#1e3a5f] text-[#1e3a5f]"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              Upload File
+            </button>
+            <button
+              type="button"
+              onClick={() => setPosterSource("ai")}
+              className={`text-xs font-semibold uppercase tracking-wider pb-1 transition ${
+                posterSource === "ai"
+                  ? "border-b-2 border-[#1e3a5f] text-[#1e3a5f]"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              AI Generated
+            </button>
+          </div>
+
+          {posterSource === "upload" ? (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="block w-full max-w-xs text-sm"
+              style={{ color: "var(--color-text-muted)" }}
             />
+          ) : (
+            <div className="space-y-3 max-w-md">
+              <input
+                type="text"
+                placeholder="Describe event poster (e.g. Neon hackathon coding contest banner)"
+                value={posterPrompt}
+                onChange={(e) => setPosterPrompt(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]"
+              />
+              <button
+                type="button"
+                disabled={isGeneratingPoster}
+                onClick={handleGeneratePoster}
+                className="bg-[#b8860b] hover:bg-[#9a7009] text-white text-xs font-semibold px-4 py-2 rounded transition disabled:opacity-60"
+              >
+                {isGeneratingPoster ? "Generating Poster..." : "Generate AI Poster"}
+              </button>
+            </div>
+          )}
+
+          {imagePreview && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-400 mb-1">Poster Preview:</p>
+              <img
+                src={imagePreview}
+                alt="Event preview"
+                className="rounded-md w-1/2 max-h-64 object-cover border"
+                style={{ borderColor: "var(--color-border)" }}
+              />
+            </div>
           )}
         </div>
 

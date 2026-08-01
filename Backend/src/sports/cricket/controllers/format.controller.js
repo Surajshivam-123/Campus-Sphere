@@ -25,6 +25,7 @@ const saveFormat = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, format, "Format saved successfully"));
   } catch (error) {
     console.log("Error while saving cricket format", error);
+    throw error;
   }
 });
 
@@ -43,6 +44,7 @@ const getFormat = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, format || null, "Format fetched successfully"));
   } catch (error) {
     console.log("Error while getting cricket format", error);
+    throw error;
   }
 });
 

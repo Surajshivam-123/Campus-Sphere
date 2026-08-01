@@ -49,9 +49,7 @@ export const config = {
 
   // CORS — FRONTEND_ORIGIN accepts comma-separated URLs
   cors: {
-    origins: [
-      ...(process.env.FRONTEND_ORIGIN || "").split(",").map((s) => s.trim()),
-    ].filter(Boolean),
+    origins: process.env.FRONTEND_ORIGIN
   },
 
   // Redis

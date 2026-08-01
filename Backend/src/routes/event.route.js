@@ -1,11 +1,12 @@
 import Router from "express";
-import { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer } from '../controllers/event.controller.js'
+import { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer, generateEventPoster } from '../controllers/event.controller.js'
 import {upload} from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
 
 
 const eventRouter=Router();
 
+eventRouter.route('/generate-poster').post(verifyJWT, generateEventPoster);
 eventRouter.route('/create').post(verifyJWT,upload.single('poster'),createEvent);
 eventRouter.route('/delete/:eventId').delete(verifyJWT,deleteEvent);
 eventRouter.route('/update/:eventId').patch(verifyJWT,upload.single('poster'),updateEvent);

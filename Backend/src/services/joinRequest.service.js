@@ -3,7 +3,9 @@ import { Member } from "../models/members.model.js";
 import { Cricket_Player } from "../sports/cricket/models/player.model.js";
 import { cacheDel } from "../utils/redis.js";
 import { getIO } from "../socket.js";
-
+import { Event } from "../models/event.model.js";
+import { ClubMember } from "../models/clubMember.model.js";
+import { User } from "../models/user.model.js";
 /**
  * Submit a join request.
  * @param {"member"|"team"|"club"} type
@@ -106,16 +108,12 @@ export async function respondToRequest(requestId, action, responderId) {
   } else if (joinReq.type === "team") {
     const isCaptain = joinReq.team.owner.toString() === responderId.toString();
     if (!isCaptain) {
-      // Also allow the event organizer
-      const { Event } = await import("../models/event.model.js");
       const event = await Event.findById(joinReq.event).select("organizer").lean();
       const isOrganizer = event?.organizer?.toString() === responderId.toString();
       if (!isOrganizer) return { forbidden: true };
     }
   } else {
-    // club — founder or any isHead member can respond
-    const { ClubMember } = await import("../models/clubMember.model.js");
-    const isFounder = joinReq.club.founder.toString() === responderId.toString();
+       const isFounder = joinReq.club.founder.toString() === responderId.toString();
     const isHead = await ClubMember.findOne({ club: joinReq.club._id, user: responderId, isHead: true });
     if (!isFounder && !isHead) {
       return { forbidden: true };
@@ -129,7 +127,6 @@ export async function respondToRequest(requestId, action, responderId) {
     if (joinReq.type === "member") {
       const exists = await Member.findOne({ owner: joinReq.requester, event: joinReq.event._id });
       if (!exists) {
-        const { User } = await import("../models/user.model.js");
         const user = await User.findById(joinReq.requester).select("fullname username").lean();
         created = await Member.create({
           owner: joinReq.requester,
@@ -150,7 +147,6 @@ export async function respondToRequest(requestId, action, responderId) {
         `teams:event:${joinReq.event._id}`
       );
     } else {
-      const { ClubMember } = await import("../models/clubMember.model.js");
       const exists = await ClubMember.findOne({ club: joinReq.club._id, user: joinReq.requester });
       if (!exists) {
         created = await ClubMember.create({
@@ -163,9 +159,10 @@ export async function respondToRequest(requestId, action, responderId) {
       }
       await cacheDel(`club:members:${joinReq.club._id}`, `clubs:user:${joinReq.requester}`);
     }
+    await JoinRequest.findByIdAndDelete(requestId);
+  } else {
+    await joinReq.save();
   }
-
-  await joinReq.save();
 
   const io = getIO();
   if (io) {

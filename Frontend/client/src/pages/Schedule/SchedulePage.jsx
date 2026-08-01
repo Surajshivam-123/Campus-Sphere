@@ -1,7 +1,7 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaRobot, FaPenAlt, FaTrophy, FaCheckCircle, FaSpinner } from "react-icons/fa";
+import { FaPenAlt, FaTrophy, FaCheckCircle, FaSpinner } from "react-icons/fa";
 import API_URL from "../../config/api.js";
 import fetchWithAuth from "../../config/fetchWithAuth.js"
 
@@ -39,13 +39,13 @@ export default function SchedulePage() {
     load();
   }, [eventId]);
 
-  const handleAIGenerate = async () => {
+  const handleAutoGenerate = async () => {
     setLoading(true); setError("");
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}/ai`, { method: "POST"});
+      const res = await fetchWithAuth(`${API_URL}/api/cpsh/schedule/${eventId}/auto`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to generate schedule");
-      setSchedule(data.data); setSaved(true);
+      setSchedule(data.data); setSaved(true); setMode(null);
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -161,48 +161,30 @@ export default function SchedulePage() {
 
         {/* Method selection */}
         {!schedule && !mode && (
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { id: "ai", icon: <FaRobot className="text-3xl" style={{ color: "var(--color-gold)" }} />, title: "Generate with AI", desc: "Unbiased, randomized schedule" },
-              { id: "manual", icon: <FaPenAlt className="text-3xl" style={{ color: "var(--color-navy)" }} />, title: "Create Manually", desc: "Pick matchups yourself" },
-            ].map(({ id, icon, title, desc }) => (
-              <motion.button key={id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                onClick={() => setMode(id)}
-                className="flex flex-col items-center gap-3 p-6 rounded-lg border transition text-center"
-                style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 50%, transparent)"}
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--color-border)"}
-              >
-                {icon}
-                <span className="font-medium text-sm" style={{ color: "var(--color-navy)" }}>{title}</span>
-                <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>{desc}</span>
-              </motion.button>
-            ))}
+          <div className="space-y-4">
+            {loading && <div className="text-center py-4 flex items-center justify-center gap-2" style={{ color: "var(--color-navy)" }}><FaSpinner className="animate-spin text-xl" /> Generating schedule automatically...</div>}
+            {!loading && (
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { id: "auto", icon: <FaTrophy className="text-3xl" style={{ color: "var(--color-gold)" }} />, title: "Generate Automatically", desc: "Autofill using tournament format", action: handleAutoGenerate },
+                  { id: "manual", icon: <FaPenAlt className="text-3xl" style={{ color: "var(--color-navy)" }} />, title: "Create Manually", desc: "Pick matchups yourself", action: () => setMode("manual") },
+                ].map(({ id, icon, title, desc, action }) => (
+                  <motion.button key={id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                    onClick={action}
+                    className="flex flex-col items-center gap-3 p-6 rounded-lg border transition text-center"
+                    style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-gold) 50%, transparent)"}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--color-border)"}
+                  >
+                    {icon}
+                    <span className="font-medium text-sm" style={{ color: "var(--color-navy)" }}>{title}</span>
+                    <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>{desc}</span>
+                  </motion.button>
+                ))}
+              </div>
+            )}
           </div>
         )}
-
-        {/* AI mode */}
-        <AnimatePresence>
-          {!schedule && mode === "ai" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                AI will generate a fair, randomized schedule based on your tournament format and registered teams.
-              </p>
-              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                Teams registered: <span className="font-medium" style={{ color: "var(--color-navy)" }}>{teamNames.join(", ") || "None"}</span>
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setMode(null)} className="btn-secondary flex-1">Back</button>
-                <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                  onClick={handleAIGenerate} disabled={loading}
-                  className="btn-gold flex-1 flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  {loading ? <><FaSpinner className="animate-spin" /> Generating…</> : <><FaRobot /> Generate Schedule</>}
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Manual mode */}
         <AnimatePresence>

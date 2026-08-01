@@ -34,7 +34,6 @@ const isFounderOrHead = async (clubId, userId, founderId) => {
 
 // ── Controllers ───────────────────────────────────────────────────────────────
 
-// POST /clubs/create
 const createClub = asyncHandler(async (req, res) => {
   try {
     const { name, description, college, category, isPublic } = req.body;
@@ -61,7 +60,7 @@ const createClub = asyncHandler(async (req, res) => {
       college: college.trim(),
       category,
       isPublic: isPublic !== undefined ? isPublic : true,
-      founder: req.user._id,
+      founder: req.user?._id,
       clubCode,
       logo,
     });
@@ -290,8 +289,8 @@ const handleClubJoinRequest = asyncHandler(async (req, res) => {
 
     const result = await respondToRequest(requestId, action, req.user._id);
 
-    if (result.notFound)       return res.status(404).json(new ApiResponse(404, null, "Join request not found"));
-    if (result.forbidden)      return res.status(403).json(new ApiResponse(403, null, "Only the founder or head members can handle join requests"));
+    if (result.notFound) return res.status(404).json(new ApiResponse(404, null, "Join request not found"));
+    if (result.forbidden) return res.status(403).json(new ApiResponse(403, null, "Only the founder or head members can handle join requests"));
     if (result.alreadyHandled) return res.status(400).json(new ApiResponse(400, null, `Request already ${result.status}`));
 
     return res.status(200).json(new ApiResponse(200, { status: result.status, member: result.created }, `Request ${result.status} successfully`));
@@ -400,7 +399,6 @@ const assignPosition = asyncHandler(async (req, res) => {
 const markAsAlumni = asyncHandler(async (req, res) => {
   try {
     const { clubMemberId } = req.params;
-
     const clubMember = await ClubMember.findById(clubMemberId);
     if (!clubMember) throw new ApiError(404, "Club member not found");
 

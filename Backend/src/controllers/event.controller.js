@@ -4,6 +4,11 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+import { Member } from "../models/members.model.js";
+import { Participant } from "../models/participant.model.js";
+import { EventMessage } from "../models/eventMessage.model.js";
+import fs from "fs";
+import path from "path";
 
 const EVENT_TTL = 300;       // 5 min — single event
 const EVENT_LIST_TTL = 120;  // 2 min — list of events (changes more often)
@@ -34,6 +39,7 @@ const createEvent = asyncHandler(async (req, res) => {
     cultural,
     maxParticipants,
     rules,
+    posterUrl,
   } = req.body;
 
   if (
@@ -49,13 +55,18 @@ const createEvent = asyncHandler(async (req, res) => {
   }
 
   const posterLocalPath = req.file?.path;
-  if (!posterLocalPath) {
-    throw new ApiError(400, "Poster is required");
+  let finalPosterUrl = posterUrl || "";
+
+  if (posterLocalPath) {
+    const poster = await uploadOnCloudinary(posterLocalPath);
+    if (!poster?.url) {
+      throw new ApiError(500, "Failed to upload poster");
+    }
+    finalPosterUrl = poster.url;
   }
 
-  const poster = await uploadOnCloudinary(posterLocalPath);
-  if (!poster?.url) {
-    throw new ApiError(500, "Failed to upload poster");
+  if (!finalPosterUrl) {
+    throw new ApiError(400, "Poster is required");
   }
 
   let memberCode = generateUniqueCode();
@@ -78,11 +89,16 @@ const createEvent = asyncHandler(async (req, res) => {
     others,
     maxParticipants,
     rules,
-    poster: poster.url,
+    poster: finalPosterUrl,
     memberCode,
     participantCode,
   });
-
+  await Member.create({
+    owner: req.user._id,
+    name: req.user.fullname,
+    role: "organizer",
+    event: event._id
+  })
   await cacheDel(`events:organizer:${req.user._id}`, "events:public");
   res.status(201).json(new ApiResponse(201, event, "Event created successfully"));
 });
@@ -114,6 +130,7 @@ const updateEvent = asyncHandler(async (req, res) => {
       startDate,
       maxParticipants,
       rules,
+      posterUrl,
     } = req.body;
     const { eventId } = req.params;
     if (!eventId) {
@@ -130,6 +147,8 @@ const updateEvent = asyncHandler(async (req, res) => {
     }
     if (poster) {
       event.poster = poster.url;
+    } else if (posterUrl) {
+      event.poster = posterUrl;
     }
     if (festivalName?.trim()) {
       event.festivalName = festivalName;
@@ -169,6 +188,7 @@ const updateEvent = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, updatedEvent, "Event updated successfully"));
   } catch (error) {
     console.log("Error while updating event", error);
+    throw error;
   }
 });
 
@@ -192,6 +212,7 @@ const getsingleEvent = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, event, "Event found successfully"));
   } catch (error) {
     console.log("Error while getting event", error);
+    throw error;
   }
 });
 
@@ -215,6 +236,7 @@ const getallEvents = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, events, "All Events found successfully"));
   } catch (error) {
     console.log("Error while getting all events", error);
+    throw error;
   }
 });
 
@@ -301,5 +323,120 @@ const revokeScorer = asyncHandler(async (req, res) => {
     throw error;
   }
 });
+const sendEventMessage = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { page = 1, limit = 50 } = req.query;
+    const userId = req.user._id;
 
-export { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer };
+    const event = await Event.findById(eventId).select("organizer").lean();
+    if (!event) {
+      return res.status(404).json({ error: "Event not found." });
+    }
+
+    const isOrganizer = event.organizer.toString() === userId.toString();
+    const isMember = await Member.findOne({ event: eventId, owner: userId }).lean();
+    const isParticipant = await Participant.findOne({ event: eventId, owner: userId }).lean();
+
+    if (!isOrganizer && !isMember && !isParticipant) {
+      return res.status(403).json({ error: "You are not authorized to view this chat." });
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const messages = await EventMessage.find({ event: eventId, deleted: false })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("sender", "fullname avatar")
+      .lean();
+
+    const total = await EventMessage.countDocuments({ event: eventId, deleted: false });
+
+    res.json({
+      messages: messages.reverse(),
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit)),
+    });
+  } catch (err) {
+    console.error("[event:chat:messages] error:", err.message);
+    res.status(500).json({ error: "Failed to fetch messages." });
+  }
+});
+
+const generateEventPoster = asyncHandler(async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt || !prompt.trim()) {
+    throw new ApiError(400, "Prompt is required");
+  }
+
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_KEY) {
+    throw new ApiError(500, "Gemini API key is not configured");
+  }
+
+  try {
+    const systemPrompt = `You are a professional SVG designer. Generate a stunning, beautiful, modern, and high-impact poster/banner SVG graphic for a campus event/festival based on the user's description.
+                          Requirements:
+                          - Return ONLY valid raw SVG XML code starting with '<svg' and ending with '</svg>'.
+                          - Do not include markdown code block styling (such as \`\`\`xml or \`\`\`svg).
+                          - Ensure it is a complete, self-contained SVG with standard namespaces (xmlns="http://www.w3.org/2000/svg"), viewBox="0 0 800 500" (landscape/banner aspect ratio), width, and height.
+                          - Design a stunning, stylized vector banner matching the prompt: "${prompt}".
+                          - Do not include any text explanation or extra whitespace before or after the SVG tag.`;
+
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }),
+      }
+    );
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error("Gemini poster API error:", geminiRes.status, errText);
+      throw new Error(`Gemini API returned status ${geminiRes.status}`);
+    }
+
+    const data = await geminiRes.json();
+    let rawSvg = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    
+    // Clean up markdown block wrapping if present
+    rawSvg = rawSvg.replace(/```xml|```svg|```/gi, "").trim();
+
+    if (!rawSvg.startsWith("<svg") && rawSvg.includes("<svg")) {
+      rawSvg = rawSvg.substring(rawSvg.indexOf("<svg"));
+    }
+    if (rawSvg.includes("</svg>")) {
+      rawSvg = rawSvg.substring(0, rawSvg.indexOf("</svg>") + 6);
+    }
+
+    if (!rawSvg || !rawSvg.startsWith("<svg")) {
+      throw new Error("Failed to generate a valid SVG poster");
+    }
+
+    // Write temp SVG file
+    const tempDir = path.resolve("./public/temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    const tempFilePath = path.join(tempDir, `eventposter-${Date.now()}.svg`);
+    fs.writeFileSync(tempFilePath, rawSvg);
+
+    // Upload to Cloudinary
+    const uploadResult = await uploadOnCloudinary(tempFilePath);
+    if (!uploadResult?.url) {
+      throw new Error("Failed to upload poster to Cloudinary");
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, { url: uploadResult.url }, "Poster generated successfully"));
+  } catch (error) {
+    console.error("Error in generateEventPoster:", error);
+    res.status(500).json(new ApiResponse(500, null, error.message || "Failed to generate poster"));
+  }
+});
+
+export { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer, sendEventMessage, generateEventPoster };

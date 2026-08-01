@@ -16,7 +16,7 @@ connectDB()
     // Eagerly connect to Redis so we know it's up at startup
     getRedisClient().connect().catch(() => {});
     httpServer.listen(config.server.port, () => {
-      console.log(`✅ Server is running on http://localhost:${config.server.port}`);
+      console.log(`✅ Server is running fast`);
       console.log(`📝 Environment: ${config.server.env}`);
     });
   })

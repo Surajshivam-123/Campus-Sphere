@@ -4,6 +4,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 import userService from "../services/user.service.js";
 import { HTTP_STATUS, COOKIE_OPTIONS } from "../constants/index.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import fs from "fs";
+import path from "path";
 
 const validatePassword = (password) => {
   if (password.length < 8) {
@@ -25,7 +27,7 @@ const validatePassword = (password) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullname, username, email, password, verificationToken } = req.body;
+  const { fullname, username, email, password, verificationToken, avatarUrl } = req.body;
 
   // Validate required fields
   if ([fullname, username, email, password].some((field) => !field?.trim())) {
@@ -44,7 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const avatarPath = req.file?.path;
   const { user, accessToken, refreshToken } = await userService.registerUser(
-    { fullname, username, email, password, verificationToken },
+    { fullname, username, email, password, verificationToken, avatarUrl },
     avatarPath
   );
 
@@ -177,7 +179,7 @@ const verifyRegistrationOtp = asyncHandler(async (req, res) => {
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
-  const { fullname } = req.body;
+  const { fullname, avatarUrl } = req.body;
   const updateData = {};
 
   if (fullname !== undefined) {
@@ -187,7 +189,11 @@ const updateProfile = asyncHandler(async (req, res) => {
     updateData.fullname = fullname;
   }
 
-  // Handle avatar upload if provided
+  if (avatarUrl !== undefined) {
+    updateData.avatar = avatarUrl;
+  }
+
+  // Handle avatar upload if provided (file upload overrides avatarUrl)
   const avatarPath = req.file?.path;
   if (avatarPath) {
     const avatar = await uploadOnCloudinary(avatarPath);
@@ -207,4 +213,79 @@ const updateProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(HTTP_STATUS.OK, updatedUser, "Profile updated successfully"));
 });
 
-export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp, sendRegistrationOtp, verifyRegistrationOtp, updateProfile };
+const generateAvatar = asyncHandler(async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt || !prompt.trim()) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Prompt is required");
+  }
+
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_KEY) {
+    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Gemini API key is not configured");
+  }
+
+  try {
+    const systemPrompt = `You are a professional SVG designer. Generate a beautiful, modern, clean, colorful vector avatar SVG based on the user's description.
+                          Requirements:
+                          - Return ONLY valid raw SVG XML code starting with '<svg' and ending with '</svg>'.
+                          - Do not include markdown code block styling (such as \`\`\`xml or \`\`\`svg).
+                          - Ensure it is a complete, self-contained SVG with standard namespaces (xmlns="http://www.w3.org/2000/svg"), viewBox="0 0 100 100", width, and height.
+                          - Design a stunning, stylized vector portrait/graphic matching the prompt: "${prompt}".
+                          - Do not include any text explanation or extra whitespace before or after the SVG tag.`;
+
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }),
+      }
+    );
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error("Gemini avatar API error:", geminiRes.status, errText);
+      throw new Error(`Gemini API returned status ${geminiRes.status}`);
+    }
+
+    const data = await geminiRes.json();
+    let rawSvg = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    
+    // Clean up markdown block wrapping if present
+    rawSvg = rawSvg.replace(/```xml|```svg|```/gi, "").trim();
+
+    if (!rawSvg.startsWith("<svg") && rawSvg.includes("<svg")) {
+      rawSvg = rawSvg.substring(rawSvg.indexOf("<svg"));
+    }
+    if (rawSvg.includes("</svg>")) {
+      rawSvg = rawSvg.substring(0, rawSvg.indexOf("</svg>") + 6);
+    }
+
+    if (!rawSvg || !rawSvg.startsWith("<svg")) {
+      throw new Error("Failed to generate a valid SVG avatar");
+    }
+
+    // Write temp SVG file
+    const tempDir = path.resolve("./public/temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    const tempFilePath = path.join(tempDir, `avatar-${Date.now()}.svg`);
+    fs.writeFileSync(tempFilePath, rawSvg);
+
+    // Upload to Cloudinary
+    const uploadResult = await uploadOnCloudinary(tempFilePath);
+    if (!uploadResult?.url) {
+      throw new Error("Failed to upload avatar to Cloudinary");
+    }
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(new ApiResponse(HTTP_STATUS.OK, { url: uploadResult.url }, "Avatar generated successfully"));
+  } catch (error) {
+    console.error("Error in generateAvatar:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(new ApiResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, null, error.message || "Failed to generate avatar"));
+  }
+});
+
+export { registerUser, loginUser, logoutUser, refreshToken, getUser, googleAuthCallback, sendOtp, verifyOtp, sendRegistrationOtp, verifyRegistrationOtp, updateProfile, generateAvatar };

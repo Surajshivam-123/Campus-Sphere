@@ -15,6 +15,41 @@ export default function Profile() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [avatarPrompt, setAvatarPrompt] = useState("");
+  const [aiAvatarUrl, setAiAvatarUrl] = useState("");
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+
+  const handleGenerateAIAvatar = async () => {
+    if (!avatarPrompt.trim()) {
+      setError("Please enter a prompt to generate an avatar.");
+      return;
+    }
+    setIsGeneratingAvatar(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetchWithAuth(`${API_URL}/api/cpsh/users/generate-avatar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: avatarPrompt }),
+        timeout: 60000,
+      });
+      const result = await response.json();
+      if (response.ok && result?.data?.url) {
+        setAiAvatarUrl(result.data.url);
+        setAvatarPreview(result.data.url);
+        setAvatarFile(null); // Clear manual upload file if they choose AI
+      } else {
+        setError(result?.message || "Failed to generate AI avatar.");
+      }
+    } catch (err) {
+      console.error("AI avatar generation error:", err);
+      setError("Something went wrong generating avatar.");
+    } finally {
+      setIsGeneratingAvatar(false);
+    }
+  };
+
   const fileInputRef = useRef(null);
 
   const loadProfile = async () => {
@@ -43,6 +78,7 @@ export default function Profile() {
     if (file) {
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
+      setAiAvatarUrl("");
     }
   };
 
@@ -67,6 +103,8 @@ export default function Profile() {
       formData.append("fullname", fullname);
       if (avatarFile) {
         formData.append("avatar", avatarFile);
+      } else if (aiAvatarUrl) {
+        formData.append("avatarUrl", aiAvatarUrl);
       }
 
       const response = await fetchWithAuth(`${API_URL}/api/cpsh/users/profile`, {
@@ -97,6 +135,8 @@ export default function Profile() {
     setFullname(user?.fullname || "");
     setAvatarPreview(user?.avatar || "");
     setAvatarFile(null);
+    setAvatarPrompt("");
+    setAiAvatarUrl("");
     setIsEditing(false);
     setError("");
     setMessage("");
@@ -157,6 +197,12 @@ export default function Profile() {
               >
                 <Camera className="h-6 w-6 animate-pulse" />
               </button>
+            )}
+
+            {isGeneratingAvatar && (
+              <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center text-white">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
             )}
             
             <input
@@ -268,6 +314,40 @@ export default function Profile() {
                   />
                   <span className="text-[10px]" style={{ color: "var(--color-text-muted)" }}>
                     Email address cannot be changed.
+                  </span>
+                </div>
+
+                <div className="border-t pt-4 space-y-2" style={{ borderColor: "var(--color-border)" }}>
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    Generate AI Avatar
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. A cool panda wearing sunglasses"
+                      value={avatarPrompt}
+                      onChange={(e) => setAvatarPrompt(e.target.value)}
+                      className="input-base flex-grow text-sm"
+                      disabled={isGeneratingAvatar || isSubmitting}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleGenerateAIAvatar}
+                      disabled={isGeneratingAvatar || isSubmitting || !avatarPrompt.trim()}
+                      className="btn-primary py-2 px-3 text-xs font-semibold shrink-0"
+                      style={{
+                        background: "linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))",
+                        color: "var(--color-navy)",
+                      }}
+                    >
+                      {isGeneratingAvatar ? "Generating..." : "Generate"}
+                    </button>
+                  </div>
+                  <span className="text-[10px] block" style={{ color: "var(--color-text-muted)" }}>
+                    Or click the camera overlay on your avatar to upload a file manually.
                   </span>
                 </div>
 

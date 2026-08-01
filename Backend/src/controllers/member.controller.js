@@ -89,8 +89,8 @@ const handleJoinRequest = asyncHandler(async (req, res) => {
 
     const result = await respondToRequest(requestId, action, req.user._id);
 
-    if (result.notFound)      return res.status(404).json(new ApiResponse(404, null, "Join request not found"));
-    if (result.forbidden)     return res.status(403).json(new ApiResponse(403, null, "Only the organizer can handle join requests"));
+    if (result.notFound) return res.status(404).json(new ApiResponse(404, null, "Join request not found"));
+    if (result.forbidden) return res.status(403).json(new ApiResponse(403, null, "Only the organizer can handle join requests"));
     if (result.alreadyHandled) return res.status(400).json(new ApiResponse(400, null, `Request already ${result.status}`));
 
     return res.status(200).json(new ApiResponse(200, { status: result.status, member: result.created }, `Request ${result.status} successfully`));
@@ -131,7 +131,7 @@ const getAllEvents = asyncHandler(async (req, res) => {
       return res.status(200).json(new ApiResponse(200, cached, "All Events fetched successfully"));
     }
 
-    const memberships = await Member.find({ owner: req.user._id });
+    const memberships = await Member.find({ owner: req.user._id, role: { $ne: "organizer" } });
     const eventIds = memberships.map((m) => m.event);
     const allEvents = await Event.find({ _id: { $in: eventIds } });
 
@@ -181,21 +181,16 @@ const getMember = asyncHandler(async (req, res) => {
     const ownerName = event?.organizer?.fullname || event?.organizer?.username;
 
     // Normalize members — use populated owner name, fallback to stored name
-    const normalizedMembers = members.map((m) => ({
-      _id: m._id,
-      owner: m.owner,
-      name: m.owner?.fullname || m.owner?.username || m.name || "Unknown",
-      role: m.role,
-    }));
-
-    // Prepend organizer only if not already in the list as a member
-    const alreadyInList = normalizedMembers.some((m) => m.owner?._id?.toString() === organizerId);
-    const allMembers = alreadyInList
-      ? normalizedMembers
-      : [
-          { _id: event.organizer._id, owner: event.organizer, name: ownerName, role: "Organizer", isOrganizer: true },
-          ...normalizedMembers,
-        ];
+    const allMembers = members.map((m) => {
+      const isOrg = m.owner?._id?.toString() === organizerId || m.role === "organizer";
+      return {
+        _id: m._id,
+        owner: m.owner,
+        name: m.owner?.fullname || m.owner?.username || m.name || "Unknown",
+        role: isOrg ? "Organizer" : m.role,
+        isOrganizer: isOrg ? true : undefined,
+      };
+    });
 
     const result = { members: allMembers, ownerName };
     await cacheSet(cacheKey, result, MEMBER_TTL);

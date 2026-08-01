@@ -17,6 +17,38 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
+  const [avatarSource, setAvatarSource] = useState("upload");
+  const [avatarPrompt, setAvatarPrompt] = useState("");
+  const [aiAvatarUrl, setAiAvatarUrl] = useState("");
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+
+  const handleGenerateAIAvatar = async () => {
+    if (!avatarPrompt.trim()) {
+      setErrorMessage("Please enter a prompt to generate an avatar.");
+      return;
+    }
+    setIsGeneratingAvatar(true);
+    setErrorMessage("");
+    try {
+      const response = await apiClient.post(
+        "/api/cpsh/users/generate-avatar",
+        { prompt: avatarPrompt },
+        { timeout: 60000 }
+      );
+      if (response?.success && response?.data?.url) {
+        setAiAvatarUrl(response.data.url);
+        setProfileImage(response.data.url);
+      } else {
+        setErrorMessage(response?.message || "Failed to generate AI avatar.");
+      }
+    } catch (err) {
+      console.error("AI avatar generation error:", err);
+      setErrorMessage(err?.message || "Something went wrong generating avatar.");
+    } finally {
+      setIsGeneratingAvatar(false);
+    }
+  };
+
   // Email verification states
   const [verificationToken, setVerificationToken] = useState("");
   const [otpEmailSent, setOtpEmailSent] = useState(false);
@@ -94,6 +126,8 @@ export default function Register() {
     if (file) {
       setProfileImage(URL.createObjectURL(file));
       setAvatarFile(file);
+      setAvatarSource("upload");
+      setAiAvatarUrl("");
     }
   };
 
@@ -131,7 +165,11 @@ export default function Register() {
     formData.append("email", email);
     formData.append("password", password);
     formData.append("verificationToken", verificationToken);
-    if (avatarFile) formData.append("avatar", avatarFile);
+    if (avatarSource === "upload" && avatarFile) {
+      formData.append("avatar", avatarFile);
+    } else if (avatarSource === "ai" && aiAvatarUrl) {
+      formData.append("avatarUrl", aiAvatarUrl);
+    }
 
     try {
       const result = await apiClient.post("/api/cpsh/users/register", formData, {
@@ -205,27 +243,86 @@ export default function Register() {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* File input */}
-          <div>
-            <label
-              className="block text-xs font-medium mb-1 uppercase tracking-wider"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Profile image
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border file:text-sm file:font-medium transition-colors"
+          {/* Tabs to choose between Upload and AI generation */}
+          <div className="flex border-b pb-2 mb-4" style={{ borderColor: "var(--color-border)" }}>
+            <button
+              type="button"
+              onClick={() => setAvatarSource("upload")}
+              className="flex-1 pb-1 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2"
               style={{
-                color: "var(--color-text-muted)",
-                "--file-bg": "var(--color-surface-2)",
-                "--file-color": "var(--color-navy)",
-                "--file-border": "var(--color-border)",
+                borderColor: avatarSource === "upload" ? "var(--color-gold)" : "transparent",
+                color: avatarSource === "upload" ? "var(--color-gold)" : "var(--color-text-muted)",
               }}
-            />
+            >
+              Upload Picture
+            </button>
+            <button
+              type="button"
+              onClick={() => setAvatarSource("ai")}
+              className="flex-1 pb-1 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2"
+              style={{
+                borderColor: avatarSource === "ai" ? "var(--color-gold)" : "transparent",
+                color: avatarSource === "ai" ? "var(--color-gold)" : "var(--color-text-muted)",
+              }}
+            >
+              Generate with AI
+            </button>
           </div>
+
+          {/* Conditional Input based on source */}
+          {avatarSource === "upload" ? (
+            <div>
+              <label
+                className="block text-xs font-medium mb-1 uppercase tracking-wider"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                Profile image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border file:text-sm file:font-medium transition-colors"
+                style={{
+                  color: "var(--color-text-muted)",
+                  "--file-bg": "var(--color-surface-2)",
+                  "--file-color": "var(--color-navy)",
+                  "--file-border": "var(--color-border)",
+                }}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <label
+                className="block text-xs font-medium mb-1 uppercase tracking-wider"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                Describe your AI avatar
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. A cool cat wearing blue sunglasses"
+                  value={avatarPrompt}
+                  onChange={(e) => setAvatarPrompt(e.target.value)}
+                  className="input-base flex-grow"
+                  disabled={isGeneratingAvatar}
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateAIAvatar}
+                  disabled={isGeneratingAvatar || !avatarPrompt.trim()}
+                  className="btn-primary py-2.5 px-4 text-xs font-semibold shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))",
+                    color: "var(--color-navy)",
+                  }}
+                >
+                  {isGeneratingAvatar ? "Generating..." : "Generate"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {fields.map(({ label, type, placeholder, value, onChange }) => (
             <div key={label}>

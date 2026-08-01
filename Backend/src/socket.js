@@ -11,7 +11,7 @@ import { Participant } from "./models/participant.model.js";
 import { TeamMessage } from "./models/teamMessage.model.js";
 import { Team } from "./models/team.model.js";
 import { Cricket_Player } from "./sports/cricket/models/player.model.js";
-
+import { sendClubMessage } from "./controllers/clubChat.controller.js";
 let io;
 
 export const initSocket = (httpServer) => {
@@ -74,38 +74,7 @@ export const initSocket = (httpServer) => {
       socket.leave(`club:chat:${clubId}`);
     });
 
-    // Send a chat message — save and broadcast immediately, no extra DB membership check
-    socket.on("club:chat:send", async ({ clubId, text, senderId, senderName, senderAvatar, tempId }) => {
-      try {
-        if (!clubId || !text?.trim() || !senderId) return;
-
-        const message = await ClubMessage.create({
-          club: clubId,
-          sender: senderId,
-          text: text.trim(),
-        });
-
-        const payload = {
-          _id: message._id,
-          tempId,
-          club: clubId,
-          text: message.text,
-          deleted: false,
-          createdAt: message.createdAt,
-          sender: {
-            _id: senderId,
-            fullname: senderName,
-            avatar: senderAvatar,
-          },
-        };
-
-        // Broadcast to everyone in the room including sender
-        io.to(`club:chat:${clubId}`).emit("club:chat:message", payload);
-      } catch (err) {
-        console.error("[club:chat:send] error:", err.message);
-        socket.emit("club:chat:error", { tempId, message: "Failed to send message." });
-      }
-    });
+    socket.on("club:chat:send", sendClubMessage);
 
     // Delete a message — sender or founder/head
     socket.on("club:chat:delete", async ({ clubId, messageId, requesterId }) => {

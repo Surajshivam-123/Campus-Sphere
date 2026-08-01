@@ -41,6 +41,12 @@ export default function TeamCreatorPage() {
   const [squadSubmitting, setSquadSubmitting] = useState(false);
   const [squadError, setSquadError] = useState("");
 
+  const [logoSource, setLogoSource] = useState("upload"); // upload | ai
+  const [logoPrompt, setLogoPrompt] = useState("");
+  const [aiLogoUrl, setAiLogoUrl] = useState("");
+  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
+  const [logoError, setLogoError] = useState("");
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -126,11 +132,45 @@ export default function TeamCreatorPage() {
 
   const { festivalName, eventName, startDate, location, organization, description, mode, category, sports, maxParticipants, rules } = event;
 
+  const handleGenerateAILogo = async () => {
+    if (!logoPrompt.trim()) {
+      setLogoError("Please enter a prompt to generate a logo.");
+      return;
+    }
+    setIsGeneratingLogo(true);
+    setLogoError("");
+    try {
+      const response = await fetchWithAuth(`${API_URL}/api/cpsh/teams/generate-logo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: logoPrompt }),
+        timeout: 60000,
+      });
+      const result = await response.json();
+      if (response.ok && result?.data?.url) {
+        setAiLogoUrl(result.data.url);
+      } else {
+        setLogoError(result?.message || "Failed to generate AI logo.");
+      }
+    } catch (err) {
+      console.error("AI logo generation error:", err);
+      setLogoError("Something went wrong generating logo.");
+    } finally {
+      setIsGeneratingLogo(false);
+    }
+  };
+
   const handleUpdateTeam = async () => {
     try {
       const formData = new FormData();
       formData.append("name", teamName);
-      if (teamlogo instanceof File) formData.append("teamlogo", teamlogo);
+      if (logoSource === "upload") {
+        if (teamlogo instanceof File) {
+          formData.append("teamlogo", teamlogo);
+        }
+      } else if (logoSource === "ai" && aiLogoUrl) {
+        formData.append("teamlogoUrl", aiLogoUrl);
+      }
       const res = await fetchWithAuth(`${API_URL}/api/cpsh/teams/update-team/${eventId}`, {
         method: "PATCH", credentials: "include", body: formData,
       });
@@ -411,24 +451,83 @@ export default function TeamCreatorPage() {
             </div>
 
             {/* Team Logo */}
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-800">Team Logo:</span>
-              {editlogo ? (
-                <div className="flex items-center gap-2">
-                  <input type="file" accept="image/*"
-                    onChange={(e) => setTeamlogo(e.target.files[0])}
-                    className="text-sm text-gray-700 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700" />
-                  <button onClick={handleUpdateTeam} className="text-green-600 font-semibold hover:underline">Save</button>
-                  <button onClick={() => setEditlogo(false)} className="text-gray-500 hover:underline">Cancel</button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  {typeof teamlogo === "string" && teamlogo ? (
-                    <img src={teamlogo} alt="Team Logo" className="w-12 h-12 rounded-full object-cover border border-gray-200" />
+            <div className="flex flex-col gap-2 border-b border-gray-100 pb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-semibold text-gray-800">Team Logo:</span>
+                {!editlogo && (
+                  <div className="flex items-center gap-3">
+                    {typeof teamlogo === "string" && teamlogo ? (
+                      <img src={teamlogo} alt="Team Logo" className="w-12 h-12 rounded-full object-cover border border-gray-200" />
+                    ) : (
+                      <span className="text-gray-400 text-sm">No logo</span>
+                    )}
+                    <button onClick={() => setEditlogo(true)} className="text-blue-600 hover:underline text-sm">Edit</button>
+                  </div>
+                )}
+              </div>
+
+              {editlogo && (
+                <div className="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="flex gap-4 border-b border-gray-200 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setLogoSource("upload")}
+                      className={`text-xs font-semibold uppercase tracking-wider pb-1 transition ${
+                        logoSource === "upload"
+                          ? "border-b-2 border-blue-600 text-blue-600"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
+                      Upload File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoSource("ai")}
+                      className={`text-xs font-semibold uppercase tracking-wider pb-1 transition ${
+                        logoSource === "ai"
+                          ? "border-b-2 border-blue-600 text-blue-600"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
+                      AI Generated
+                    </button>
+                  </div>
+
+                  {logoSource === "upload" ? (
+                    <input type="file" accept="image/*"
+                      onChange={(e) => setTeamlogo(e.target.files[0])}
+                      className="text-sm text-gray-700 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700" />
                   ) : (
-                    <span className="text-gray-400 text-sm">No logo</span>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Describe team logo (e.g. A fierce blue tiger shield)"
+                        value={logoPrompt}
+                        onChange={(e) => setLogoPrompt(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring focus:ring-blue-300"
+                      />
+                      <button
+                        type="button"
+                        disabled={isGeneratingLogo}
+                        onClick={handleGenerateAILogo}
+                        className="w-full bg-[#b8860b] hover:bg-[#9a7009] text-white text-xs font-semibold py-2 rounded-lg transition disabled:opacity-60"
+                      >
+                        {isGeneratingLogo ? "Generating Logo..." : "Generate AI Logo"}
+                      </button>
+                      {logoError && <p className="text-red-500 text-xs">{logoError}</p>}
+                      {aiLogoUrl && (
+                        <div className="flex flex-col items-center justify-center p-3 border border-dashed border-gray-300 rounded bg-white">
+                          <p className="text-xs text-gray-400 mb-2">Preview:</p>
+                          <img src={aiLogoUrl} alt="AI Logo Preview" className="w-24 h-24 rounded-full border object-cover shadow-sm" />
+                        </div>
+                      )}
+                    </div>
                   )}
-                  <button onClick={() => setEditlogo(true)} className="text-blue-600 hover:underline text-sm">Edit</button>
+
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={handleUpdateTeam} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-1.5 rounded-lg text-sm transition">Save</button>
+                    <button onClick={() => setEditlogo(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-1.5 rounded-lg text-sm transition">Cancel</button>
+                  </div>
                 </div>
               )}
             </div>

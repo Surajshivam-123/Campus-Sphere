@@ -1,9 +1,10 @@
 import Router from 'express';
-import { createTeam ,getTeam,updateTeam,deleteTeam,getEventTeams} from '../controllers/team.controller.js';
+import { createTeam ,getTeam,updateTeam,deleteTeam,getEventTeams, generateTeamLogo} from '../controllers/team.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 import {upload} from '../middlewares/multer.middleware.js';
 
 const teamRouter=Router();
+teamRouter.route('/generate-logo').post(verifyJWT, generateTeamLogo);
 teamRouter.route('/create-team/:eventId').post(verifyJWT,upload.single("teamlogo"),createTeam);
 teamRouter.route('/get-team/:eventId').get(verifyJWT,getTeam);
 teamRouter.route('/get-event-teams/:eventId').get(verifyJWT,getEventTeams);

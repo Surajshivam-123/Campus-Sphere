@@ -72,4 +72,38 @@ const deleteMessage = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { messageId: message._id }, "Message deleted"));
 });
 
-export { getMessages, deleteMessage, isMemberOrFounder };
+const sendClubMessage = asyncHandler(async ({ clubId, text, senderId, senderName, senderAvatar, tempId }) => {
+  try {
+    if (!clubId || !text?.trim() || !senderId) return;
+
+    const message = await ClubMessage.create({
+      club: clubId,
+      sender: senderId,
+      text: text.trim(),
+    });
+
+    const payload = {
+      _id: message._id,
+      tempId,
+      club: clubId,
+      text: message.text,
+      deleted: false,
+      createdAt: message.createdAt,
+      sender: {
+        _id: senderId,
+        fullname: senderName,
+        avatar: senderAvatar,
+      },
+    };
+
+    // Broadcast to everyone in the room including sender
+    io.to(`club:chat:${clubId}`).emit("club:chat:message", payload);
+  } catch (err) {
+    console.error("[club:chat:send] error:", err.message);
+    socket.emit("club:chat:error", { tempId, message: "Failed to send message." });
+  }
+}
+
+)
+
+export { getMessages, deleteMessage, isMemberOrFounder, sendClubMessage };

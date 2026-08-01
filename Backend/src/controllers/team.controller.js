@@ -5,6 +5,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { cacheGet, cacheSet, cacheDel } from "../utils/redis.js";
+import fs from "fs";
+import path from "path";
 
 const TEAM_TTL = 300;       // 5 min — single team with players
 const TEAMS_TTL = 120;      // 2 min — all teams for an event
@@ -22,7 +24,7 @@ const generateUniqueCode = () => {
 
 const createTeam = asyncHandler(async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, teamlogoUrl } = req.body;
     const { eventId } = req.params;
     const teamlogoLocalPath = req.file?.path;
     
@@ -33,7 +35,7 @@ const createTeam = asyncHandler(async (req, res) => {
       throw new ApiError(404, "Event id is required");
     }
     
-    let teamlogo = null;
+    let teamlogo = teamlogoUrl || null;
     if (teamlogoLocalPath) {
       const uploadedLogo = await uploadOnCloudinary(teamlogoLocalPath);
       if (uploadedLogo) {
@@ -61,6 +63,7 @@ const createTeam = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, team, "Team created successfully"));
   } catch (error) {
     console.log("Error while creating team", error);
+    throw error;
   }
 });
 
@@ -118,13 +121,14 @@ const getTeam = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, data, "Team found successfully"));
   } catch (error) {
     console.log("Error while getting team", error);
+    throw error;
   }
 });
 
 const updateTeam = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
-    const { name } = req.body;
+    const { name, teamlogoUrl } = req.body;
     const teamlogoLocalPath = req.file?.path;
     
     if (!eventId) {
@@ -142,6 +146,8 @@ const updateTeam = asyncHandler(async (req, res) => {
       if (uploadedLogo) {
         team.teamlogo = uploadedLogo.url;
       }
+    } else if (teamlogoUrl) {
+      team.teamlogo = teamlogoUrl;
     }
     const updatedTeam = await Team.findByIdAndUpdate(team._id, team, {
       new: true,
@@ -158,6 +164,7 @@ const updateTeam = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, updatedTeam, "Team updated successfully"));
   } catch (error) {
     console.log("Error while updating team", error);
+    throw error;
   }
 });
 
@@ -180,6 +187,7 @@ const deleteTeam = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, team, "Team deleted successfully"));
   } catch (error) {
     console.log("Error while deleting team", error);
+    throw error;
   }
 });
 
@@ -218,6 +226,82 @@ const getEventTeams = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, teams, "Teams fetched successfully"));
   } catch (error) {
     console.log("Error while getting event teams", error);
+    throw error;
+  }
+});
+
+const generateTeamLogo = asyncHandler(async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt || !prompt.trim()) {
+    throw new ApiError(400, "Prompt is required");
+  }
+
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_KEY) {
+    throw new ApiError(500, "Gemini API key is not configured");
+  }
+
+  try {
+    const systemPrompt = `You are a professional SVG designer. Generate a beautiful, modern, clean, colorful vector logo/shield/insignia for a sports/coding team based on the user's description.
+                          Requirements:
+                          - Return ONLY valid raw SVG XML code starting with '<svg' and ending with '</svg>'.
+                          - Do not include markdown code block styling (such as \`\`\`xml or \`\`\`svg).
+                          - Ensure it is a complete, self-contained SVG with standard namespaces (xmlns="http://www.w3.org/2000/svg"), viewBox="0 0 100 100", width, and height.
+                          - Design a stunning, stylized team emblem matching the prompt: "${prompt}".
+                          - Do not include any text explanation or extra whitespace before or after the SVG tag.`;
+
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }),
+      }
+    );
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error("Gemini logo API error:", geminiRes.status, errText);
+      throw new Error(`Gemini API returned status ${geminiRes.status}`);
+    }
+
+    const data = await geminiRes.json();
+    let rawSvg = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    
+    // Clean up markdown block wrapping if present
+    rawSvg = rawSvg.replace(/```xml|```svg|```/gi, "").trim();
+
+    if (!rawSvg.startsWith("<svg") && rawSvg.includes("<svg")) {
+      rawSvg = rawSvg.substring(rawSvg.indexOf("<svg"));
+    }
+    if (rawSvg.includes("</svg>")) {
+      rawSvg = rawSvg.substring(0, rawSvg.indexOf("</svg>") + 6);
+    }
+
+    if (!rawSvg || !rawSvg.startsWith("<svg")) {
+      throw new Error("Failed to generate a valid SVG logo");
+    }
+
+    // Write temp SVG file
+    const tempDir = path.resolve("./public/temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    const tempFilePath = path.join(tempDir, `teamlogo-${Date.now()}.svg`);
+    fs.writeFileSync(tempFilePath, rawSvg);
+
+    // Upload to Cloudinary
+    const uploadResult = await uploadOnCloudinary(tempFilePath);
+    if (!uploadResult?.url) {
+      throw new Error("Failed to upload logo to Cloudinary");
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, { url: uploadResult.url }, "Logo generated successfully"));
+  } catch (error) {
+    console.error("Error in generateTeamLogo:", error);
+    res.status(500).json(new ApiResponse(500, null, error.message || "Failed to generate logo"));
   }
 });
 
@@ -226,4 +310,5 @@ export { createTeam,
          updateTeam,
          deleteTeam,
          getEventTeams,
+         generateTeamLogo,
 };
