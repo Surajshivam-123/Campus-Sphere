@@ -29,7 +29,6 @@ const validatePassword = (password) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, username, email, password, verificationToken, avatarUrl } = req.body;
 
-  // Validate required fields
   if ([fullname, username, email, password].some((field) => !field?.trim())) {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, "All fields are required");
   }

@@ -36,7 +36,7 @@ userRouter.route("/profile")
   .patch(verifyJWT, upload.single("avatar"), updateProfile);
 
 // OTP login
-userRouter.route("/send-otp").post(sendOtp);
+userRouter.route("/send-otp").post(sendOtp);//done
 userRouter.route("/verify-otp").post(verifyOtp);
 
 // Google OAuth

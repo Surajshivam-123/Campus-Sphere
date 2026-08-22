@@ -213,7 +213,7 @@ class UserService {
 
       user = await User.create({ fullname, username, email, googleId, avatar, isVerified: true });
       // Send welcome email to newly registered user (non-blocking)
-      sendWelcomeEmail(email, fullname).catch(() => {});
+      sendWelcomeEmail(email, fullname).catch(() => { });
     }
 
     const { accessToken, refreshToken } = await this.generateTokens(user);
