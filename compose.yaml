@@ -6,7 +6,7 @@ services:
       - ./Backend/.env
     environment:
       NODE_ENV: production
-      MONGODB_URI: mongodb+srv://skumar919810_db_user:Csph919810@campus-sphere.1vcerdd.mongodb.net/?appName=Campus-Sphere
+      MONGODB_URI: ${MONGODB_URI}
       REDIS_URL: redis://redis:6379
       PORT: 4000
       FRONTEND_ORIGIN: http://localhost

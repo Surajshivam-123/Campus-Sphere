@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaArrowLeft, FaPlay, FaPen, FaEye } from "react-icons/fa";
@@ -49,7 +49,7 @@ export default function MatchManager() {
       } else {
         setMsg(data?.message || "Error initialising matches");
       }
-    } catch (err) {
+    } catch {
       setMsg("Failed to initialise matches");
     } finally {
       setInitialising(false);

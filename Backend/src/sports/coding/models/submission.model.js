@@ -3,12 +3,33 @@ import mongoose, { Schema } from "mongoose";
 // One submission per participant per problem attempt
 const submissionSchema = new Schema(
   {
-    event:       { type: Schema.Types.ObjectId, ref: "Event",   required: true },
-    problem:     { type: Schema.Types.ObjectId, ref: "Problem", required: true },
-    participant: { type: Schema.Types.ObjectId, ref: "User",    required: true },
-    language:    { type: String, required: true },   // "cpp", "python", "java", "javascript"
-    languageId:  { type: Number, required: true },   // Judge0 language ID
-    code:        { type: String, required: true },
+    event:       { 
+      type: Schema.Types.ObjectId, 
+      ref: "Event",   
+      required: true 
+    },
+    problem:     { 
+      type: Schema.Types.ObjectId, 
+      ref: "Problem", 
+      required: true 
+    },
+    participant: { 
+      type: Schema.Types.ObjectId, 
+      ref: "User",    
+      required: true 
+    },
+    language:    { 
+      type: String, 
+      required: true 
+    },   // "cpp", "python", "java", "javascript"
+    languageId:  { 
+      type: Number, 
+      required: true 
+    },   // Judge0 language ID
+    code:{ 
+      type: String, 
+      required: true 
+    },
     status: {
       type: String,
       enum: ["pending", "running", "accepted", "wrong_answer", "time_limit_exceeded",
@@ -27,12 +48,30 @@ const submissionSchema = new Schema(
         isSample:       Boolean,
       },
     ],
-    passedCount:  { type: Number, default: 0 },
-    totalCount:   { type: Number, default: 0 },
-    score:        { type: Number, default: 0 },
-    executionTime: { type: Number, default: 0 },  // ms, max across test cases
-    memoryUsed:    { type: Number, default: 0 },  // KB, max across test cases
-    errorMessage:  { type: String, default: "" },
+    passedCount:  { 
+      type: Number, 
+      default: 0 
+    },
+    totalCount:   { 
+      type: Number, 
+      default: 0 
+    },
+    score:{ 
+      type: Number, 
+      default: 0 
+    },
+    executionTime: { 
+      type: Number, 
+      default: 0 
+    },  // ms, max across test cases
+    memoryUsed:{ 
+      type: Number, 
+      default: 0 
+    },  // KB, max across test cases
+    errorMessage:  { 
+      type: String, 
+      default: "" 
+    },
   },
   { timestamps: true }
 );

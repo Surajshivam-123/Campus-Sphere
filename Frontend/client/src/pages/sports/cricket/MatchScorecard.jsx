@@ -212,7 +212,6 @@ export default function MatchScorecard() {
       socket.off("match:updated");
       socket.off("connect");
       socket.off("disconnect");
-      socket.disconnect();
     };
   }, [matchId, access]);
 

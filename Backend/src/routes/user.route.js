@@ -16,6 +16,7 @@ import {
 import {upload} from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
 import passport from "../config/passport.js";
+import { otpRateLimiter } from "../middlewares/rateLimit.middleware.js";
 
 const userRouter = Router();
 
@@ -25,7 +26,7 @@ userRouter.route('/register').post(
 
 userRouter.route("/generate-avatar").post(generateAvatar);
 
-userRouter.route("/register/send-otp").post(sendRegistrationOtp);
+userRouter.route("/register/send-otp").post(otpRateLimiter, sendRegistrationOtp);
 userRouter.route("/register/verify-otp").post(verifyRegistrationOtp);
 
 userRouter.route("/login").post(loginUser)
@@ -36,7 +37,8 @@ userRouter.route("/profile")
   .patch(verifyJWT, upload.single("avatar"), updateProfile);
 
 // OTP login
-userRouter.route("/send-otp").post(sendOtp);//done
+userRouter.route("/send-otp").post(otpRateLimiter, sendOtp);
+userRouter.route("/send-login-otp").post(otpRateLimiter, sendOtp);
 userRouter.route("/verify-otp").post(verifyOtp);
 
 // Google OAuth

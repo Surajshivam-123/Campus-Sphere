@@ -173,15 +173,28 @@ const getSingleParticipant = asyncHandler(async (req, res) => {
 const deleteParticipant = asyncHandler(async (req, res) => {
   try {
     const participantId = req.params.participantId;
-    const participant = await Participant.findByIdAndDelete(participantId);
+    const participant = await Participant.findById(participantId);
     if (!participant) {
-      throw new ApiError(400, "Participation is Not deleted");
+      throw new ApiError(404, "Participant not found");
     }
+
+    const isOwner = participant.owner?.toString() === req.user._id.toString();
+    let isOrganizer = false;
+    if (!isOwner && participant.event) {
+      const event = await Event.findById(participant.event).select("organizer").lean();
+      isOrganizer = event?.organizer?.toString() === req.user._id.toString();
+    }
+
+    if (!isOwner && !isOrganizer) {
+      throw new ApiError(403, "You are not authorized to delete this participant");
+    }
+
+    await Participant.findByIdAndDelete(participantId);
     await cacheDel(
       `participants:event:${participant.event}`,
       `participant:myevents:${participant.owner}`
     );
-    return res.status(200).json(new ApiResponse(200, "Participant is deleted successfully"));
+    return res.status(200).json(new ApiResponse(200, null, "Participant is deleted successfully"));
   } catch (error) {
     console.log("Error while deleting Participant:", error);
     throw error;

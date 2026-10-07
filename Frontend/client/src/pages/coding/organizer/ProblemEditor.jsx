@@ -92,11 +92,11 @@ export default function ProblemEditor() {
       if (data?.success) {
         // Navigate back to contest setup
         const eid = isEdit ? data.data.event : eventId;
-        navigate(`/event/${eid}/coding`);
+        navigate(`/organizer/coding/${eid}`);
       } else {
         setError(data?.message || "Failed to save problem.");
       }
-    } catch (e) {
+    } catch {
       setError("Error saving problem.");
     } finally {
       setSaving(false);

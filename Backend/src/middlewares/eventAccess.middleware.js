@@ -7,6 +7,7 @@ import { Team } from "../models/team.model.js";
 import { Cricket_Player } from "../sports/cricket/models/player.model.js";
 import { Match } from "../models/match.model.js";
 import { Submission } from "../sports/coding/models/submission.model.js";
+import { Problem } from "../sports/coding/models/problem.model.js";
 
 /**
  * Resolves eventId from either:
@@ -18,6 +19,10 @@ const resolveEventId = async (req) => {
   if (req.params.matchId) {
     const match = await Match.findById(req.params.matchId).select("event").lean();
     return match?.event?.toString() || null;
+  }
+  if (req.params.problemId) {
+    const problem = await Problem.findById(req.params.problemId).select("event").lean();
+    return problem?.event?.toString() || null;
   }
   return null;
 };
@@ -64,5 +69,28 @@ export const verifyEventAccess = asyncHandler(async (req, res, next) => {
   } catch (error) {
     console.log("verifyEventAccess error", error);
     return res.status(500).json(new ApiResponse(500, null, "Error checking event access"));
+  }
+});
+
+/**
+ * Allows access only if the logged-in user is the event organizer.
+ */
+export const verifyEventOrganizer = asyncHandler(async (req, res, next) => {
+  try {
+    const eventId = await resolveEventId(req);
+    if (!eventId) {
+      return res.status(400).json(new ApiResponse(400, null, "Event not found"));
+    }
+
+    const event = await Event.findById(eventId).select("organizer").lean();
+    if (!event) return res.status(404).json(new ApiResponse(404, null, "Event not found"));
+    if (event.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json(new ApiResponse(403, null, "Only the event organizer can perform this action"));
+    }
+
+    next();
+  } catch (error) {
+    console.log("verifyEventOrganizer error", error);
+    return res.status(500).json(new ApiResponse(500, null, "Error checking organizer access"));
   }
 });

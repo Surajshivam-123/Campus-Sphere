@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, Sparkles } from "lucide-react";
 import logo from "/logo.jpg";
 import { useTheme } from "../../hooks/useTheme";
 import { useAuth } from "../../hooks/useAuth";
@@ -41,6 +41,17 @@ export default function Navbar() {
 
           {/* Right controls */}
           <div className="flex items-center gap-2">
+            {/* AI Assistant */}
+            <Link
+              to="/assistant"
+              aria-label="Campus Sphere AI Assistant"
+              className="p-2 rounded text-amber-500 hover:text-amber-400 hover:bg-[var(--color-surface-2)] transition-colors focus-visible:outline-none flex items-center gap-1.5"
+              title="Campus Sphere AI Assistant"
+            >
+              <Sparkles size={20} />
+              <span className="hidden lg:inline text-xs font-semibold">AI Assistant</span>
+            </Link>
+
             {/* Theme toggle */}
             <button
               onClick={toggle}
@@ -135,6 +146,16 @@ export default function Navbar() {
                   className="py-2 px-3 rounded border border-transparent transition-colors hover:border-gold hover:text-navy"
                 >
                   Profile
+                </Link>
+                <Link
+                  to="/assistant"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2 px-3 rounded border border-transparent transition-colors hover:border-gold hover:text-navy flex items-center justify-between"
+                >
+                  <span>AI Assistant</span>
+                  <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 border border-amber-400/30">
+                    RAG
+                  </span>
                 </Link>
 
 

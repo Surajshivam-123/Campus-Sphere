@@ -55,9 +55,14 @@ import codingContestRouter from "./sports/coding/routes/contest.route.js";
 import codingProblemRouter from "./sports/coding/routes/problem.route.js";
 import codingSubmissionRouter from "./sports/coding/routes/submission.route.js";
 
+// AI / RAG Assistant
+import ragRouter from "./routes/rag.route.js";
+
 // Core routes
 app.use("/api/cpsh/users", userRouter);
+app.use("/api/cpsh/ai", ragRouter);
 app.use("/api/cpsh/events", eventRouter);
+
 app.use("/api/cpsh/participants", participantRouter);
 app.use("/api/cpsh/members", memberRouter);
 app.use("/api/cpsh/teams", teamRouter);

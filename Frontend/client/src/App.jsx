@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import AppRoutes from "./routes/Route";
 import Navbar from "./pages/Home/Navbar";
-import { Footer, ScrollToTop } from "./components/shared";
+import { Footer, ScrollToTop, ErrorBoundary, FloatingAiAssistant } from "./components/shared";
 import OfflinePage from "./pages/OfflinePage";
 
 function App() {
@@ -47,9 +47,12 @@ function App() {
       {showNavbar && <Navbar />}
       {/* We add a top padding to the main container when Navbar is present so content isn't hidden behind it */}
       <div className={`flex-grow ${showNavbar ? "pt-24" : ""}`}>
-        <AppRoutes />
+        <ErrorBoundary resetKeys={[location.pathname]}>
+          <AppRoutes />
+        </ErrorBoundary>
       </div>
       {showFooter && <Footer />}
+      {showNavbar && <FloatingAiAssistant />}
       <ScrollToTop />
     </div>
   );

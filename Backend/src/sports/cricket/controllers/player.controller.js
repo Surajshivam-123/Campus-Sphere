@@ -43,6 +43,7 @@ const joinTeam = asyncHandler(async (req, res) => {
     res.status(500).json(new ApiResponse(500, null, error.message || "Error joining team"));
   }
 });
+
 const getMyTeam = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;

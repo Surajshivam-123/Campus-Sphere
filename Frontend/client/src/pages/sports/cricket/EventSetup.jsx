@@ -1,4 +1,4 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -29,12 +29,10 @@ export default function CricketEventPage() {
   const [editedRoles, setEditedRoles] = useState({});
   const [event, setevent] = useState(null);
   const [member, setMember] = useState([]);
-  const [ownerName, setOwnerName] = useState("");
   const [teams, setTeams] = useState([]);
   const [cricketFormat, setCricketFormat] = useState(null);
   const [schedule, setSchedule] = useState(null);
   const [initLoading, setInitLoading] = useState(false);
-  const [initDone, setInitDone] = useState(false);
   const [matchesExist, setMatchesExist] = useState(false);
   const [participants, setParticipants] = useState([]);
   const [scorerUpdater, setScorerUpdater] = useState(null);
@@ -73,7 +71,6 @@ export default function CricketEventPage() {
       const member = await response.json();
       console.log("Server Response", member);
       setMember(member?.data?.members);
-      setOwnerName(member?.data?.ownerName);
 
       // Fetch teams that have participated in this event
       try {
@@ -133,7 +130,7 @@ export default function CricketEventPage() {
       }
     };
     loadEvent();
-  }, []);
+  }, [eventId]);
 
   if (!event) {
     return (
@@ -158,7 +155,6 @@ export default function CricketEventPage() {
     memberCode,
     participantCode,
     poster,
-    createdAt,
   } = event;
 
   let members = [];
@@ -195,7 +191,6 @@ export default function CricketEventPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setInitDone(true);
         setMatchesExist(true);
         navigate(`/sports/cricket/scoreboard/${eventId}`);
       } else {

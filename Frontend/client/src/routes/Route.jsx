@@ -1,80 +1,84 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
-import { useAuth } from "../hooks/useAuth";
 import EventChatWrapper from "../components/shared/EventChatWrapper";
+import LoadingPage from "../pages/LoadingPage";
 
 // Public Pages
-import Front from "../pages/Front/Front";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
+const Front = lazy(() => import("../pages/Front/Front"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
 
 // Home & Navigation
-import Home from "../pages/Home/Home";
-import IamChoice from "../pages/Home/Option";
-import AllEvents from "../pages/Home/AllEvents";
+const Home = lazy(() => import("../pages/Home/Home"));
+const IamChoice = lazy(() => import("../pages/Home/Option"));
+const AllEvents = lazy(() => import("../pages/Home/AllEvents"));
 
 // Event Creation & Management
-import CreateEvent from "../pages/EventCreation/CreateEvent";
-import WorkshopEventDetails from "../pages/EventCreation/WorkshopEventDetails";
-import UpdateEventPage from "../pages/EditEvent/UpdateEvent";
+const CreateEvent = lazy(() => import("../pages/EventCreation/CreateEvent"));
+const WorkshopEventDetails = lazy(() => import("../pages/EventCreation/WorkshopEventDetails"));
+const UpdateEventPage = lazy(() => import("../pages/EditEvent/UpdateEvent"));
 
 // Hosted Events
-import EventList from "../pages/MyHostedEvent/EventList";
-import HostedEventDetail from "../pages/MyHostedEvent/HostedEventDetail";
+const EventList = lazy(() => import("../pages/MyHostedEvent/EventList"));
+const HostedEventDetail = lazy(() => import("../pages/MyHostedEvent/HostedEventDetail"));
 
 // Participant - Join & View Events
-import JoinEvent from "../pages/ParticipateEvent/JoinEvent";
-import EventDetailsPage from "../pages/ParticipateEvent/EventDetails";
-import MyEvents from "../pages/MyParticipatedEvents/MyEvents";
+const JoinEvent = lazy(() => import("../pages/ParticipateEvent/JoinEvent"));
+const EventDetailsPage = lazy(() => import("../pages/ParticipateEvent/EventDetails"));
+const MyEvents = lazy(() => import("../pages/MyParticipatedEvents/MyEvents"));
 
 // Member - Join & View Events
-import JoinMember from "../pages/JoinMember/JoinMember";
-import EventDetailsMemberPage from "../pages/JoinMember/EventDetailsMember";
-import MemberEvents from "../pages/MyParticipatedEvents/ParticipateateasMember";
+const JoinMember = lazy(() => import("../pages/JoinMember/JoinMember"));
+const EventDetailsMemberPage = lazy(() => import("../pages/JoinMember/EventDetailsMember"));
+const MemberEvents = lazy(() => import("../pages/MyParticipatedEvents/ParticipateateasMember"));
 
 // Schedule
-import SchedulePage from "../pages/Schedule/SchedulePage";
+const SchedulePage = lazy(() => import("../pages/Schedule/SchedulePage"));
 
 // User Profile
-import Profile from "../pages/Profile";
+const Profile = lazy(() => import("../pages/Profile"));
+
+// AI Assistant (RAG)
+const AiAssistantPage = lazy(() => import("../pages/AiAssistant/AiAssistantPage"));
 
 // Auth Callback (Google OAuth)
-import AuthCallback from "../pages/AuthCallback";
+const AuthCallback = lazy(() => import("../pages/AuthCallback"));
 
 // ── Cricket ──────────────────────────────────────────────────────────────────
-import CricketEventSetup from "../pages/sports/cricket/EventSetup";
-import CricketFormat from "../pages/sports/cricket/Format";
-import CricketOrganizerPage from "../pages/sports/cricket/CricketOrganizerPage";
-import CricketLiveScoreboard from "../pages/sports/cricket/LiveScoreboard";
-import CricketMatchScorecard from "../pages/sports/cricket/MatchScorecard";
-import CricketScoreInput from "../pages/sports/cricket/ScoreInput";
-import CricketMatchManager from "../pages/sports/cricket/MatchManager";
-import CricketSquadSubmit from "../pages/sports/cricket/SquadSubmit";
-import CricketEventDetails from "../pages/sports/cricket/participant/EventDetails";
-import CricketJoinTeam from "../pages/sports/cricket/participant/JoinTeam";
-import CricketCreateTeam from "../pages/sports/cricket/participant/CreateTeam";
-import CricketTeamCreator from "../pages/sports/cricket/participant/TeamCreator";
-import CricketTeamMember from "../pages/sports/cricket/participant/TeamMember";
+const CricketEventSetup = lazy(() => import("../pages/sports/cricket/EventSetup"));
+const CricketFormat = lazy(() => import("../pages/sports/cricket/Format"));
+const CricketOrganizerPage = lazy(() => import("../pages/sports/cricket/CricketOrganizerPage"));
+const CricketLiveScoreboard = lazy(() => import("../pages/sports/cricket/LiveScoreboard"));
+const CricketMatchScorecard = lazy(() => import("../pages/sports/cricket/MatchScorecard"));
+const CricketScoreInput = lazy(() => import("../pages/sports/cricket/ScoreInput"));
+const CricketMatchManager = lazy(() => import("../pages/sports/cricket/MatchManager"));
+const CricketSquadSubmit = lazy(() => import("../pages/sports/cricket/SquadSubmit"));
+const CricketEventDetails = lazy(() => import("../pages/sports/cricket/participant/EventDetails"));
+const CricketJoinTeam = lazy(() => import("../pages/sports/cricket/participant/JoinTeam"));
+const CricketCreateTeam = lazy(() => import("../pages/sports/cricket/participant/CreateTeam"));
+const CricketTeamCreator = lazy(() => import("../pages/sports/cricket/participant/TeamCreator"));
+const CricketTeamMember = lazy(() => import("../pages/sports/cricket/participant/TeamMember"));
 
 // ── Coding ────────────────────────────────────────────────────────────────────
-import ProblemEditor from "../pages/coding/organizer/ProblemEditor";
-import CodingOrganizerPage from "../pages/coding/organizer/CodingOrganizerPage";
-import ContestArena from "../pages/coding/participant/ContestArena";
-import Leaderboard from "../pages/coding/Leaderboard";
+const ProblemEditor = lazy(() => import("../pages/coding/organizer/ProblemEditor"));
+const CodingOrganizerPage = lazy(() => import("../pages/coding/organizer/CodingOrganizerPage"));
+const ContestArena = lazy(() => import("../pages/coding/participant/ContestArena"));
+const Leaderboard = lazy(() => import("../pages/coding/Leaderboard"));
 
 // ── Campus Clubs ──────────────────────────────────────────────────────────────
-import AllClubs from "../pages/Club/AllClubs";
-import CreateClub from "../pages/Club/CreateClub";
-import ClubDetail from "../pages/Club/ClubDetail";
-import ManageClub from "../pages/Club/ManageClub";
-import MyClubs from "../pages/Club/MyClubs";
-import JoinClub from "../pages/Club/JoinClub";
-import ClubChat from "../pages/Club/ClubChat";
-import EventChat from "../pages/Event/EventChat";
-import TeamChat from "../pages/Event/TeamChat";
-import PublicEvents from "../pages/Event/PublicEvents";
+const AllClubs = lazy(() => import("../pages/Club/AllClubs"));
+const CreateClub = lazy(() => import("../pages/Club/CreateClub"));
+const ClubDetail = lazy(() => import("../pages/Club/ClubDetail"));
+const ManageClub = lazy(() => import("../pages/Club/ManageClub"));
+const MyClubs = lazy(() => import("../pages/Club/MyClubs"));
+const JoinClub = lazy(() => import("../pages/Club/JoinClub"));
+const ClubChat = lazy(() => import("../pages/Club/ClubChat"));
+const EventChat = lazy(() => import("../pages/Event/EventChat"));
+const TeamChat = lazy(() => import("../pages/Event/TeamChat"));
+const PublicEvents = lazy(() => import("../pages/Event/PublicEvents"));
 
 const PageLayout = () => {
   return (
@@ -86,7 +90,9 @@ const PageLayout = () => {
         transition={{ duration: 0.25, ease: "easeOut" }}
         className="w-full h-full"
       >
-        <Outlet />
+        <Suspense fallback={<LoadingPage />}>
+          <Outlet />
+        </Suspense>
       </motion.div>
     </EventChatWrapper>
   );
@@ -107,6 +113,10 @@ export default function AppRoutes() {
 
       {/* Google OAuth Callback — no guard, handles its own redirect */}
       <Route path="/auth/callback" element={<AuthCallback />} />
+
+      {/* AI Assistant (accessible to all, personalized when logged in) */}
+      <Route path="/assistant"    element={<AiAssistantPage />} />
+      <Route path="/ai-assistant" element={<Navigate to="/assistant" replace />} />
 
       {/* ── All routes below require authentication ── */}
 

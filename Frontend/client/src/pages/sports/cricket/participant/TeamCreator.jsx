@@ -124,7 +124,6 @@ export default function TeamCreatorPage() {
 
     return () => {
       socket.off("join:request");
-      socket.disconnect();
     };
   }, [user, eventId]);
 
@@ -223,7 +222,7 @@ export default function TeamCreatorPage() {
       } else {
         setSquadError(data.message || "Failed to submit squad");
       }
-    } catch (e) {
+    } catch {
       setSquadError("Error submitting squad");
     } finally {
       setSquadSubmitting(false);

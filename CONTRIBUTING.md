@@ -325,6 +325,8 @@ chore: bump mongoose to 8.x
 
 ## Code Style Guidelines
 
+For the comprehensive guide to code conventions, socket lifecycles, and architecture patterns, see [CONVENTIONS.md](./CONVENTIONS.md).
+
 **Backend (Node.js)**
 - ES Modules (`import`/`export`) — no `require()`
 - Use `AsyncHandler` wrapper for all async route handlers to avoid unhandled promise rejections

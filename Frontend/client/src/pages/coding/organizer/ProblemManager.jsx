@@ -1,5 +1,5 @@
 import API_URL from "../../../config/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -27,16 +27,16 @@ export default function ProblemManager() {
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/problems/event/${eventId}?organizer=true`);
       const data = await res.json();
       if (data?.data) setProblems(data.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
-  };
+  }, [eventId]);
 
-  useEffect(() => { load(); }, [eventId]);
+  useEffect(() => { load(); }, [load]);
 
   const openCreate = () => { setForm({ ...emptyProblem, order: problems.length }); setEditing(null); setShowForm(true); };
   const openEdit = (p) => {
@@ -96,7 +96,7 @@ export default function ProblemManager() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => navigate(`/event/${eventId}/coding`)} className="btn-secondary px-4 py-2">
+            <button onClick={() => navigate(`/organizer/coding/${eventId}`)} className="btn-secondary px-4 py-2">
               ← Back
             </button>
             <button onClick={openCreate} className="btn-primary flex items-center gap-2 px-4 py-2">

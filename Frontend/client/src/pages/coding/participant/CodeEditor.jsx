@@ -1,5 +1,5 @@
 import API_URL from "../../../config/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaPlay, FaCheckCircle, FaTimesCircle, FaSpinner, FaClock } from "react-icons/fa";
 import fetchWithAuth from "../../../config/fetchWithAuth";
 
@@ -64,6 +64,11 @@ export default function CodeEditor({ problem, eventId, contest, mySubmissions, o
   const [activeTab, setActiveTab] = useState("editor");
   const [pendingId, setPendingId] = useState(null);
 
+  const onSubmitSuccessRef = useRef(onSubmitSuccess);
+  useEffect(() => {
+    onSubmitSuccessRef.current = onSubmitSuccess;
+  }, [onSubmitSuccess]);
+
   useEffect(() => {
     setCode(BOILERPLATE[language] || "");
   }, [language]);
@@ -76,7 +81,7 @@ export default function CodeEditor({ problem, eventId, contest, mySubmissions, o
         const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/submissions/${pendingId}`);
         const data = await res.json();
         if (data?.data && !["pending", "running"].includes(data.data.status)) {
-          onSubmitSuccess(data.data);
+          onSubmitSuccessRef.current?.(data.data);
           setPendingId(null);
           setSubmitting(false);
           clearInterval(interval);

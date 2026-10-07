@@ -155,7 +155,6 @@ export default function TeamChat() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [accessDenied, setAccessDenied] = useState(false);
-  const [captainOnly, setCaptainOnly] = useState(false);
   const [text, setText] = useState("");
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
@@ -245,7 +244,6 @@ export default function TeamChat() {
     };
 
     const onError = ({ message: errMsg }) => {
-      if (errMsg?.toLowerCase().includes("captain")) setCaptainOnly(true);
       console.error("[team chat error]", errMsg);
     };
 

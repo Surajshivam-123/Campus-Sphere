@@ -18,10 +18,26 @@ const joinRequestSchema = new Schema(
       enum: ["member", "team", "club"],
       required: true,
     },
-    event: { type: Schema.Types.ObjectId, ref: "Event", default: null },
-    team: { type: Schema.Types.ObjectId, ref: "Team", default: null },
-    club: { type: Schema.Types.ObjectId, ref: "Club", default: null },
-    requester: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    event: { 
+      type: Schema.Types.ObjectId, 
+      ref: "Event", 
+      default: null 
+    },
+    team: { 
+      type: Schema.Types.ObjectId, 
+      ref: "Team", 
+      default: null 
+    },
+    club: { 
+      type: Schema.Types.ObjectId, 
+      ref: "Club", 
+      default: null 
+    },
+    requester: { 
+      type: Schema.Types.ObjectId, 
+      ref: "User", 
+      required: true 
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

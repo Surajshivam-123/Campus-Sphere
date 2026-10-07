@@ -1,4 +1,4 @@
-﻿import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -67,7 +67,7 @@ export default function CricketEventDetailsPageParticipant() {
   useEffect(() => {
     if (role === "creator") navigate(`/sports/cricket/team-creator/${eventId}`, { replace: true });
     if (role === "member") navigate(`/sports/cricket/team-member/${eventId}`, { replace: true });
-  }, [role]);
+  }, [role, eventId, navigate]);
 
   if (!event || role === null || role === "creator" || role === "member") {
     return <LoadingPage />;

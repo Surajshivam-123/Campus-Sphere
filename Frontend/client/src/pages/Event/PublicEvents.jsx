@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Calendar, Compass, RefreshCw, XCircle } from "lucide-react";
+import { Search, Filter, Calendar, Compass, RefreshCw, XCircle, ChevronDown } from "lucide-react";
 import eventService from "../../services/event.service";
 import EventCard from "../../components/shared/EventCard";
 import LoadingPage from "../LoadingPage";
@@ -133,18 +133,19 @@ export default function PublicEvents() {
         >
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted pointer-events-none" />
             <input
               type="text"
               placeholder="Search by event name, description or keywords..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
-              className="input-base w-full pl-10"
+              className="input-base w-full !pl-11 !pr-11"
+              style={{ paddingLeft: "2.75rem", paddingRight: searchVal ? "2.75rem" : "1rem" }}
             />
             {searchVal && (
               <button
                 onClick={() => setSearchVal("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-[var(--color-gold)] transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-[var(--color-gold)] transition-colors p-1"
                 aria-label="Clear search"
               >
                 <XCircle className="h-5 w-5" />
@@ -154,11 +155,12 @@ export default function PublicEvents() {
 
           {/* Category Dropdown */}
           <div className="relative min-w-[200px] flex items-center">
-            <Filter className="absolute left-3 h-4 w-4 text-muted pointer-events-none" />
+            <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
             <select
               value={category}
               onChange={handleCategoryChange}
-              className="input-base w-full pl-9 cursor-pointer appearance-none"
+              className="input-base w-full !pl-10 !pr-10 cursor-pointer appearance-none"
+              style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }}
             >
               <option value="all">All Categories</option>
               <option value="sports">Sports</option>
@@ -167,6 +169,7 @@ export default function PublicEvents() {
               <option value="workshop">Workshop</option>
               <option value="others">Others</option>
             </select>
+            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
           </div>
 
           {/* Reset Filters Button (Visible only when filters are active) */}

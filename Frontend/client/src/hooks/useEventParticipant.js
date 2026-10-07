@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import API_URL from "../config/api";
 import fetchWithAuth from "../config/fetchWithAuth.js";
 /**
@@ -11,7 +11,7 @@ export const useEventParticipant = (eventId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchParticipant = async () => {
+  const fetchParticipant = useCallback(async () => {
     if (!eventId) {
       setLoading(false);
       return;
@@ -44,11 +44,11 @@ export const useEventParticipant = (eventId) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     fetchParticipant();
-  }, [eventId]);
+  }, [fetchParticipant]);
 
   return {
     participant,

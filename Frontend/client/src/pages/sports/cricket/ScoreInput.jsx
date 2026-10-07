@@ -1,11 +1,12 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaArrowLeft, FaCircle, FaCheckCircle } from "react-icons/fa";
 import { MdSportsCricket } from "react-icons/md";
 import API_URL from "../../../config/api";
 import socket from "../../../config/socket";
-import fetchWithAuth from "../../../config/fetchWithAuth"
+import fetchWithAuth from "../../../config/fetchWithAuth";
+import LoadingPage from "../../LoadingPage";
 // ── Toss Setup ────────────────────────────────────────────────────────────────
 function TossSetup({ match, onStart }) {
   const [tossWinner, setTossWinner] = useState(match.team1);
@@ -579,7 +580,6 @@ export default function ScoreInput() {
     return () => {
       socket.emit("leave:match", matchId);
       socket.off("match:updated");
-      socket.disconnect();
     };
   }, [matchId]);
 
@@ -592,7 +592,7 @@ export default function ScoreInput() {
       });
       const data = await res.json();
       if (data?.data) setMatch(data.data);
-    } catch (err) { setError("Failed to save toss"); }
+    } catch { setError("Failed to save toss"); }
   };
 
   const handleConfirmXI = async (xiData) => {
@@ -605,7 +605,7 @@ export default function ScoreInput() {
       const data = await res.json();
       if (data?.data) setMatch(data.data);
       else setError(data?.message || "Failed to confirm XI");
-    } catch (err) { setError("Failed to confirm XI"); }
+    } catch { setError("Failed to confirm XI"); }
   };
 
   const handleDelivery = async (deliveryData) => {
@@ -622,7 +622,7 @@ export default function ScoreInput() {
       } else {
         setError(data?.message || "Error recording delivery");
       }
-    } catch (err) { setError("Failed to record delivery"); }
+    } catch { setError("Failed to record delivery"); }
     return null;
   };
 
@@ -636,7 +636,7 @@ export default function ScoreInput() {
       const data = await res.json();
       if (data?.data) setMatch(data.data);
       else setError(data?.message || "Failed to resume match");
-    } catch (err) { setError("Failed to resume match"); }
+    } catch { setError("Failed to resume match"); }
   };
 
   const handleAbandonMatch = async () => {
@@ -649,10 +649,10 @@ export default function ScoreInput() {
       const data = await res.json();
       if (data?.data) setMatch(data.data);
       else setError(data?.message || "Failed to abandon match");
-    } catch (err) { setError("Failed to abandon match"); }
+    } catch { setError("Failed to abandon match"); }
   };
 
-
+  if (loading) return <LoadingPage />;
   if (!match) return <div className="min-h-screen flex items-center justify-center text-gray-400">Match not found</div>;
 
   if (authorized === false) {

@@ -1,5 +1,5 @@
 import API_URL from "../../../config/api";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaCode, FaTrophy, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import fetchWithAuth from "../../../config/fetchWithAuth";
@@ -119,13 +119,12 @@ export default function ContestArena() {
       socket.off("contest:ended");
       socket.off("contest:restarted");
       socket.off("submission:result");
-      socket.disconnect();
     };
   }, [eventId]);
 
-  const onSubmitSuccess = (newSub) => {
+  const onSubmitSuccess = useCallback((newSub) => {
     setMySubmissions((prev) => [newSub, ...prev]);
-  };
+  }, []);
 
   const formatTime = (secs) => {
     if (secs === null) return "--:--";
@@ -332,7 +331,3 @@ export default function ContestArena() {
     </div>
   );
 }
-
-const sumTwoNumbers = (a, b) => a + b;
-
-

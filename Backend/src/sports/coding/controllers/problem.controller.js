@@ -2,6 +2,7 @@ import asyncHandler from "../../../utils/AsyncHandler.js";
 import ApiResponse from "../../../utils/ApiResponse.js";
 import ApiError from "../../../utils/ApiError.js";
 import { Problem } from "../models/problem.model.js";
+import { Event } from "../../../models/event.model.js";
 import { cacheGet, cacheSet, cacheDel } from "../../../utils/redis.js";
 
 const PROBLEM_TTL = 120;
@@ -58,7 +59,8 @@ const deleteProblem = asyncHandler(async (req, res) => {
 
 const getProblems = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
-  const isOrganizer = req.query.organizer === "true";
+  const event = await Event.findById(eventId).select("organizer").lean();
+  const isOrganizer = event?.organizer?.toString() === req.user?._id?.toString();
   const cacheKey = `problems:event:${eventId}:${isOrganizer ? "full" : "public"}`;
 
   const cached = await cacheGet(cacheKey);
@@ -73,14 +75,16 @@ const getProblems = asyncHandler(async (req, res) => {
 
 const getProblem = asyncHandler(async (req, res) => {
   const { problemId } = req.params;
-  const isOrganizer = req.query.organizer === "true";
+
+  const problem = await Problem.findById(problemId).lean();
+  if (!problem) throw new ApiError(404, "Problem not found");
+
+  const event = await Event.findById(problem.event).select("organizer").lean();
+  const isOrganizer = event?.organizer?.toString() === req.user?._id?.toString();
   const cacheKey = `problem:${problemId}:${isOrganizer ? "full" : "public"}`;
 
   const cached = await cacheGet(cacheKey);
   if (cached) return res.status(200).json(new ApiResponse(200, cached, "Problem fetched"));
-
-  const problem = await Problem.findById(problemId).lean();
-  if (!problem) throw new ApiError(404, "Problem not found");
 
   const result = isOrganizer ? problem : stripHidden(problem);
   await cacheSet(cacheKey, result, PROBLEM_TTL);

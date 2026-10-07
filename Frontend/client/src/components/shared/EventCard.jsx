@@ -30,11 +30,11 @@ export default function EventCard({ event, variant = "basic", additionalData = {
   };
 
   const handleClick = () => {
-    const { identityNumber, participantCode, participantId } = additionalData;
+    const { identityNumber, participantId } = additionalData;
     switch (variant) {
       case "participant":
       case "team":
-        if (event.category === "sports" && event.sports === "cricket") {
+        if (event.category === "sports" && event.sports?.toLowerCase() === "cricket") {
           navigate(`/sports/cricket/event-details/${event._id}/${identityNumber}/${encodeURIComponent(event.participantCode)}/${participantId}`);
         } else if (event.category === "coding") {
           navigate(`/coding/contest/${event._id}`);

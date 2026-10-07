@@ -2,17 +2,47 @@ import mongoose, { Schema } from "mongoose";
 
 const contestFormatSchema = new Schema(
   {
-    event:           { type: Schema.Types.ObjectId, ref: "Event", required: true, unique: true },
-    durationMinutes: { type: Number, required: true, min: 1 },   // contest window
-    startTime:       { type: Date, required: true },
-    endTime:         { type: Date },                              // computed on save
-    scoringType:     { type: String, enum: ["points", "time_penalty"], default: "points" },
+    event:           { 
+      type: Schema.Types.ObjectId, 
+      ref: "Event", 
+      required: true, 
+      unique: true 
+    },
+    durationMinutes: {
+       type: Number, 
+       required: true, 
+       min: 1 
+      },   // contest window
+    startTime:{ 
+      type: Date, 
+      required: true 
+    },
+    endTime:{ 
+      type: Date 
+    },                              // computed on save
+    scoringType:{ 
+      type: String, 
+      enum: ["points", "time_penalty"], 
+      default: "points" 
+    },
     // points: sum of problem points for accepted solutions
     // time_penalty: ICPC-style (penalty minutes for wrong attempts)
-    allowedLanguages:{ type: [String], default: ["cpp", "python", "java", "javascript"] },
-    maxAttempts:     { type: Number, default: 0 },  // 0 = unlimited
-    showLeaderboard: { type: Boolean, default: true },
-    createdBy:       { type: Schema.Types.ObjectId, ref: "User" },
+    allowedLanguages:{ 
+      type: [String], 
+      default: ["cpp", "python", "java", "javascript"] 
+    },
+    maxAttempts:{ 
+      type: Number, 
+      default: 0 
+    },  // 0 = unlimited
+    showLeaderboard: { 
+      type: Boolean, 
+      default: true 
+    },
+    createdBy:{ 
+      type: Schema.Types.ObjectId, 
+      ref: "User" 
+    },
   },
   { timestamps: true }
 );

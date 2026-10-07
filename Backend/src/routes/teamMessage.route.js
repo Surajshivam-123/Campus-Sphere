@@ -13,7 +13,7 @@ router.get("/:teamId", verifyJWT, async (req, res) => {
     const { page = 1, limit = 50 } = req.query;
     const userId = req.user._id;
 
-    const team = await Team.findById(teamId).select("owner event").lean();
+    const team = await Team.findById(teamId).select("name owner event").lean();
     if (!team) {
       return res.status(404).json({ error: "Team not found." });
     }

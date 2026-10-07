@@ -148,15 +148,23 @@ const editRole = asyncHandler(async (req, res) => {
     const { memberId } = req.params;
     if (!memberId) throw new ApiError(400, "Member id is required");
 
-    const { role } = req.body;
-    const member = await Member.findByIdAndUpdate(memberId, { role }, { new: true });
+    const member = await Member.findById(memberId);
     if (!member) throw new ApiError(404, "Member not found");
+
+    const event = await Event.findById(member.event).select("organizer").lean();
+    if (!event || event.organizer.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "Only the event organizer can edit member roles");
+    }
+
+    const { role } = req.body;
+    member.role = role;
+    await member.save();
 
     await cacheDel(`members:event:${member.event}`);
     return res.status(200).json(new ApiResponse(200, member, "Role updated successfully"));
   } catch (error) {
     console.log("Error while editing role", error);
-    return res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
+    throw error;
   }
 });
 

@@ -11,11 +11,10 @@ export default function JoinClub() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [clubName, setClubName] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); setSuccess(""); setClubName("");
+    setError(""); setSuccess("");
 
     const code = clubCode.trim();
     if (!code) return setError("Club code is required.");

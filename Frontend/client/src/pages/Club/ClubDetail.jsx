@@ -2,7 +2,8 @@ import API_URL from "../../config/api";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaUsers, FaExclamationTriangle, FaCheckCircle, FaCrown, FaStar, FaCopy, FaCheck, FaLock, FaComments } from "react-icons/fa";
+import { FaUsers, FaExclamationTriangle, FaCheckCircle, FaCrown, FaStar, FaLock, FaComments } from "react-icons/fa";
+import CopyToClipboard from "../../components/shared/CopyToClipboard";
 import { useFetch } from "../../hooks/useFetch";
 import { useAuth } from "../../hooks/useAuth";
 import fetchWithAuth from "../../config/fetchWithAuth";
@@ -59,12 +60,11 @@ export default function ClubDetail() {
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState("");
   const [joinSuccess, setJoinSuccess] = useState("");
-  const [copied, setCopied] = useState(false);
   const [leaveLoading, setLeaveLoading] = useState(false);
   const [leaveError, setLeaveError] = useState("");
 
   const { data: club, loading: clubLoading } = useFetch(`${API_URL}/api/cpsh/clubs/${clubId}`);
-  const { data: membersData, loading: membersLoading, refetch: refetchMembers } = useFetch(`${API_URL}/api/cpsh/clubs/members/${clubId}`);
+  const { data: membersData, loading: membersLoading } = useFetch(`${API_URL}/api/cpsh/clubs/members/${clubId}`);
 
   const activeMembers = membersData?.activeMembers || [];
   const alumniMembers = membersData?.alumniMembers || [];
@@ -75,12 +75,6 @@ export default function ClubDetail() {
 
   const isMember = user && activeMembers.some((m) => m.user?._id === user._id);
   const isAlumni = user && alumniMembers.some((m) => m.user?._id === user._id);
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(club.clubCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -227,7 +221,7 @@ export default function ClubDetail() {
                     Club code
                   </span>
                   <div
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border"
                     style={{
                       backgroundColor: "color-mix(in srgb, var(--color-navy) 6%, transparent)",
                       borderColor: "color-mix(in srgb, var(--color-navy) 20%, transparent)",
@@ -236,14 +230,7 @@ export default function ClubDetail() {
                     <span className="font-mono font-semibold text-sm tracking-widest" style={{ color: "var(--color-navy)" }}>
                       {club.clubCode}
                     </span>
-                    <button
-                      onClick={copyCode}
-                      aria-label="Copy club code"
-                      className="transition-colors"
-                      style={{ color: copied ? "var(--color-gold)" : "var(--color-navy)" }}
-                    >
-                      {copied ? <FaCheck size={12} /> : <FaCopy size={12} />}
-                    </button>
+                    <CopyToClipboard textToCopy={club.clubCode} />
                   </div>
                   {!club.isPublic && (
                     <span

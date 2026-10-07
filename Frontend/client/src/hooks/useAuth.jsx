@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useCallback } from "react";
+import { useState, useEffect, createContext, useContext, useCallback, useMemo } from "react";
 import userService from "../services/user.service";
 import { setForceLogoutHandler } from "../services/api.service";
 
@@ -34,12 +34,7 @@ export const AuthProvider = ({ children }) => {
     setForceLogoutHandler(forceLogout);
   }, [forceLogout]);
 
-  // Check if user is logged in on mount
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const token = localStorage.getItem("accessToken");
 
@@ -64,7 +59,7 @@ export const AuthProvider = ({ children }) => {
       // Verify against backend — catches tampered/revoked tokens
       const response = await userService.getProfile();
       if (!response?.data) throw new Error("Invalid profile response");
-      setUser(response.data);
+      setUser(response?.data?.user || response?.data);
     } catch (err) {
       // Only clear auth on explicit 401 — not on network errors (backend down)
       if (err?.status === 401) {
@@ -77,9 +72,14 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const login = async (credentials) => {
+  // Check if user is logged in on mount
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const login = useCallback(async (credentials) => {
     try {
       setError(null);
       const response = await userService.login(credentials);
@@ -89,9 +89,9 @@ export const AuthProvider = ({ children }) => {
       setError(err.message);
       throw err;
     }
-  };
+  }, []);
 
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     try {
       setError(null);
       const response = await userService.register(userData);
@@ -101,9 +101,9 @@ export const AuthProvider = ({ children }) => {
       setError(err.message);
       throw err;
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       // Tell backend to clear refreshToken from DB and clear cookies
       await userService.logout();
@@ -114,17 +114,21 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("accessToken");
       setUser(null);
     }
-  };
+  }, []);
 
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    isAuthenticated: !!user,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      error,
+      login,
+      register,
+      logout,
+      checkAuth,
+      isAuthenticated: !!user,
+    }),
+    [user, loading, error, login, register, logout, checkAuth]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

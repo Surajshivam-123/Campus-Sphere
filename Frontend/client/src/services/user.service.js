@@ -21,11 +21,17 @@ class UserService {
       formData.append("avatar", userData.avatar);
     }
 
-    return apiClient.post("/api/cpsh/users/register", formData, {
+    const response = await apiClient.post("/api/cpsh/users/register", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
+
+    if (response?.data?.accessToken) {
+      localStorage.setItem("accessToken", response.data.accessToken);
+    }
+
+    return response;
   }
 
   /**

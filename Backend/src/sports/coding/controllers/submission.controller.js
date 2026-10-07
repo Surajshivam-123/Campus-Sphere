@@ -180,6 +180,7 @@ const getLeaderboard = asyncHandler(async (req, res) => {
 
   const map = new Map();
   for (const sub of submissions) {
+    if (!sub.participant?._id || !sub.problem?._id) continue;
     const uid = sub.participant._id.toString();
     const pid = sub.problem._id.toString();
     if (!map.has(uid)) {

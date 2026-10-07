@@ -1,5 +1,5 @@
 import API_URL from "../../config/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTrophy, FaMedal, FaArrowLeft, FaSync } from "react-icons/fa";
@@ -17,7 +17,7 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       const res = await fetchWithAuth(`${API_URL}/api/cpsh/coding/submissions/event/${eventId}/leaderboard`);
       const data = await res.json();
@@ -25,7 +25,7 @@ export default function Leaderboard() {
     } catch (e) {
       console.error("Error fetching leaderboard", e);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     const load = async () => {
@@ -40,19 +40,18 @@ export default function Leaderboard() {
       setLoading(false);
     };
     load();
-  }, [eventId]);
+  }, [eventId, fetchLeaderboard]);
 
   // Real-time updates
   useEffect(() => {
-    socket.connect();
+    if (!socket.connected) socket.connect();
     socket.emit("join:contest", eventId);
-    socket.on("leaderboard:updated", () => fetchLeaderboard());
+    socket.on("leaderboard:updated", fetchLeaderboard);
     return () => {
       socket.emit("leave:contest", eventId);
-      socket.off("leaderboard:updated");
-      socket.disconnect();
+      socket.off("leaderboard:updated", fetchLeaderboard);
     };
-  }, [eventId]);
+  }, [eventId, fetchLeaderboard]);
 
   if (loading) return <LoadingPage />;
 

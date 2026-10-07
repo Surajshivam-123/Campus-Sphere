@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowLeft, FaCheckCircle, FaUsers } from "react-icons/fa";
@@ -20,10 +20,7 @@ export default function SquadSubmit() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [mRes, tRes] = await Promise.all([
-          fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" }),
-          // profile needed to know which team is ours — we get it from team endpoint
-        ]);
+        const mRes = await fetchWithAuth(`${API_URL}/api/cpsh/matches/${matchId}`, { credentials: "include" });
         const mData = await mRes.json();
         const m = mData?.data;
         if (!m) { setError("Match not found"); setLoading(false); return; }
@@ -96,7 +93,7 @@ export default function SquadSubmit() {
       } else {
         setError(data.message || "Failed to submit squad");
       }
-    } catch (e) {
+    } catch {
       setError("Error submitting squad");
     } finally {
       setSubmitting(false);

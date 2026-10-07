@@ -35,7 +35,6 @@ export default function JoinTeam() {
 
     return () => {
       socket.off("join:response");
-      socket.disconnect();
     };
   }, [user, eventId, navigate]);
 

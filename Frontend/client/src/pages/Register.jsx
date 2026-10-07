@@ -135,14 +135,14 @@ export default function Register() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
-  const hasSpecial = /[@$!%*?&#^()\-_+=\[\]{}|;:,./<>~`]/.test(password);
+  const hasSpecial = /[@$!%*?&#^()\-_+=[\]{}|;:,./<>~`]/.test(password);
 
   const validatePassword = (pwd) => {
     if (pwd.length < 8) return "Password must be at least 8 characters long";
     if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
     if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
     if (!/\d/.test(pwd)) return "Password must contain at least one number";
-    if (!/[@$!%*?&#^()\-_+=\[\]{}|;:,./<>~`]/.test(pwd)) return "Password must contain at least one special character";
+    if (!/[@$!%*?&#^()\-_+=[\]{}|;:,./<>~`]/.test(pwd)) return "Password must contain at least one special character";
     return "";
   };
 

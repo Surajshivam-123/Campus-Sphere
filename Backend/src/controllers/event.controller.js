@@ -105,10 +105,14 @@ const createEvent = asyncHandler(async (req, res) => {
 
 const deleteEvent = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
-  const event = await Event.findByIdAndDelete(eventId);
+  const event = await Event.findById(eventId);
   if (!event) {
     throw new ApiError(404, "Event not found");
   }
+  if (event.organizer.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "Only the event organizer can perform this action");
+  }
+  await Event.findByIdAndDelete(eventId);
   await cacheDel(
     `event:${eventId}`,
     `events:organizer:${event.organizer}`,
@@ -139,6 +143,9 @@ const updateEvent = asyncHandler(async (req, res) => {
     const event = await Event.findById(eventId);
     if (!event) {
       throw new ApiError(404, "Event not found");
+    }
+    if (event.organizer.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "Only the event organizer can perform this action");
     }
     const posterfilePath = req.file?.path;
     let poster = null;
@@ -323,6 +330,7 @@ const revokeScorer = asyncHandler(async (req, res) => {
     throw error;
   }
 });
+
 const sendEventMessage = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -439,4 +447,18 @@ const generateEventPoster = asyncHandler(async (req, res) => {
   }
 });
 
-export { createEvent, deleteEvent, updateEvent, getallEvents, getsingleEvent, getPublicEvents, assignScorer, revokeScorer, sendEventMessage, generateEventPoster };
+const getEventMessages = sendEventMessage;
+
+export {
+  createEvent,
+  deleteEvent,
+  updateEvent,
+  getallEvents,
+  getsingleEvent,
+  getPublicEvents,
+  assignScorer,
+  revokeScorer,
+  sendEventMessage,
+  getEventMessages,
+  generateEventPoster,
+};

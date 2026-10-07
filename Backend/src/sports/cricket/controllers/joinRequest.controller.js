@@ -110,10 +110,8 @@ const getMyRequestStatus = asyncHandler(async (req, res) => {
   }
 });
 
-export { requestJoinTeam, getJoinRequests, respondToJoinRequest, getMyRequestStatus };
-
 // GET /event-join-requests/:eventId — organizer fetches ALL pending team join requests for their event
-export const getEventJoinRequests = asyncHandler(async (req, res) => {
+const getEventJoinRequests = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
 
@@ -142,3 +140,4 @@ export const getEventJoinRequests = asyncHandler(async (req, res) => {
     throw error;
   }
 });
+export { requestJoinTeam, getJoinRequests, respondToJoinRequest, getMyRequestStatus, getEventJoinRequests};

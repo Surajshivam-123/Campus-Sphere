@@ -114,7 +114,6 @@ export default function LiveScoreboard() {
       socket.off("match:updated");
       socket.off("connect");
       socket.off("disconnect");
-      socket.disconnect();
     };
   }, [eventId, access]);
 

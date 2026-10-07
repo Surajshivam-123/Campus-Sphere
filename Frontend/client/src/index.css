@@ -345,14 +345,14 @@ body {
 .dark .border-gray-300 { border-color: var(--color-border) !important; }
 
 /* Cricket Pages Compatibility */
-.dark .bg-\[#1e3a5f\]         { background-color: var(--color-surface-2) !important; }
-.dark .hover\:bg-\[#2d4a6f\]:hover { background-color: var(--color-border) !important; }
-.dark .border-\[#1e3a5f\]     { border-color: var(--color-border) !important; }
-.dark .text-\[#1e3a5f\]  { color: var(--color-text-heading) !important; }
-.dark .text-\[#374151\]  { color: var(--color-text-secondary) !important; }
-.dark .text-\[#6b7280\]  { color: var(--color-text-muted) !important; }
-.dark .bg-\[#faf9f6\]    { background-color: var(--color-bg) !important; }
-.dark .bg-\[#f0ede6\]    { background-color: var(--color-surface-2) !important; }
+.dark .bg-\[\#1e3a5f\]         { background-color: var(--color-surface-2) !important; }
+.dark .hover\:bg-\[\#2d4a6f\]:hover { background-color: var(--color-border) !important; }
+.dark .border-\[\#1e3a5f\]     { border-color: var(--color-border) !important; }
+.dark .text-\[\#1e3a5f\]  { color: var(--color-text-heading) !important; }
+.dark .text-\[\#374151\]  { color: var(--color-text-secondary) !important; }
+.dark .text-\[\#6b7280\]  { color: var(--color-text-muted) !important; }
+.dark .bg-\[\#faf9f6\]    { background-color: var(--color-bg) !important; }
+.dark .bg-\[\#f0ede6\]    { background-color: var(--color-surface-2) !important; }
 .dark .text-red-700 { color: #fca5a5 !important; }
 .dark .rounded-2xl.bg-white, .dark .rounded-xl.bg-white, .dark .rounded-lg.bg-white { background-color: var(--color-surface) !important; }
 .dark select.border-gray-200, .dark input.border-gray-200 {
@@ -360,6 +360,7 @@ body {
   border-color: var(--color-border) !important;
   color: var(--color-text-primary) !important;
 }
-.dark .text-\[#b8860b\] { color: var(--color-gold) !important; }
-.dark .bg-\[#b8860b\]   { background-color: var(--color-gold) !important; }
-.dark .border-\[#b8860b\]\/30 { border-color: color-mix(in srgb, var(--color-gold) 30%, transparent) !important; }
+.dark .text-\[\#b8860b\] { color: var(--color-gold) !important; }
+.dark .bg-\[\#b8860b\]   { background-color: var(--color-gold) !important; }
+.dark .border-\[\#b8860b\]\/30 { border-color: color-mix(in srgb, var(--color-gold) 30%, transparent) !important; }
+

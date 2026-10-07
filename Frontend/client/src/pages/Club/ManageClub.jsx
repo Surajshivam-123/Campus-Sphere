@@ -1,5 +1,5 @@
 import API_URL from "../../config/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaUserCheck, FaCog, FaCrown, FaStar, FaTrash, FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
@@ -21,7 +21,7 @@ function Avatar({ user, size = 8 }) {
 }
 
 // ── Members Tab ───────────────────────────────────────────────────────────────
-function MembersTab({ clubId, club, currentUser, onClubDeleted }) {
+function MembersTab({ clubId, club, currentUser }) {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ function MembersTab({ clubId, club, currentUser, onClubDeleted }) {
 
   const isFounder = club?.founder?._id === currentUser?._id || club?.founder === currentUser?._id;
 
-  const loadMembers = async () => {
+  const loadMembers = useCallback(async () => {
     try {
       const res = await fetchWithAuth(`${API_URL}/api/cpsh/clubs/members/${clubId}`);
       const data = await res.json();
@@ -45,9 +45,9 @@ function MembersTab({ clubId, club, currentUser, onClubDeleted }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clubId]);
 
-  useEffect(() => { loadMembers(); }, [clubId]);
+  useEffect(() => { loadMembers(); }, [loadMembers]);
 
   const showFeedback = (type, msg) => {
     setFeedback({ type, msg });
@@ -315,7 +315,7 @@ function JoinRequestsTab({ clubId }) {
   const [actionLoading, setActionLoading] = useState(null);
   const [feedback, setFeedback] = useState({ type: "", msg: "" });
 
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       const res = await fetchWithAuth(`${API_URL}/api/cpsh/clubs/join-requests/${clubId}`);
       const data = await res.json();
@@ -325,9 +325,9 @@ function JoinRequestsTab({ clubId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clubId]);
 
-  useEffect(() => { loadRequests(); }, [clubId]);
+  useEffect(() => { loadRequests(); }, [loadRequests]);
 
   const showFeedback = (type, msg) => {
     setFeedback({ type, msg });

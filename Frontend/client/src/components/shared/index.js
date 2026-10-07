@@ -10,4 +10,5 @@ export { default as EventCard } from './EventCard';
 export { default as CopyToClipboard } from './CopyToClipboard';
 export { default as Footer } from './Footer';
 export { default as ScrollToTop } from './ScrollToTop';
-
+export { default as ErrorBoundary, DefaultErrorFallback } from './ErrorBoundary';
+export { default as FloatingAiAssistant } from './FloatingAiAssistant';

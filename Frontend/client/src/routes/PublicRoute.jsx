@@ -7,7 +7,7 @@ import { useAuth } from "../hooks/useAuth";
  * - If not authenticated → show the page
  * - `landing` prop: marks the root "/" page (no redirect for guests)
  */
-export default function PublicRoute({ children, landing = false }) {
+export default function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) return null;

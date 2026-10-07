@@ -55,7 +55,7 @@ export default function EventDetailsPage() {
       className="min-h-screen py-12 px-4"
       style={{ backgroundColor: "var(--color-bg)" }}
     >
-      <FloatingChatButton eventId={eventId} />
+      <FloatingChatButton eventId={eventData?._id} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,9 +87,27 @@ export default function EventDetailsPage() {
         </div>
 
         <div className="mt-8 flex flex-col gap-3">
+          {eventData.category === "sports" && eventData.sports?.toLowerCase() === "cricket" && (
+            <button
+              onClick={() => navigate(`/sports/cricket/event-details/${eventData._id}/${identityNumber}/${encodeURIComponent(participantCode)}/${participantId}`)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition hover:opacity-90 shadow-xs"
+              style={{ backgroundColor: "var(--color-navy)" }}
+            >
+              🏏 Cricket Tournament & Squad
+            </button>
+          )}
+          {eventData.category === "coding" && (
+            <button
+              onClick={() => navigate(`/coding/contest/${eventData._id}`)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition hover:opacity-90 shadow-xs"
+              style={{ backgroundColor: "var(--color-navy)" }}
+            >
+              💻 Enter Coding Contest Arena
+            </button>
+          )}
           <button
             onClick={() => navigate(`/events/${eventData._id}/chat`)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition"
+            className="w-full flex items-center justify-center gap-2 py-2.5 text-white font-medium rounded text-sm transition hover:opacity-90"
             style={{ backgroundColor: "var(--color-navy)" }}
           >
             <FaComments size={14} /> Open Chat

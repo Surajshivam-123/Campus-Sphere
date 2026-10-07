@@ -53,7 +53,13 @@ const registerUser = asyncHandler(async (req, res) => {
     .status(HTTP_STATUS.CREATED)
     .cookie("accessToken", accessToken, COOKIE_OPTIONS)
     .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-    .json(new ApiResponse(HTTP_STATUS.CREATED, user, "User registered successfully"));
+    .json(
+      new ApiResponse(
+        HTTP_STATUS.CREATED,
+        { user, accessToken, refreshToken },
+        "User registered successfully"
+      )
+    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -148,7 +154,8 @@ const googleAuthCallback = asyncHandler(async (req, res) => {
   // req.user is set by passport after successful Google auth
   const { user, accessToken, refreshToken } = await userService.googleLogin(req.user);
 
-  const frontendUrl = (process.env.FRONTEND_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
+  const rawOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+  const frontendUrl = (rawOrigin.includes(",") ? rawOrigin.split(",")[0].trim() : rawOrigin).replace(/\/$/, "");
 
   res
     .status(HTTP_STATUS.OK)

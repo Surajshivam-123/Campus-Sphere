@@ -59,7 +59,7 @@ export default function CodingContestFormat() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (data?.success) { setSaved(true); setTimeout(() => navigate(`/event/${eventId}/coding`), 1200); }
+      if (data?.success) { setSaved(true); setTimeout(() => navigate(`/organizer/coding/${eventId}`), 1200); }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };

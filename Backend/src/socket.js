@@ -11,7 +11,6 @@ import { Participant } from "./models/participant.model.js";
 import { TeamMessage } from "./models/teamMessage.model.js";
 import { Team } from "./models/team.model.js";
 import { Cricket_Player } from "./sports/cricket/models/player.model.js";
-import { sendClubMessage } from "./controllers/clubChat.controller.js";
 let io;
 
 export const initSocket = (httpServer) => {
@@ -74,7 +73,52 @@ export const initSocket = (httpServer) => {
       socket.leave(`club:chat:${clubId}`);
     });
 
-    socket.on("club:chat:send", sendClubMessage);
+    // Send club chat message — founder or active member can send
+    socket.on("club:chat:send", async ({ clubId, text, senderId, senderName, senderAvatar, tempId }) => {
+      try {
+        if (!clubId || !text?.trim() || !senderId) return;
+
+        const club = await Club.findById(clubId).select("founder").lean();
+        if (!club) return;
+
+        const isFounder = club.founder.toString() === senderId.toString();
+        const isMember = await ClubMember.findOne({
+          club: clubId,
+          user: senderId,
+          status: "active",
+        }).lean();
+
+        if (!isFounder && !isMember) {
+          socket.emit("club:chat:error", { tempId, message: "You are not a member of this club." });
+          return;
+        }
+
+        const message = await ClubMessage.create({
+          club: clubId,
+          sender: senderId,
+          text: text.trim(),
+        });
+
+        const payload = {
+          _id: message._id,
+          tempId,
+          club: clubId,
+          text: message.text,
+          deleted: false,
+          createdAt: message.createdAt,
+          sender: {
+            _id: senderId,
+            fullname: senderName,
+            avatar: senderAvatar,
+          },
+        };
+
+        io.to(`club:chat:${clubId}`).emit("club:chat:message", payload);
+      } catch (err) {
+        console.error("[club:chat:send] error:", err.message);
+        socket.emit("club:chat:error", { tempId, message: "Failed to send message." });
+      }
+    });
 
     // Delete a message — sender or founder/head
     socket.on("club:chat:delete", async ({ clubId, messageId, requesterId }) => {
@@ -273,8 +317,8 @@ export const initSocket = (httpServer) => {
         if (!message || message.team.toString() !== teamId) return;
 
         const team = await Team.findById(teamId).select("owner").lean();
-        const isCaptain = team?.owner.toString() === requesterId;
-        const isSender = message.sender.toString() === requesterId;
+        const isCaptain = team?.owner?.toString() === requesterId;
+        const isSender = message.sender?.toString() === requesterId;
 
         if (!isSender && !isCaptain) return;
 

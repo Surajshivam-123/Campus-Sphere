@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 
 const ThemeContext = createContext(null);
 
@@ -31,10 +31,19 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const toggle = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const toggle = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
+
+  const value = useMemo(
+    () => ({
+      theme,
+      toggle,
+      isDark: theme === "dark",
+    }),
+    [theme, toggle]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle, isDark: theme === "dark" }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
