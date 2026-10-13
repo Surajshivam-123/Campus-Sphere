@@ -1,0 +1,45 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: CampusSphere Alerts
+    folder: CampusSphere
+    interval: 1m
+    rules:
+      - uid: backend-down
+        title: Backend Down
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "-- Grafana --"
+            model:
+              type: math
+              expression: "$__value < 1"
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CampusSphere backend is unreachable"
+
+      - uid: high-error-rate
+        title: High 5xx Error Rate
+        condition: A
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: "-- Grafana --"
+            model:
+              type: math
+              expression: "$__value > 0.05"
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "5xx error rate exceeded 5%"

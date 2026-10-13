@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+alerting:
+  alertmanagers: []
+
+scrape_configs:
+  # Node.js backend
+  - job_name: "campussphere-backend"
+    static_configs:
+      - targets: ["backend:4000"]
+    metrics_path: /metrics
+
+  # MongoDB exporter not available for Atlas — use Atlas built-in monitoring
+  # - job_name: "mongodb"
+  #   static_configs:
+  #     - targets: ["mongodb-exporter:9216"]
+
+  # Redis via redis_exporter
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  # node-exporter (Linux container host metrics)
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # windows_exporter running natively on the Windows host
+  # Install from: https://github.com/prometheus-community/windows_exporter/releases
+  # Download the .msi and run it — it installs as a Windows service on port 9182.
+  # If not installed, this job will show as DOWN but won't affect other targets.
+  - job_name: "windows-host"
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    static_configs:
+      - targets: ["host.docker.internal:9182"]
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

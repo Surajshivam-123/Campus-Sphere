@@ -58,8 +58,6 @@ Thumbs.db
 .classpath
 .settings/
 .vscode/
-monitoring/
-k6/
 
 # Docker
 compose.yaml

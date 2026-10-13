@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "CampusSphere"
+    orgId: 1
+    folder: "CampusSphere"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards

@@ -1,0 +1,82 @@
+groups:
+  - name: campussphere-backend
+    interval: 30s
+    rules:
+      - alert: BackendDown
+        expr: up{job="campussphere-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CampusSphere backend is down"
+          description: "The backend has been unreachable for more than 1 minute."
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(campussphere_http_requests_total{status_code=~"5.."}[5m]))
+          /
+          sum(rate(campussphere_http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP 5xx error rate"
+          description: "More than 5% of requests are returning 5xx errors."
+
+      - alert: SlowRequests
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(campussphere_http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow HTTP responses (p95 > 2s)"
+          description: "95th percentile response time has exceeded 2 seconds."
+
+      - alert: HighInFlightRequests
+        expr: campussphere_http_requests_in_flight > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Too many in-flight requests"
+          description: "More than 100 requests are being processed simultaneously."
+
+      - alert: HighHeapUsage
+        expr: |
+          (
+            campussphere_nodejs_heap_size_used_bytes
+            /
+            campussphere_nodejs_heap_size_total_bytes > 0.95
+          )
+          and
+          campussphere_nodejs_heap_size_total_bytes > 100000000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node.js heap usage above 95%"
+          description: "The Node.js process is using more than 95% of its heap (and heap is >100MB, ruling out startup false positives)."
+
+  - name: infrastructure
+    interval: 30s
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis exporter is down"
+          description: "Cannot scrape Redis metrics."
+
+      - alert: HighRedisMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage above 85%"
+          description: "Redis is using more than 85% of its configured max memory."

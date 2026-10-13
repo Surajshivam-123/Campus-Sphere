@@ -1,0 +1,261 @@
+{
+  "title": "CampusSphere Overview",
+  "uid": "campussphere-overview",
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "HTTP Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(campussphere_http_requests_total[1m])) by (method, route)",
+          "legendFormat": "{{method}} {{route}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 2,
+      "title": "HTTP Request Duration (p50 / p95 / p99)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(campussphere_http_request_duration_seconds_bucket[1m])) by (le, route))",
+          "legendFormat": "p50 {{route}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(campussphere_http_request_duration_seconds_bucket[1m])) by (le, route))",
+          "legendFormat": "p95 {{route}}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(campussphere_http_request_duration_seconds_bucket[1m])) by (le, route))",
+          "legendFormat": "p99 {{route}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 3,
+      "title": "HTTP Error Rate (4xx / 5xx)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(campussphere_http_requests_total{status_code=~\"4..\"}[1m]))",
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "sum(rate(campussphere_http_requests_total{status_code=~\"5..\"}[1m]))",
+          "legendFormat": "5xx"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 4,
+      "title": "In-Flight Requests",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_http_requests_in_flight",
+          "legendFormat": "In-Flight"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Active Socket.IO Connections",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_socket_connections_active",
+          "legendFormat": "Sockets"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Node.js Heap Used",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_nodejs_heap_size_used_bytes",
+          "legendFormat": "Heap Used"
+        },
+        {
+          "expr": "campussphere_nodejs_heap_size_total_bytes",
+          "legendFormat": "Heap Total"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 7,
+      "title": "Node.js Event Loop Lag",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(campussphere_nodejs_eventloop_lag_seconds[1m])",
+          "legendFormat": "Event Loop Lag"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 13,
+      "title": "Node.js Process CPU Usage",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(campussphere_process_cpu_seconds_total[1m]) * 100",
+          "legendFormat": "CPU %"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "id": 14,
+      "title": "Node.js GC Duration",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(campussphere_nodejs_gc_duration_seconds_sum[1m])",
+          "legendFormat": "GC {{gc_type}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 8,
+      "title": "MongoDB Connection State",
+      "description": "1 = connected, 0 = disconnected. Atlas does not support mongodb-exporter, so connection counts are unavailable.",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_mongodb_connection_state",
+          "legendFormat": "Connected"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "Disconnected", "color": "red" }, "1": { "text": "Connected", "color": "green" } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "red", "value": 0 }, { "color": "green", "value": 1 }]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "MongoDB Operation Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(campussphere_db_operation_duration_seconds_bucket[1m])) by (le, operation, collection))",
+          "legendFormat": "p95 {{operation}} {{collection}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 9,
+      "title": "Redis Memory Used",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 40, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes",
+          "legendFormat": "Used"
+        },
+        {
+          "expr": "redis_memory_max_bytes",
+          "legendFormat": "Max"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 10,
+      "title": "Redis Commands / sec",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 40, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(redis_commands_processed_total[1m])",
+          "legendFormat": "Commands/s"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "id": 11,
+      "title": "Container CPU Usage (node-exporter)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 48, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)",
+          "legendFormat": "CPU % (container host)"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } }
+    },
+    {
+      "id": 12,
+      "title": "Container Memory Usage (node-exporter)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 48, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+          "legendFormat": "Used"
+        },
+        {
+          "expr": "node_memory_MemTotal_bytes",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 16,
+      "title": "Prometheus Scrape Health",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 56, "w": 24, "h": 6 },
+      "targets": [
+        {
+          "expr": "up",
+          "legendFormat": "{{job}} — {{instance}}",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        { "id": "labelsToFields", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { "Value": "Status", "job": "Job", "instance": "Instance" }
+          }
+        }
+      ]
+    }
+  ]
+}

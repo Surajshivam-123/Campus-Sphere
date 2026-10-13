@@ -1,0 +1,275 @@
+{
+  "title": "Windows Host Metrics",
+  "uid": "windows-host",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "CPU Usage %",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(windows_cpu_time_total{mode=\"idle\"}[1m])) * 100)",
+          "legendFormat": "CPU %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "CPU Usage per Core",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 - (rate(windows_cpu_time_total{mode=\"idle\"}[1m]) * 100)",
+          "legendFormat": "Core {{core}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "id": 3,
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "windows_os_physical_memory_free_bytes",
+          "legendFormat": "Free"
+        },
+        {
+          "expr": "windows_cs_physical_memory_bytes - windows_os_physical_memory_free_bytes",
+          "legendFormat": "Used"
+        },
+        {
+          "expr": "windows_cs_physical_memory_bytes",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 4,
+      "title": "Memory Usage %",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 - (windows_os_physical_memory_free_bytes / windows_cs_physical_memory_bytes * 100)",
+          "legendFormat": "Memory %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 75 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Uptime",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "time() - windows_system_system_up_time",
+          "legendFormat": "Uptime"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 6,
+      "title": "Disk Read / Write Bytes/s",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(windows_logical_disk_read_bytes_total[1m])",
+          "legendFormat": "Read {{volume}}"
+        },
+        {
+          "expr": "rate(windows_logical_disk_write_bytes_total[1m])",
+          "legendFormat": "Write {{volume}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps" } }
+    },
+    {
+      "id": 7,
+      "title": "Disk Free Space",
+      "type": "bargauge",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "windows_logical_disk_free_bytes{volume!~\"HarddiskVolume.*\"}",
+          "legendFormat": "{{volume}} Free"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 8,
+      "title": "Disk I/O Operations/s",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(windows_logical_disk_reads_total[1m])",
+          "legendFormat": "Reads/s {{volume}}"
+        },
+        {
+          "expr": "rate(windows_logical_disk_writes_total[1m])",
+          "legendFormat": "Writes/s {{volume}}"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Network Received / Sent Bytes/s",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(windows_net_bytes_received_total{nic!~\".*isatap.*|.*teredo.*\"}[1m])",
+          "legendFormat": "Recv {{nic}}"
+        },
+        {
+          "expr": "rate(windows_net_bytes_sent_total{nic!~\".*isatap.*|.*teredo.*\"}[1m])",
+          "legendFormat": "Sent {{nic}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps" } }
+    },
+    {
+      "id": 10,
+      "title": "Network Packets/s",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(windows_net_packets_received_total{nic!~\".*isatap.*|.*teredo.*\"}[1m])",
+          "legendFormat": "Recv Pkts {{nic}}"
+        },
+        {
+          "expr": "rate(windows_net_packets_sent_total{nic!~\".*isatap.*|.*teredo.*\"}[1m])",
+          "legendFormat": "Sent Pkts {{nic}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "TCP Connections",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "windows_net_current_bandwidth_bytes_total",
+          "legendFormat": "Bandwidth {{nic}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps" } }
+    },
+    {
+      "id": 12,
+      "title": "Running Processes",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 40, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "windows_os_processes",
+          "legendFormat": "Processes"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Threads",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 40, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "windows_system_threads",
+          "legendFormat": "Threads"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "System Calls/s",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 40, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(windows_system_system_calls_total[1m])",
+          "legendFormat": "Syscalls/s"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Page Faults/s",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 46, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(windows_memory_page_faults_total[1m])",
+          "legendFormat": "Page Faults/s"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Paging File Usage %",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 46, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "100 * (1 - windows_pagefile_free_bytes / windows_pagefile_limit_bytes)",
+          "legendFormat": "Page File %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

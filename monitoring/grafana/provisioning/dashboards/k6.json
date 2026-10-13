@@ -1,0 +1,190 @@
+{
+  "title": "k6 Load Test Results",
+  "uid": "k6-load-tests",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "HTTP Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(campussphere_http_requests_total[30s]))",
+          "legendFormat": "req/s"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "fixed", "fixedColor": "blue" } } }
+    },
+    {
+      "id": 2,
+      "title": "Active Virtual Users (In-Flight Requests)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_http_requests_in_flight",
+          "legendFormat": "VUs"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 150 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error Rate",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(campussphere_http_requests_total{status_code=~\"5..\"}[30s])) / sum(rate(campussphere_http_requests_total[30s])) * 100",
+          "legendFormat": "Error %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Response Time Percentiles",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 9 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(campussphere_http_request_duration_seconds_bucket[30s])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum(rate(campussphere_http_request_duration_seconds_bucket[30s])) by (le))",
+          "legendFormat": "p90"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(campussphere_http_request_duration_seconds_bucket[30s])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(campussphere_http_request_duration_seconds_bucket[30s])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "title": "Latency per Route",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 17, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(campussphere_http_request_duration_seconds_bucket[30s])) by (le, route))",
+          "legendFormat": "p95 {{route}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 6,
+      "title": "Error Rate per Route",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 17, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(campussphere_http_requests_total{status_code=~\"4..|5..\"}[30s])) by (route, status_code)",
+          "legendFormat": "{{status_code}} {{route}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 7,
+      "title": "Node.js Heap During Load",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 25, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_nodejs_heap_size_used_bytes",
+          "legendFormat": "Heap Used"
+        },
+        {
+          "expr": "campussphere_nodejs_heap_size_total_bytes",
+          "legendFormat": "Heap Total"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 8,
+      "title": "Event Loop Lag During Load",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 25, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "campussphere_nodejs_eventloop_lag_p50_seconds * 1000",
+          "legendFormat": "p50 lag (ms)"
+        },
+        {
+          "expr": "campussphere_nodejs_eventloop_lag_p99_seconds * 1000",
+          "legendFormat": "p99 lag (ms)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Throughput vs Latency Correlation",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 33, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(campussphere_http_requests_total[30s]))",
+          "legendFormat": "req/s"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(campussphere_http_request_duration_seconds_bucket[30s])) by (le)) * 1000",
+          "legendFormat": "p95 latency (ms)"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    }
+  ]
+}
