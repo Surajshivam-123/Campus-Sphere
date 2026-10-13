@@ -6,52 +6,14 @@ import {
   Twitter,
   Linkedin,
   Instagram,
-  ArrowUp,
-  Mail,
-  Check,
-  Globe,
-  Loader2
+  Globe
 } from "lucide-react";
 import logo from "/logo.jpg";
 
 export default function Footer() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!email) {
-      setEmailError("Email address is required.");
-      return;
-    }
-    // Simple email regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address.");
-      return;
-    }
-
-    setEmailError("");
-    setIsSubmitting(true);
-
-    // Mock network request
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubscribed(true);
-    }, 1200);
-  };
-
-  const handleBackToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  };
 
   const triggerToast = (featureName) => {
     setToastMessage(`"${featureName}" is under construction. Coming soon!`);
@@ -98,7 +60,7 @@ export default function Footer() {
         {/* Main Columns Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
           {/* Brand Column */}
-          <div className="lg:col-span-4 flex flex-col space-y-4">
+          <div className="lg:col-span-6 flex flex-col space-y-4">
             <Link to="/home" className="flex items-center space-x-3 w-fit">
               <motion.img
                 whileHover={{ scale: 1.03 }}
@@ -253,68 +215,6 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Newsletter Column */}
-          <div className="lg:col-span-2 flex flex-col space-y-3 min-w-[200px]">
-            <h3 className="font-heading text-sm font-semibold uppercase tracking-wider text-primary border-b border-soft pb-2">
-              Stay Updated
-            </h3>
-            <p className="text-xs text-secondary leading-relaxed">
-              Subscribe to get notified about the latest campus matches, hackathons, and activities.
-            </p>
-            <div className="pt-1">
-              <AnimatePresence mode="wait">
-                {subscribed ? (
-                  <motion.div
-                    key="subscribed-state"
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    className="flex flex-col items-center justify-center p-3 border border-success/20 bg-success/5 rounded-lg text-center"
-                  >
-                    <Check className="h-6 w-6 text-success mb-1" aria-hidden="true" />
-                    <span className="font-heading text-xs font-semibold text-primary">Subscribed!</span>
-                  </motion.div>
-                ) : (
-                  <motion.form
-                    key="subscribe-form"
-                    onSubmit={handleSubscribe}
-                    className="flex flex-col gap-2"
-                  >
-                    <div className="relative">
-                      <input
-                        type="email"
-                        placeholder="Enter your college email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (emailError) setEmailError("");
-                        }}
-                        className={`w-full text-xs px-3 py-2 border rounded-md bg-surface-2 text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-colors ${
-                          emailError ? "border-error" : "border-base"
-                        }`}
-                      />
-                      <Mail className="absolute right-3 top-2.5 h-3.5 w-3.5 text-muted pointer-events-none" aria-hidden="true" />
-                    </div>
-                    {emailError && (
-                      <p className="text-[10px] text-error leading-tight mt-0.5">{emailError}</p>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full btn-gold text-xs py-2 font-medium flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
-                      ) : (
-                        "Subscribe"
-                      )}
-                    </button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Bar separator */}
@@ -338,20 +238,6 @@ export default function Footer() {
               className="hover:text-gold transition-colors duration-150 cursor-pointer"
             >
               Terms of Service
-            </button>
-            <button
-              onClick={handleBackToTop}
-              className="group flex items-center gap-1 hover:text-gold transition-colors duration-150 cursor-pointer"
-              aria-label="Back to top"
-            >
-              Back to Top
-              <motion.span
-                className="inline-block"
-                animate={{ y: [0, -2, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5, repeatDelay: 1 }}
-              >
-                <ArrowUp className="h-3.5 w-3.5 text-muted group-hover:text-gold transition-colors" aria-hidden="true" />
-              </motion.span>
             </button>
           </div>
         </div>
