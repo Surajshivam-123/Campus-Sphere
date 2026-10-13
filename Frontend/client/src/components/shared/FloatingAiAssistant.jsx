@@ -243,9 +243,6 @@ export default function FloatingAiAssistant() {
                     <h3 className="font-heading font-bold text-sm tracking-wide">
                       Campus Sphere AI
                     </h3>
-                    <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                      RAG 2.5
-                    </span>
                   </div>
                   <p className="text-[11px] text-slate-300 flex items-center gap-1">
                     <ShieldCheck size={12} className="text-emerald-400" />

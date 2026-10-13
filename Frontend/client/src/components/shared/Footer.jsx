@@ -3,9 +3,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Github,
-  Twitter,
-  Linkedin,
-  Instagram,
   Globe
 } from "lucide-react";
 import logo from "/logo.jpg";
@@ -77,27 +74,20 @@ export default function Footer() {
             <p className="text-sm text-secondary leading-relaxed max-w-sm">
               Your ultimate campus event & club hub. Connect, compete, and collaborate with peers through sports, coding contests, and vibrant club activities.
             </p>
-            {/* Social Media Links */}
-            <div className="flex items-center space-x-3 pt-2">
-              {[
-                { icon: Twitter, label: "Twitter", url: "https://twitter.com" },
-                { icon: Linkedin, label: "LinkedIn", url: "https://linkedin.com" },
-                { icon: Github, label: "GitHub", url: "https://github.com" },
-                { icon: Instagram, label: "Instagram", url: "https://instagram.com" }
-              ].map((social, idx) => (
-                <motion.a
-                  key={idx}
-                  href={social.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  whileHover={{ scale: 1.15, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label={social.label}
-                  className="p-2.5 rounded-full bg-surface-2 border border-base text-secondary hover:text-gold hover:border-gold/50 transition-all duration-200 shadow-sm"
-                >
-                  <social.icon className="h-4.5 w-4.5" aria-hidden="true" />
-                </motion.a>
-              ))}
+            {/* GitHub Repository */}
+            <div className="pt-2">
+              <motion.a
+                href="https://github.com/Surajshivam-123/Campus-Sphere"
+                target="_blank"
+                rel="noreferrer"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                aria-label="GitHub Repository"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-2 border border-base text-secondary hover:text-gold hover:border-gold/50 transition-all duration-200 text-xs font-medium shadow-sm w-fit"
+              >
+                <Github className="h-4 w-4" aria-hidden="true" />
+                <span>GitHub</span>
+              </motion.a>
             </div>
           </div>
 
