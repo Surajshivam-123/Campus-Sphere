@@ -1,40 +1,14 @@
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-import dotenv from 'dotenv';
-dotenv.config({path:'./.env'});
+import { storageService } from "../services/storage/storage.service.js";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
+/**
+ * Backward-compatible wrapper delegating to StorageService (SOLID DIP & OCP)
+ */
 const uploadOnCloudinary = async (localfilePath) => {
-  try {
-    if (!localfilePath) throw "File not found";
-    const response = await cloudinary.uploader.upload(localfilePath, {
-      resource_type: "auto",
-    });
-    console.log("file is uploaded successfully on cloudinary", response.url);
-    fs.unlinkSync(localfilePath);
-    return response;
-  } catch (error) {
-    console.log("Error",error);
-    return null;
-  }
+  return storageService.uploadFile(localfilePath);
 };
 
 const deleteFromCloudinary = async (public_id) => {
-    try {
-        if(!public_id){
-            throw "Public Id not found"
-        }
-        await cloudinary.uploader.destroy(public_id,{resouce_type:"auto"})
-        return true
-    } catch (error) {
-        console.log("Error",error);
-    }
-}
+  return storageService.deleteFile(public_id);
+};
 
-export {uploadOnCloudinary,deleteFromCloudinary}
-    
+export { uploadOnCloudinary, deleteFromCloudinary };
